@@ -54,7 +54,7 @@ class _BottomTextState extends State<BottomText> {
                       ? 'Bir hesabın var mı? '
                       : 'Hesabın yok mu? ',
                   style: const TextStyle(
-                    color: kPrimaryColor,
+                    color: kPrimaryColor2,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -64,7 +64,7 @@ class _BottomTextState extends State<BottomText> {
                       ? 'Giriş Yap'
                       : 'Kayıt Ol',
                   style: const TextStyle(
-                    color: kSecondaryColor,
+                    color: kSecondaryColor2,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
