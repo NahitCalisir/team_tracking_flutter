@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "329358166515",
+    "project_id": "teamtracking-96377",
+    "storage_bucket": "teamtracking-96377.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329358166515:android:2eca2772023cfd562c2a86",
+        "android_client_info": {
+          "package_name": "com.nahitcalisir.team_tracking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "329358166515-ro91u8j1eti3f8ssv8e0tq8j8lvqbkn6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nahitcalisir.team_tracking",
+            "certificate_hash": "d7a4957d7e7039b20a59e1ee735dafdf051f283e"
+          }
+        },
+        {
+          "client_id": "329358166515-pnl4bvn4kion0j8ohk69g3kot8a2a89b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIzwDRLrETkOmylzU7vLF7bfhohUkvvFs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "329358166515-pnl4bvn4kion0j8ohk69g3kot8a2a89b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "329358166515-04ur5ji0o8dajv0s5rutu8g5dct4d21l.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nahitcalisir.TeamTracking"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
