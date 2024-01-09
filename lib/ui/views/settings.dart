@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class SecondScreen extends StatelessWidget {
-  const SecondScreen({Key? key}) : super(key: key);
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,11 +12,12 @@ class SecondScreen extends StatelessWidget {
         child: user == null
             ? const Text("İkinci Ekran")
             : ListTile(
-          title: Text(user!.displayName!),
-          subtitle: Text(user!.email!),
-          leading: CircleAvatar(child: Image.network(user!.photoURL!),)
+          title: Text(user.displayName!),
+          subtitle: Text(user.email!),
+          leading: CircleAvatar(child: Image.network(user.photoURL!),)
         )
       ),
     );
   }
 }
+

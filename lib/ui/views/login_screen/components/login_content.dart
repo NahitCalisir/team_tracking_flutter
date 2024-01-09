@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:team_tracking/locator.dart';
-import 'package:team_tracking/screens/second_screen.dart';
-import 'package:team_tracking/services/auth_service.dart';
+import 'package:team_tracking/ui/cubits/login_screen_cubit.dart';
+import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
 import 'package:team_tracking/utils/helper_functions.dart';
-import '../../../utils/constants.dart';
+import 'package:team_tracking/utils/constants.dart';
 import '../animations/change_screen_animation.dart';
 import 'bottom_text.dart';
 import 'top_text.dart';
@@ -128,7 +127,7 @@ class _LoginContentState extends State<LoginContent>
           const SizedBox(width: 24),
           InkWell(
               onTap: () async{
-                locator.get<AuthService>().signInWithGoogle().then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SecondScreen(), settings: RouteSettings(arguments: value))));
+                LoginScreenCubit().signInWithGoogle().then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage())));
               },
               child: Image.asset('assets/images/google.png')),
         ],
@@ -159,7 +158,7 @@ class _LoginContentState extends State<LoginContent>
       inputField(_tName, 'İsim', Ionicons.person_outline),
       inputField(_tEmail, 'Email', Ionicons.mail_outline),
       inputField(_tPassword, 'Şifre', Ionicons.lock_closed_outline),
-      actionButton('Kayıt Ol', onTap: () => locator.get<AuthService>().signUp(context, name: _tName.text, email: _tEmail.text, password: _tPassword.text),),
+      actionButton('Kayıt Ol', onTap: () => LoginScreenCubit().signUp(context, name: _tName.text, email: _tEmail.text, password: _tPassword.text),),
       orDivider(),
       logos(),
     ];
@@ -167,7 +166,7 @@ class _LoginContentState extends State<LoginContent>
     loginContent = [
       inputField(_tEmail, 'Email', Ionicons.mail_outline),
       inputField(_tPassword, 'Şifre', Ionicons.lock_closed_outline),
-      actionButton('Giriş Yap', onTap: () => locator.get<AuthService>().signIn(context, email: _tEmail.text, password: _tPassword.text),),
+      actionButton('Giriş Yap', onTap: () => LoginScreenCubit().signIn(context, email: _tEmail.text, password: _tPassword.text),),
       forgotPassword(),
     ];
 
