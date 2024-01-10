@@ -44,7 +44,7 @@ class MapScreenCubit extends Cubit<List<LatLng>> {
     // Harita konumunu güncelle(rotanın bütününü gösterir)
     if (routePoints.isNotEmpty && controller != null) {
       LatLngBounds bounds = calculateBoundingBox(routePoints);
-      controller.fitBounds(bounds, options: FitBoundsOptions(padding: EdgeInsets.all(16.0)));
+      controller.fitBounds(bounds, options: FitBoundsOptions(padding: EdgeInsets.all(30.0)));
     }
 
     emit(routePoints);

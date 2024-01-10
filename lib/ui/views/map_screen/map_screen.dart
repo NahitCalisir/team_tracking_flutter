@@ -3,7 +3,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
-import 'myInput.dart';
+import 'package:team_tracking/utils/map_markers/my_marker_layer_with_circles.dart';
+import 'package:team_tracking/utils/map_markers/my_marker_layer_with_image.dart';
+import 'package:team_tracking/utils/map_markers/my_marker_layer_with_pin_icon.dart';
+import '../../../utils/myInput.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -24,8 +27,8 @@ class MapScreen extends StatelessWidget {
 
 class MapScreenContent extends StatelessWidget {
 
-  final TextEditingController start = TextEditingController(text: "34740");
-  final TextEditingController end = TextEditingController(text: "34870");
+  final TextEditingController start = TextEditingController(text: "34740 bostancı");
+  final TextEditingController end = TextEditingController(text: "34870 kartal");
   MapController _mapController = MapController();
 
 
@@ -42,12 +45,12 @@ class MapScreenContent extends StatelessWidget {
                   mapController: _mapController,
                   options: MapOptions(
                     center: routpoints.isNotEmpty ? routpoints[0] : LatLng(0, 0),
-                    zoom: 17,
+                    //zoom: 17,
                     maxZoom: 18,
-                  ),
+            ),
                   nonRotatedChildren: const [
                     SimpleAttributionWidget(
-                      source: Text('OpenStreetMap contributors'),
+                      source: Text('OpenStreetMap '),
                     ),
                   ],
                   children: [
@@ -61,16 +64,10 @@ class MapScreenContent extends StatelessWidget {
                         Polyline(points: routpoints, color: Colors.blue, strokeWidth: 6),
                       ],
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(point: routpoints.first, builder: (ctx)=> Container(
-                          child: Icon(Icons.location_on,color: Colors.red,),
-                        )),
-                        Marker(point: routpoints.last, builder: (ctx)=> Container(
-                          child: Icon(Icons.man,color: Colors.red,),
-                        ))
-                      ],
-                    ),
+                    //My Custom Marker Layers
+                    MyMarkerLayerWithImage(markerPoint: routpoints.first,imageUrl: "http://nahitcalisir.online/images/nahit.jpg",),
+                    MyMarkerLayerWithCircles(markerPoint: routpoints.last),
+                    MyMarkerLayerWithPinIcon(markerPoint: routpoints.last),
                   ],
                 ),
                 Padding(
@@ -78,16 +75,16 @@ class MapScreenContent extends StatelessWidget {
                   child: Column(
                     children: [
                       myInput(controller: start, hint: "Enter Starting PostCode"),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       myInput(controller: end, hint: "Enter Ending PostCode"),
-                      SizedBox(height: 15),
+                      const SizedBox(height: 15),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
                         onPressed: () async {
                           // Rotayı oluştur
                           await context.read<MapScreenCubit>().createRoute(start, end, _mapController);
                         },
-                        child: Text("Route", style: TextStyle(color: Colors.white)),
+                        child: const Text("Route", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
