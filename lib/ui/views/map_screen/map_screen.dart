@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
@@ -23,8 +24,8 @@ class MapScreen extends StatelessWidget {
 
 class MapScreenContent extends StatelessWidget {
 
-  final TextEditingController start = TextEditingController();
-  final TextEditingController end = TextEditingController();
+  final TextEditingController start = TextEditingController(text: "34740");
+  final TextEditingController end = TextEditingController(text: "34870");
   MapController _mapController = MapController();
 
 
@@ -42,6 +43,7 @@ class MapScreenContent extends StatelessWidget {
                   options: MapOptions(
                     center: routpoints.isNotEmpty ? routpoints[0] : LatLng(0, 0),
                     zoom: 17,
+                    maxZoom: 18,
                   ),
                   nonRotatedChildren: const [
                     SimpleAttributionWidget(
@@ -57,6 +59,16 @@ class MapScreenContent extends StatelessWidget {
                       polylineCulling: false,
                       polylines: [
                         Polyline(points: routpoints, color: Colors.blue, strokeWidth: 6),
+                      ],
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(point: routpoints.first, builder: (ctx)=> Container(
+                          child: Icon(Icons.location_on,color: Colors.red,),
+                        )),
+                        Marker(point: routpoints.last, builder: (ctx)=> Container(
+                          child: Icon(Icons.man,color: Colors.red,),
+                        ))
                       ],
                     ),
                   ],
