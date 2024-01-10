@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:team_tracking/ui/views/map_screen/map_screen.dart';
 import 'package:team_tracking/ui/views/users_screen.dart';
 import 'package:team_tracking/ui/views/homepage.dart';
 import 'package:team_tracking/ui/views/groups_screen.dart';
-import 'package:team_tracking/ui/views/map_screen.dart';
 import 'package:team_tracking/ui/views/settings.dart';
 
 class BottomNavigationBarPage extends StatefulWidget {

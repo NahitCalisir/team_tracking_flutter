@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/ui/cubits/accounts_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});

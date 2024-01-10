@@ -42,7 +42,15 @@ dependencies:
   cloud_firestore: ^4.7.0
   firebase_auth: ^4.6.0
   google_sign_in: ^6.1.0
-  flutter_bloc: 
+  flutter_bloc:
+
+  geolocator:
+  geocoding:
+  flutter_map:
+  latlng:
+  latlong2:
+  http:
+
 
 dev_dependencies:
   flutter_test:
