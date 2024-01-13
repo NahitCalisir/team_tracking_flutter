@@ -20,8 +20,7 @@ class AccountsScreenCubit extends Cubit<List<Users>> {
         var user = Users(
             id: document.id,
             name: document["name"] as String,
-            email: document["email"] as String,
-            password: document["password"] as String);
+            email: document["email"] as String,);
         userList.add(user);
       }
       emit(userList);
@@ -38,7 +37,7 @@ class AccountsScreenCubit extends Cubit<List<Users>> {
             id: document.id as String,
             name: document["name"] as String,
             email: document["email"] as String,
-            password: document["password"] as String);
+            photoUrl: document["photoURl"] as String ?? "");
         if(user.name.toLowerCase().contains(aramaTerimi.toLowerCase())){
           userList.add(user);
         }

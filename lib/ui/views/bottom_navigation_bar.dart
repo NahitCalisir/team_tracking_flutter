@@ -5,6 +5,8 @@ import 'package:team_tracking/ui/views/homepage.dart';
 import 'package:team_tracking/ui/views/groups_screen.dart';
 import 'package:team_tracking/ui/views/settings.dart';
 
+import 'map_screen/create_route_screen.dart';
+
 class BottomNavigationBarPage extends StatefulWidget {
   const BottomNavigationBarPage({super.key});
 

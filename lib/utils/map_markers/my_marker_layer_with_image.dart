@@ -22,6 +22,7 @@ class MyMarkerLayerWithImage extends StatelessWidget {
       markers: [
         Marker(
           point: markerPoint,
+          rotate: true,
           height: 155,
           width: 86,
           builder: (_) => Container(
@@ -31,7 +32,7 @@ class MyMarkerLayerWithImage extends StatelessWidget {
                 Icon(Icons.location_pin, size: 84, color: Colors.red.shade900,),
                 Positioned(
                   top: 10,
-                  left: 21,
+                  left: 20,
                   child: CircleAvatar(
                     radius: 22,
                     backgroundColor: Colors.white,

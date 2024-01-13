@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
 import 'package:team_tracking/utils/map_markers/my_marker_layer_with_circles.dart';
 import 'package:team_tracking/utils/map_markers/my_marker_layer_with_image.dart';
@@ -25,17 +28,18 @@ class MapScreen extends StatelessWidget {
   }
 }
 
+
 class MapScreenContent extends StatelessWidget {
 
   final TextEditingController start = TextEditingController(text: "34740 bostancı");
   final TextEditingController end = TextEditingController(text: "34870 kartal");
   MapController _mapController = MapController();
 
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MapScreenCubit, List<LatLng>>(
-      builder: (context, routpoints) {
+    context.read<MapScreenCubit>().trackMe(_mapController);
+    return BlocBuilder<MapScreenCubit, List<Users>>(
+      builder: (context, userList) {
         return Scaffold(
           backgroundColor: Colors.grey.shade300,
           body: SafeArea(
@@ -44,7 +48,7 @@ class MapScreenContent extends StatelessWidget {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    center: routpoints.isNotEmpty ? routpoints[0] : LatLng(0, 0),
+                    center: userList.isNotEmpty ? LatLng(userList[0].lastLocation!.latitude, userList[0].lastLocation!.longitude) : LatLng(0, 0),
                     //zoom: 17,
                     maxZoom: 18,
             ),
@@ -58,33 +62,62 @@ class MapScreenContent extends StatelessWidget {
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.nahitcalisir.team_tracking',
                     ),
-                    PolylineLayer(
-                      polylineCulling: false,
-                      polylines: [
-                        Polyline(points: routpoints, color: Colors.blue, strokeWidth: 6),
-                      ],
+                    MarkerLayer(
+                      markers: userList.map((user){
+                        return Marker(
+                          point: LatLng(user.lastLocation!.latitude, user.lastLocation!.longitude),
+                          rotate: true,
+                          height: 200,
+                          width: 86,
+                          builder: (_) => Container(
+                            child: Column(
+                              children: [
+                                Container(
+                                  child: Text("${user.name}",style: TextStyle(color: Colors.white, backgroundColor: Colors.red),),
+                                  width: 86,
+                                ),
+                                Stack(
+                                  alignment: Alignment.topCenter,
+                                  children: [
+                                    Icon(Icons.location_pin, size: 84, color: Colors.red.shade900,),
+                                    Positioned(
+                                      top: 10,
+                                      left: 20,
+                                      child: CircleAvatar(
+                                        radius: 22,
+                                        backgroundColor: Colors.white,
+                                        child: CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(
+                                              "${user.photoUrl}",
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                    //My Custom Marker Layers
-                    MyMarkerLayerWithImage(markerPoint: routpoints.first,imageUrl: "http://nahitcalisir.online/images/nahit.jpg",),
-                    MyMarkerLayerWithCircles(markerPoint: routpoints.last),
-                    MyMarkerLayerWithPinIcon(markerPoint: routpoints.last),
                   ],
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     children: [
-                      myInput(controller: start, hint: "Enter Starting PostCode"),
-                      const SizedBox(height: 15),
-                      myInput(controller: end, hint: "Enter Ending PostCode"),
-                      const SizedBox(height: 15),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
                         onPressed: () async {
                           // Rotayı oluştur
-                          await context.read<MapScreenCubit>().createRoute(start, end, _mapController);
+                          //await context.read<MapScreenCubit>().createRoute(start, end, _mapController);
+
+                          //await context.read<MapScreenCubit>().trackMe(_mapController);
+                          await context.read<MapScreenCubit>().startLocationUpdates(_mapController);
                         },
-                        child: const Text("Route", style: TextStyle(color: Colors.white)),
+                        child: const Text("Show All", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -97,5 +130,7 @@ class MapScreenContent extends StatelessWidget {
     );
   }
 }
+
+
 
 

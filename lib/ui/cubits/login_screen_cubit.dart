@@ -14,7 +14,7 @@ class LoginScreenCubit extends Cubit<void> {
     await TeamTrackingDaoRepository.shared.signIn(context, email: email, password: password);
   }
 
-  Future<void> signInWithGoogle() async {
-    await TeamTrackingDaoRepository.shared.signInWithGoogle();
+  Future<void> signInWithGoogle(BuildContext context) async {
+    await TeamTrackingDaoRepository.shared.signInWithGoogle(context);
   }
 }

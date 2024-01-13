@@ -14,8 +14,6 @@ class TeamTrackingDaoRepository {
 
   static TeamTrackingDaoRepository shared = TeamTrackingDaoRepository();
 
-  var collectionKisiler = FirebaseFirestore.instance.collection("Kisiler");
-
   //Dikkat: firestore kullanırken arayüzde veri güncelleme yapan metodları
   // (kisileriYukle ve kisiAra gibi) repoda yapıp return edemiyoruz.
   // Direk anasayfa_cubit içerisinde bu metodları yazıyoruz.
@@ -26,8 +24,8 @@ class TeamTrackingDaoRepository {
   Future<void> signUp(BuildContext context, {required String name, required String email, required String password}) async {
     try {
       final UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      if (userCredential.user != null )  {
-        await _registerUser(name: name, email: email, password: password);
+      if (userCredential.user != null) {
+        await _registerUser(uid: userCredential.user!.uid, name: name, email: email, photoUrl: "",);
         Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage(),));
       }
     } on FirebaseAuthException catch (e) {
@@ -35,13 +33,19 @@ class TeamTrackingDaoRepository {
     }
   }
 
-  Future<void> _registerUser({required String name, required String email, required String password}) async {
-    var newUser = HashMap<String,dynamic>();
-    newUser["id"] = "";
-    newUser["name"] = name;
-    newUser["email"] = email;
-    newUser["password"] = password;
-    await userCollection.add(newUser);
+  Future<void> _registerUser({required String uid, required String name, required String email, required String photoUrl}) async {
+    var newUser = {
+      "name": name,
+      "email": email,
+      "photoUrl": photoUrl,
+      "city": "",
+      "lastLocation": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+      },
+      "groups": {},
+    };
+    await userCollection.doc(uid).set(newUser);
   }
 
   Future<void> signIn(BuildContext context, {required String email, required String password}) async {
@@ -58,7 +62,7 @@ class TeamTrackingDaoRepository {
 
 
 
-  Future<User?> signInWithGoogle() async {
+  Future<User?> signInWithGoogle(BuildContext context,) async {
     // Oturum açma sürecini başlat
     final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
@@ -71,7 +75,18 @@ class TeamTrackingDaoRepository {
     // Kullanıcı girişini sağla
     final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
     log(userCredential.user!.email.toString());
+
+    if (userCredential.user != null) {
+      await _registerUser(
+        uid: userCredential.user!.uid,
+        name: userCredential.user!.displayName ?? "",
+        email: userCredential.user!.email ?? "",
+        photoUrl: userCredential.user!.photoURL ?? "",
+      );
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage()));
+    }
     return userCredential.user;
   }
+
 }
 
