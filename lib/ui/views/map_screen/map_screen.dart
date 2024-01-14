@@ -1,43 +1,55 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
-import 'package:team_tracking/utils/map_markers/my_marker_layer_with_circles.dart';
-import 'package:team_tracking/utils/map_markers/my_marker_layer_with_image.dart';
-import 'package:team_tracking/utils/map_markers/my_marker_layer_with_pin_icon.dart';
-import '../../../utils/myInput.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => MapScreenCubit(),
-      child: MapScreenContent(),
-    );
+    return  BlocProvider(create: (context) => MapScreenCubit(),
+    child: MapScreenContent());
   }
 }
+class MapScreenContent extends StatefulWidget {
 
+  @override
+  State<MapScreenContent> createState() => _MapScreenContentState();
+}
 
-class MapScreenContent extends StatelessWidget {
-
+class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepAliveClientMixin {
   final TextEditingController start = TextEditingController(text: "34740 bostancı");
   final TextEditingController end = TextEditingController(text: "34870 kartal");
-  MapController _mapController = MapController();
+  final MapController _mapController = MapController();
+  late MapScreenCubit _mapScreenCubit; // Cubit'i saklamak için bir değişken
+
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapScreenCubit = BlocProvider.of<MapScreenCubit>(context);
+  }
+
+  @override
+  void dispose() {
+    print("Dispose method called");
+    _mapScreenCubit.cancelTimers(); // _mapScreenCubit'i kullanarak cancelTimer'ı çağır
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    context.read<MapScreenCubit>().trackMe(_mapController);
+    super.build(context);
+    context.read<MapScreenCubit>().updateMyLocation();
+    context.read<MapScreenCubit>().runTrackMe(_mapController);
     return BlocBuilder<MapScreenCubit, List<Users>>(
       builder: (context, userList) {
         return Scaffold(
@@ -72,9 +84,11 @@ class MapScreenContent extends StatelessWidget {
                           builder: (_) => Container(
                             child: Column(
                               children: [
-                                Container(
-                                  child: Text("${user.name}",style: TextStyle(color: Colors.white, backgroundColor: Colors.red),),
-                                  width: 86,
+                                SizedBox( width:70,height: 27,
+                                  child: Card(
+                                    color: Colors.red.shade900,
+                                    child: Text("${user.name}",style: TextStyle(color: Colors.white),textAlign:TextAlign.center),
+                                  ),
                                 ),
                                 Stack(
                                   alignment: Alignment.topCenter,
@@ -89,7 +103,7 @@ class MapScreenContent extends StatelessWidget {
                                         child: CircleAvatar(
                                           radius: 20,
                                           backgroundImage: NetworkImage(
-                                              "${user.photoUrl}",
+                                            user.photoUrl!.isNotEmpty ? user.photoUrl! : "http://nahitcalisir.online/images/person2.png",
                                           ),
                                         ),
                                       ),
@@ -115,7 +129,7 @@ class MapScreenContent extends StatelessWidget {
                           //await context.read<MapScreenCubit>().createRoute(start, end, _mapController);
 
                           //await context.read<MapScreenCubit>().trackMe(_mapController);
-                          await context.read<MapScreenCubit>().startLocationUpdates(_mapController);
+                          context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
                         },
                         child: const Text("Show All", style: TextStyle(color: Colors.white)),
                       ),

@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
+import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
+
+import '../entity/users.dart';
 
 class TeamTrackingDaoRepository {
 
@@ -17,6 +20,8 @@ class TeamTrackingDaoRepository {
   //Dikkat: firestore kullanırken arayüzde veri güncelleme yapan metodları
   // (kisileriYukle ve kisiAra gibi) repoda yapıp return edemiyoruz.
   // Direk anasayfa_cubit içerisinde bu metodları yazıyoruz.
+
+
 
   final userCollection = FirebaseFirestore.instance.collection("users");
   final firebaseAuth = FirebaseAuth.instance;
@@ -60,6 +65,16 @@ class TeamTrackingDaoRepository {
     }
   }
 
+  Future<void> signOut(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    try {
+      await firebaseAuth.signOut();
+      navigator.push(MaterialPageRoute(builder: (context) => const LoginScreen()));
+    } on FirebaseAuthException catch(e) {
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
+    }
+  }
+
 
 
   Future<User?> signInWithGoogle(BuildContext context,) async {
@@ -86,6 +101,20 @@ class TeamTrackingDaoRepository {
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage()));
     }
     return userCredential.user;
+  }
+
+  Future<Users?> getCurrentUserInfo() async {
+    final _auth = await FirebaseAuth.instance;
+    final curentUser = await _auth.currentUser;
+    if(curentUser != null) {
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance.collection("users").doc(curentUser.uid).get();
+      if(snapshot.exists) {
+        String id = snapshot.id;
+        Map<String, dynamic>? userData = snapshot.data();
+        Users user = Users.fromMap(id, userData!);
+        return user;
+      }
+    }
   }
 
 }
