@@ -1,4 +1,4 @@
-import 'package:latlng/latlng.dart';
+import 'package:latlong2/latlong.dart';
 
 class Users {
   String id; // Doküman ID'sini tutacak alan
@@ -7,17 +7,20 @@ class Users {
   String? photoUrl;
   String? phone;
   LatLng? lastLocation;
+  List<String>? groups;
 
   Users({
     required this.id,
     required this.name,
     required this.email,
     this.photoUrl,
-    this.lastLocation,
     this.phone,
+    this.lastLocation,
+    this.groups
   });
 
   factory Users.fromMap(String id, Map<String, dynamic> data) {
+    List<String> groups = List.from(data["groups"]);
     return Users(
       id: id,
       name: data['name'],
@@ -28,6 +31,7 @@ class Users {
         data['lastLocation']['latitude'],
         data['lastLocation']['longitude'],
       ),
+      groups: groups ,
     );
   }
 
@@ -41,6 +45,7 @@ class Users {
         'latitude': lastLocation?.latitude,
         'longitude': lastLocation?.longitude,
       },
+      'groups' :groups
     };
   }
 }

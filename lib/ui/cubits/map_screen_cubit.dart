@@ -13,8 +13,8 @@ class MapScreenCubit extends Cubit<List<Users>> {
   MapScreenCubit() : super([]);
 
   Timer? _updateMyLocationTimer;
-  Timer? _showAllOnMapTimer;
   Timer? _trackMeTimer;
+  Timer? _showAllOnMapTimer;
   List<LatLng> allUserLocations = [];
   List<Users> allUserList = [];
   LatLng? myLocation;
@@ -25,12 +25,10 @@ class MapScreenCubit extends Cubit<List<Users>> {
     _trackMeTimer?.cancel();
   }
 
-  Future<void> runShowAllOnMap(mapController) async {
-    cancelTimers();
-    await showAllOnMap( mapController);
-    setMapPositionForAll(mapController);
-    _showAllOnMapTimer = Timer.periodic(Duration(seconds: 3), (timer) {
-      showAllOnMap( mapController);
+  Future<void> runUpdateMyLocation() async {
+    await updateMyLocation();
+    _updateMyLocationTimer = Timer.periodic(Duration(seconds: 300), (timer) async {
+      await updateMyLocation();
     });
   }
 
@@ -38,12 +36,100 @@ class MapScreenCubit extends Cubit<List<Users>> {
     cancelTimers();
     await trackMe(mapController);
     setMapPositionForMe(mapController);
-    _trackMeTimer = Timer.periodic(Duration(seconds: 3), (timer) {
-      trackMe(mapController);
+    _trackMeTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+      await trackMe(mapController);
     });
   }
 
-  // Timer'ı başlatan metod -----------
+  Future<void> runShowAllOnMap(mapController) async {
+    cancelTimers();
+    await showAllOnMap( mapController);
+    setMapPositionForAll(mapController);
+    _showAllOnMapTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+     await showAllOnMap( mapController);
+    });
+  }
+
+  //TODO: Update my location, send to firestore method
+  Future<void> updateMyLocation() async {
+    // Timer zaten çalışıyorsa durdur
+    _updateMyLocationTimer?.cancel();
+
+    //Mevcut kullanıcıyı al
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    User? currentUser = _auth.currentUser;
+
+    //Son konumu al
+    Position myLastPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    if (currentUser != null) {
+      // Firestore'da kullanıcının son konumunu güncelle
+      await FirebaseFirestore.instance.collection('users').doc(
+          currentUser.uid).update({
+        "lastLocation": {
+          "latitude": myLastPosition.latitude,
+          "longitude": myLastPosition.longitude,
+        },
+      });
+      print("${currentUser.displayName} son konumum firestora gönerildi");
+    }
+  }
+
+  //TODO:Track Me Method (Shows only me on map)
+  Future<void> trackMe(MapController controller) async {
+
+    // Mevcut kullanıcıyı al
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    User? currentUser = _auth.currentUser;
+
+    //Son konumu al
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    final myLastPosition = LatLng(position.latitude, position.longitude);
+    myLocation = myLastPosition;
+
+    if (currentUser != null) {
+      // Firestore'dan kullanıcı verilerini çek
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot =
+      await FirebaseFirestore.instance.collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      //Çekilen documandan Users modelinde kullanıcı oluştur
+      List<Users> allUserList = [];
+      List<LatLng> allUserLocations = [];
+      if (documentSnapshot.exists) {
+        String id = documentSnapshot.id;
+        Map<String, dynamic>? userData = documentSnapshot.data();
+        if (userData != null && userData.containsKey("lastLocation")) {
+          Users u = Users(
+            id: id,
+            name: userData["name"],
+            email: userData["email"],
+            photoUrl: userData["photoUrl"] ,
+            lastLocation: myLastPosition,
+          );
+          allUserList.add(u);
+        }
+
+        // Harita konumunu güncelle(Başlangıç konumuna odaklar)
+        //if (allUserList.isNotEmpty) {
+        //  controller.move(myLastPosition, 17.0);
+        //}
+        emit(allUserList);
+        print("${currentUser.displayName} trackMe çalışıyor");
+      } else {
+        print("Kullanıcı giriş yapmamış.");
+        // Kullanıcı giriş yapmamışsa gerekli işlemleri burada yapabilirsiniz.
+      }
+    }
+  }
+
+
+  //TODO: Show all group members method -----------
   Future<void> showAllOnMap(MapController mapController) async {
     bool isFirstRun = true;
 
@@ -77,7 +163,7 @@ class MapScreenCubit extends Cubit<List<Users>> {
     }
   }
 
-  //Update Map position for all users
+  //TODO:Update Map position for all users
   Future<void> setMapPositionForAll(mapController) async {
     // harita konumunu güncelle
     LatLngBounds bounds = calculateBoundingBox(allUserLocations);
@@ -90,85 +176,7 @@ class MapScreenCubit extends Cubit<List<Users>> {
       mapController.move(myLocation, 17.0);
   }
 
-  //Track Me ----------------------------------
-  Future<void> trackMe(MapController controller) async {
-
-    // Mevcut kullanıcıyı al
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? currentUser = _auth.currentUser;
-
-    //Son konumu al
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    final myLastPosition = LatLng(position.latitude, position.longitude);
-    myLocation = myLastPosition;
-
-    if (currentUser != null) {
-      // Firestore'dan kullanıcı verilerini çek
-      DocumentSnapshot<Map<String, dynamic>> documentSnapshot =
-      await FirebaseFirestore.instance.collection('users')
-          .doc(currentUser.uid)
-          .get();
-
-      //Çekilen documandan Users modelinde kullanıcı oluştur
-      List<Users> allUserList = [];
-      List<LatLng> allUserLocations = [];
-      if (documentSnapshot.exists) {
-        String id = documentSnapshot.id;
-        Map<String, dynamic>? userData = documentSnapshot.data();
-        if (userData != null && userData.containsKey("lastLocation")) {
-          Users u = Users.fromMap(id, userData);
-          allUserList.add(u);
-        }
-
-        // Harita konumunu güncelle(Başlangıç konumuna odaklar)
-        //if (allUserList.isNotEmpty) {
-        //  controller.move(myLastPosition, 17.0);
-        //}
-        emit(allUserList);
-        print("${currentUser.displayName} trackMe çalışıyor");
-      } else {
-        print("Kullanıcı giriş yapmamış.");
-        // Kullanıcı giriş yapmamışsa gerekli işlemleri burada yapabilirsiniz.
-      }
-    }
-  }
-
-  Future<void> updateMyLocation() async {
-
-    // Timer zaten çalışıyorsa durdur
-    _updateMyLocationTimer?.cancel();
-
-    //Her 3 sn de konumu al
-    _updateMyLocationTimer = Timer.periodic(Duration(seconds: 3), (Timer timer) async {
-
-      // Mevcut kullanıcıyı al
-      final FirebaseAuth _auth = FirebaseAuth.instance;
-      User? currentUser = _auth.currentUser;
-
-      //Son konumu al
-      Position myLastPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      if (currentUser != null) {
-        // Firestore'da kullanıcının son konumunu güncelle
-        await FirebaseFirestore.instance.collection('users').doc(
-            currentUser.uid).update({
-          "lastLocation": {
-            "latitude": myLastPosition.latitude,
-            "longitude": myLastPosition.longitude,
-          },
-        });
-        print("${currentUser.displayName} son konumum firestora gönerildi");
-      }
-    });
-  }
-
-
-
-  //SET MAP POSITION METHOD
+  // TODO: SET MAP POSITION METHOD
   LatLngBounds calculateBoundingBox(List<LatLng> points) {
     double minLat = double.infinity;
     double minLng = double.infinity;

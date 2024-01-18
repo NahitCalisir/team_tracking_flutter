@@ -36,6 +36,8 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
   void initState() {
     super.initState();
     _mapScreenCubit = BlocProvider.of<MapScreenCubit>(context);
+    context.read<MapScreenCubit>().updateMyLocation();
+    context.read<MapScreenCubit>().runTrackMe(_mapController);
   }
 
   @override
@@ -48,8 +50,6 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    context.read<MapScreenCubit>().updateMyLocation();
-    context.read<MapScreenCubit>().runTrackMe(_mapController);
     return BlocBuilder<MapScreenCubit, List<Users>>(
       builder: (context, userList) {
         return Scaffold(
@@ -86,14 +86,14 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                               children: [
                                 SizedBox( width:70,height: 27,
                                   child: Card(
-                                    color: Colors.red.shade900,
+                                    color: Colors.deepPurpleAccent,
                                     child: Text("${user.name}",style: TextStyle(color: Colors.white),textAlign:TextAlign.center),
                                   ),
                                 ),
                                 Stack(
                                   alignment: Alignment.topCenter,
                                   children: [
-                                    Icon(Icons.location_pin, size: 84, color: Colors.red.shade900,),
+                                    Icon(Icons.location_pin, size: 84, color: Colors.deepPurpleAccent,),
                                     Positioned(
                                       top: 10,
                                       left: 20,

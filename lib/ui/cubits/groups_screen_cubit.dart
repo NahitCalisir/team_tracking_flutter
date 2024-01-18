@@ -17,11 +17,9 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
       var groupList = <Groups>[];
       var documents = event.docs;
       for (var document in documents) {
-        var group = Groups(
-            id: document.id,
-            name: document["name"] as String,
-            city: document["city"] as String,
-            country: document["country"] as String);
+        List<String> memberIds = List.from(document["memberIds" as String]);
+
+        var group = Groups.fromMap(document.id, document.data());
         groupList.add(group);
       }
       emit(groupList);
@@ -38,7 +36,9 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
             id: document.id,
             name: document["name"] as String,
             city: document["city"] as String,
-            country: document["country"] as String);
+            country: document["country"] as String,
+            owner: document["owner"] as String,
+            memberIds: document["memberIds"] as List<String>);
         if(group.name.toLowerCase().contains(aramaTerimi.toLowerCase())){
           groupList.add(group);
         }

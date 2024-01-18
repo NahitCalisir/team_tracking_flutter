@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
+import 'package:team_tracking/ui/views/groups_screen/create_group_screen.dart';
 
 class GroupsScreen extends StatefulWidget {
   const GroupsScreen({super.key});
@@ -69,6 +70,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                             children: [
                               Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                               Text("${user.city} - ${user.country}"),
+                              Text("Admin: ${user.owner} (${user.memberIds.length})"),
                             ],
                           ),
                         ],
@@ -80,7 +82,9 @@ class _GroupsScreenState extends State<GroupsScreen> {
       //FLOATING ACTION BUTTON *********************************
       //floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateGroupScreen()));
+        },
         child: Icon(Icons.add),
         backgroundColor: Colors.black87,
         foregroundColor: Colors.orangeAccent,
