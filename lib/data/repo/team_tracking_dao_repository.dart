@@ -235,8 +235,8 @@ class TeamTrackingDaoRepository {
       String fileName = 'group_images/$userId/$timestamp.jpeg';
 
       // Upload the resized image to Firebase Storage
-      //File resizedImageFile = await resizeImage(imageFile, 200, 200);
-      await FirebaseStorage.instance.ref(fileName).putFile(imageFile);
+      File resizedImageFile = await resizeImage(imageFile, 200, 200);
+      await FirebaseStorage.instance.ref(fileName).putFile(resizedImageFile);
 
       // Get the download URL of the uploaded image
       String imageUrl = await FirebaseStorage.instance.ref(fileName).getDownloadURL();
@@ -270,20 +270,20 @@ class TeamTrackingDaoRepository {
  //}
 
 
-  //Future<File> resizeImage(File imageFile, double width, double height) async {
-  //  // Dosyayı oku ve image paketini kullanarak image nesnesine dönüştür
-  //  List<int> imageBytes = await imageFile.readAsBytes();
-  //  img.Image image = img.decodeImage(Uint8List.fromList(imageBytes))!;
-//
-  //  // Belirli genişlik ve yüksekliğe boyutlandır
-  //  img.Image resizedImage = img.copyResize(image, width: width.toInt(), height: height.toInt());
-//
-  //  // Boyutlandırılmış resmi bir File nesnesine dönüştür
-  //  File resultFile = await File(imageFile.path)
-  //    ..writeAsBytesSync(Uint8List.fromList(img.encodePng(resizedImage)!));
-//
-  //  return resultFile;
-  //}
+  Future<File> resizeImage(File imageFile, double width, double height) async {
+    // Dosyayı oku ve image paketini kullanarak image nesnesine dönüştür
+    List<int> imageBytes = await imageFile.readAsBytes();
+    img.Image image = img.decodeImage(Uint8List.fromList(imageBytes))!;
+
+    // Belirli genişlik ve yüksekliğe boyutlandır
+    img.Image resizedImage = img.copyResize(image, width: width.toInt(), height: height.toInt());
+
+    // Boyutlandırılmış resmi bir File nesnesine dönüştür
+    File resultFile = await File(imageFile.path)
+      ..writeAsBytesSync(Uint8List.fromList(img.encodePng(resizedImage)!));
+
+    return resultFile;
+  }
 
 
 
