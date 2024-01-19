@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
 import 'package:team_tracking/firebase_options.dart';
+import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/create_route_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
@@ -53,8 +55,9 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (BuildContext context) => GroupsScreenCubit()),
         BlocProvider(create: (BuildContext context) => MapScreenCubit()),
         BlocProvider(create: (BuildContext context) => SettingsScreenCubit()),
-        BlocProvider(
-            create: (BuildContext context) => CreateRouteScreenCubit()),
+        BlocProvider(create: (BuildContext context) => CreateRouteScreenCubit()),
+        BlocProvider(create: (BuildContext context) => CreateGroupScreenCubit()),
+        BlocProvider(create: (BuildContext context) => GroupMembersScreenCubit()),
       ],
       child: MaterialApp(
         title: 'Firebase Auth',

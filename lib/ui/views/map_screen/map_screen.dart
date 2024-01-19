@@ -35,9 +35,9 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
   @override
   void initState() {
     super.initState();
-    _mapScreenCubit = BlocProvider.of<MapScreenCubit>(context);
+    //_mapScreenCubit = BlocProvider.of<MapScreenCubit>(context);
     context.read<MapScreenCubit>().updateMyLocation();
-    context.read<MapScreenCubit>().runTrackMe(_mapController);
+    context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
   }
 
   @override
@@ -118,27 +118,17 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
-                        onPressed: () async {
-                          // Rotayı oluştur
-                          //await context.read<MapScreenCubit>().createRoute(start, end, _mapController);
-
-                          //await context.read<MapScreenCubit>().trackMe(_mapController);
-                          context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
-                        },
-                        child: const Text("Show All", style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+          floatingActionButton: FloatingActionButton(
+              shape: CircleBorder(),
+              child: Icon(Icons.close),
+              onPressed: (){
+                Navigator.of(context).pop();
+          }
+        ),
         );
       },
     );

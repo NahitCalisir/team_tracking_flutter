@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
@@ -35,9 +36,9 @@ class TeamTrackingDaoRepository {
       await handleUserSignIn(context, userCredential);
       await _registerUser(
         uid: userCredential.user!.uid,
-        name: userCredential.user!.displayName ?? "",
-        email: userCredential.user!.email ?? "",
-        photoUrl: userCredential.user!.photoURL ?? "",
+        name: name ?? "unnamed",
+        email: email,
+        photoUrl: "",
       );
     } on FirebaseAuthException catch (e) {
       handleAuthException(context, e);
@@ -178,7 +179,14 @@ class TeamTrackingDaoRepository {
     await groupCollection.doc().set(newGroup);
   }
 
-  Future<void> saveGroup(BuildContext context, String name, String city, String country, File? _groupImage) async {
+  Future<void> saveGroup(
+      {
+        required BuildContext context,
+        required String name,
+        required String city,
+        required String country,
+        required File? groupImage
+      }) async {
 
     if(name.isEmpty || city.isEmpty || country.isEmpty) {
       showDialog(
@@ -198,32 +206,24 @@ class TeamTrackingDaoRepository {
           );
         },
       );
-      return;
     } else {
-
-      // TODO: Upload group image
-      if (_groupImage != null) {
-        String imageUrl = await TeamTrackingDaoRepository.shared.uploadGroupImage(_groupImage!);
-        if (imageUrl.isNotEmpty) {
-          // If the image upload is successful, set the imageUrl to the group
-          //photoUrl = imageUrl;
-        }
-        // TODO: Register group to firestore
-        String owner = UsersManager().currentUser!.name;
-        List<String> memberIds = [UsersManager().currentUser!.id];
-        TeamTrackingDaoRepository.shared.registerGroup(
-          name: name,
-          city: city,
-          country: country,
-          owner:  owner,
-          memberIds: memberIds,
-          photoUrl: imageUrl,
-        );
-        // After the group is saved, navigate back to the GroupsScreen
-        Navigator.pop(context);
+      //Upload group image
+      String imageUrl = "";
+      if (groupImage != null) {
+        imageUrl = await uploadGroupImage(groupImage);
       }
+      //Register group to firestore
+      String owner = UsersManager().currentUser!.name;
+      List<String> memberIds = [UsersManager().currentUser!.id];
+      registerGroup(
+        name: name,
+        city: city,
+        country: country,
+        owner:  owner,
+        memberIds: memberIds,
+        photoUrl: imageUrl,
+      );
     }
-
   }
 
 
