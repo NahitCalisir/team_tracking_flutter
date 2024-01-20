@@ -30,15 +30,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Padding(
                           padding: EdgeInsets.all(8.0),
-                            child: currentUser.photoUrl!.isEmpty ?
-                            Icon(Icons.account_circle, size: 100, color: kSecondaryColor2,):
+                            child: currentUser.photoUrl != null && currentUser.photoUrl!.isNotEmpty ?
                             ClipOval(
                               child: Image(
                                 image: NetworkImage(currentUser.photoUrl!),
                                 width: 100,
                                 height: 100,
                               ),
-                            ),
+                            ):
+                            Icon(Icons.account_circle, size: 100, color: kSecondaryColor2),
                         ),
                         SizedBox(width: 8),
                         Column(crossAxisAlignment: CrossAxisAlignment.start,

@@ -28,22 +28,24 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
   final MapController _mapController = MapController();
   late MapScreenCubit _mapScreenCubit; // Cubit'i saklamak için bir değişken
 
-
-  @override
   bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    //_mapScreenCubit = BlocProvider.of<MapScreenCubit>(context);
-    context.read<MapScreenCubit>().updateMyLocation();
-    context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
+    _mapScreenCubit = context.read<MapScreenCubit>();
+    context.read<MapScreenCubit>().runUpdateMyLocation();
+    context.read<MapScreenCubit>().runTrackMe(_mapController);
+    //context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
   }
 
   @override
   void dispose() {
     print("Dispose method called");
-    _mapScreenCubit.cancelTimers(); // _mapScreenCubit'i kullanarak cancelTimer'ı çağır
+    if (_mapScreenCubit.state != null) {
+      _mapScreenCubit.cancelTimers();
+      _mapScreenCubit.close();
+    }
     super.dispose();
   }
 
@@ -118,6 +120,20 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                     ),
                   ],
                 ),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
+                        onPressed: () async {
+                          context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
+                        },
+                        child: const Text("Show All", style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -126,6 +142,7 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
               shape: CircleBorder(),
               child: Icon(Icons.close),
               onPressed: (){
+                context.read<MapScreenCubit>().cancelTimers();
                 Navigator.of(context).pop();
           }
         ),

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:team_tracking/data/entity/user_manager.dart';
 //import 'package:flutter_map/plugin_api.dart';
 import 'package:team_tracking/data/entity/users.dart';
 
@@ -26,63 +27,59 @@ class MapScreenCubit extends Cubit<List<Users>> {
   }
 
   Future<void> runUpdateMyLocation() async {
-    await updateMyLocation();
+    await _updateMyLocation();
     _updateMyLocationTimer = Timer.periodic(Duration(seconds: 300), (timer) async {
-      await updateMyLocation();
+      await _updateMyLocation();
     });
   }
 
   Future<void> runTrackMe(mapController) async {
     cancelTimers();
-    await trackMe(mapController);
+    await _trackMe(mapController);
     setMapPositionForMe(mapController);
-    _trackMeTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
-      await trackMe(mapController);
+    _trackMeTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
+      await _trackMe(mapController);
     });
   }
 
   Future<void> runShowAllOnMap(mapController) async {
     cancelTimers();
-    await showAllOnMap( mapController);
+    await _showAllOnMap( mapController);
     setMapPositionForAll(mapController);
     _showAllOnMapTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
-     await showAllOnMap( mapController);
+     await _showAllOnMap( mapController);
     });
   }
 
   //TODO: Update my location, send to firestore method
-  Future<void> updateMyLocation() async {
-    // Timer zaten çalışıyorsa durdur
-    _updateMyLocationTimer?.cancel();
+  Future<void> _updateMyLocation() async {
 
     //Mevcut kullanıcıyı al
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? currentUser = _auth.currentUser;
+    Users? currentUser = UsersManager().currentUser;
 
     //Son konumu al
-    Position myLastPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    Position myLastPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
     if (currentUser != null) {
       // Firestore'da kullanıcının son konumunu güncelle
       await FirebaseFirestore.instance.collection('users').doc(
-          currentUser.uid).update({
+          currentUser.id).update({
         "lastLocation": {
           "latitude": myLastPosition.latitude,
           "longitude": myLastPosition.longitude,
         },
       });
-      print("${currentUser.displayName} son konumum firestora gönerildi");
+      print("${currentUser.name} son konumum firestora gönerildi");
+    } else {
+      print(" location update çalıştı fakat konum güncellenemedi");
     }
   }
 
   //TODO:Track Me Method (Shows only me on map)
-  Future<void> trackMe(MapController controller) async {
+  Future<void> _trackMe(MapController controller) async {
 
     // Mevcut kullanıcıyı al
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    User? currentUser = _auth.currentUser;
+    Users? currentUser = UsersManager().currentUser;
 
     //Son konumu al
     Position position = await Geolocator.getCurrentPosition(
@@ -91,46 +88,32 @@ class MapScreenCubit extends Cubit<List<Users>> {
     final myLastPosition = LatLng(position.latitude, position.longitude);
     myLocation = myLastPosition;
 
+    //databasedeki konumu değil anlık konumu aldığımız için manuel user oluşturduk !!!
     if (currentUser != null) {
-      // Firestore'dan kullanıcı verilerini çek
-      DocumentSnapshot<Map<String, dynamic>> documentSnapshot =
-      await FirebaseFirestore.instance.collection('users')
-          .doc(currentUser.uid)
-          .get();
-
-      //Çekilen documandan Users modelinde kullanıcı oluştur
       List<Users> allUserList = [];
-      List<LatLng> allUserLocations = [];
-      if (documentSnapshot.exists) {
-        String id = documentSnapshot.id;
-        Map<String, dynamic>? userData = documentSnapshot.data();
-        if (userData != null && userData.containsKey("lastLocation")) {
-          Users u = Users(
-            id: id,
-            name: userData["name"],
-            email: userData["email"],
-            photoUrl: userData["photoUrl"] ,
-            lastLocation: myLastPosition,
-          );
-          allUserList.add(u);
-        }
+      Users u = Users(
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        photoUrl: currentUser.photoUrl ,
+        lastLocation: myLastPosition, // !!!! geo locatordan gelen anlık konum
+      );
+      allUserList.add(u);
 
-        // Harita konumunu güncelle(Başlangıç konumuna odaklar)
-        //if (allUserList.isNotEmpty) {
-        //  controller.move(myLastPosition, 17.0);
-        //}
-        emit(allUserList);
-        print("${currentUser.displayName} trackMe çalışıyor");
-      } else {
-        print("Kullanıcı giriş yapmamış.");
-        // Kullanıcı giriş yapmamışsa gerekli işlemleri burada yapabilirsiniz.
-      }
+      emit(allUserList);
+      print("${currentUser.email} trackMe çalışıyor");
+
+    }else {
+      print("Kullanıcı giriş yapmamış.");
+      // Kullanıcı giriş yapmamışsa gerekli işlemleri burada yapabilirsiniz.
     }
+
+
   }
 
 
   //TODO: Show all group members method -----------
-  Future<void> showAllOnMap(MapController mapController) async {
+  Future<void> _showAllOnMap(MapController mapController) async {
     bool isFirstRun = true;
 
     try {
@@ -140,19 +123,40 @@ class MapScreenCubit extends Cubit<List<Users>> {
       List<LatLng> userLocations = [];
       List<Users> userList = [];
 
+      //for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in querySnapshot.docs) {
+      //  if (documentSnapshot.exists) {
+      //    String id = documentSnapshot.id;
+      //    Map<String, dynamic> userData = documentSnapshot.data();
+      //    if (userData != null && userData.containsKey("lastLocation")) {
+      //      Users u = Users.fromMap(id, userData);
+      //      userList.add(u);
+      //      if (u.lastLocation?.latitude != null && u.lastLocation?.longitude != null){
+      //        userLocations.add(LatLng(u.lastLocation!.latitude, u.lastLocation!.longitude));
+      //      }
+      //      allUserList = userList;
+      //      allUserLocations = userLocations;
+      //      print(u.name);
+      //    }
+      //  }
+      //}
       for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in querySnapshot.docs) {
         if (documentSnapshot.exists) {
           String id = documentSnapshot.id;
-          Map<String, dynamic> userData = documentSnapshot.data();
+          Map<String, dynamic>? userData = documentSnapshot.data();
           if (userData != null && userData.containsKey("lastLocation")) {
-            Users u = Users.fromMap(id, userData);
-            userList.add(u);
-            if (u.lastLocation?.latitude != null && u.lastLocation?.longitude != null){
-              userLocations.add(LatLng(u.lastLocation!.latitude, u.lastLocation!.longitude));
+            // Eksik kontrolü ekleyin
+            if (userData["lastLocation"] is Map<String, dynamic>) {
+              Users u = Users.fromMap(id, userData);
+              userList.add(u);
+              if (u.lastLocation?.latitude != null &&
+                  u.lastLocation?.longitude != null) {
+                userLocations.add(LatLng(
+                    u.lastLocation!.latitude, u.lastLocation!.longitude));
+              }
+              allUserList = userList;
+              allUserLocations = userLocations;
+              print(u.name);
             }
-            allUserList = userList;
-            allUserLocations = userLocations;
-            print(u.name);
           }
         }
       }
