@@ -42,7 +42,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
       bottomNavigationBar: BottomAppBar(
         notchMargin: 5.0,
         shape: const CircularNotchedRectangle(),
-        color: Colors.white,
+        color: kSecondaryColor2,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           mainAxisSize: MainAxisSize.max,
@@ -70,12 +70,12 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
           children: [
             Icon(
               icon,
-              color: secilenIndex == index ? Colors.orangeAccent : kSecondaryColor,
+              color: secilenIndex == index ? Colors.white : kSecondaryColor,
             ),
             Text(
               label,
               style: TextStyle(
-                color: secilenIndex == index ? Colors.orangeAccent : kSecondaryColor,
+                color: secilenIndex == index ? Colors.white : kSecondaryColor,
               ),
             ),
           ],

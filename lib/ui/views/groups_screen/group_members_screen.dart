@@ -1,8 +1,9 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'package:team_tracking/data/entity/groups.dart';
-import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
 import 'package:team_tracking/ui/views/map_screen/map_screen.dart';
@@ -20,7 +21,6 @@ class GroupMembersScreen extends StatefulWidget {
 class _GroupMembersScreenState extends State<GroupMembersScreen> {
 
   bool aramaYapiliyormu = false;
-
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +66,7 @@ class _GroupMembersScreenState extends State<GroupMembersScreen> {
                           Padding(
                             padding: EdgeInsets.all(8.0),
                             child: user.photoUrl!.isEmpty ?
-                                Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
+                                const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                             ClipOval(
                               child: Image(
                                 image: NetworkImage(user.photoUrl!),
@@ -75,11 +75,12 @@ class _GroupMembersScreenState extends State<GroupMembersScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Column(crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                               Text(user.email),
+                              Text("Last Update:${user.formattedLastLocationUpdatedAt()}"),
                             ],
                           ),
                         ],
@@ -93,11 +94,12 @@ class _GroupMembersScreenState extends State<GroupMembersScreen> {
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => MapScreen()));
         },
-        icon: Icon(Icons.map),
-        label: Text("Show on map"),
-        backgroundColor: kSecondaryColor,
+        icon: const Icon(Icons.map_outlined),
+        label: const Text("Show on map"),
+        backgroundColor: kSecondaryColor2,
         foregroundColor: Colors.white,
       ),
+
 
     );
   }

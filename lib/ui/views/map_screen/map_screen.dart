@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 //import 'package:flutter_map/plugin_api.dart';
 import 'package:provider/provider.dart';
+import 'package:team_tracking/utils/constants.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -62,16 +63,14 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    center: userList.isNotEmpty ? LatLng(userList[0].lastLocation!.latitude, userList[0].lastLocation!.longitude) : LatLng(0, 0),
+                    initialCenter: userList.isNotEmpty ? LatLng(userList[0].lastLocation!.latitude, userList[0].lastLocation!.longitude) : LatLng(0, 0),
                     //zoom: 17,
                     maxZoom: 18,
-            ),
-                  nonRotatedChildren: const [
+                  ),
+                  children: [
                     SimpleAttributionWidget(
                       source: Text('OpenStreetMap '),
                     ),
-                  ],
-                  children: [
                     TileLayer(
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.nahitcalisir.team_tracking',
@@ -102,12 +101,11 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                                       child: CircleAvatar(
                                         radius: 22,
                                         backgroundColor: Colors.white,
-                                        child: CircleAvatar(
+                                        child: user.photoUrl!.isNotEmpty ?
+                                        CircleAvatar(
                                           radius: 20,
-                                          backgroundImage: NetworkImage(
-                                            user.photoUrl!.isNotEmpty ? user.photoUrl! : "http://nahitcalisir.online/images/person2.png",
-                                          ),
-                                        ),
+                                          backgroundImage:  NetworkImage( user.photoUrl!),
+                                        ): Icon(Icons.account_circle,color: Colors.orangeAccent,size: 42,),
                                       ),
                                     ),
                                   ],
@@ -121,11 +119,12 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.only(left: 8),
                   child: Column(
                     children: [
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
+                        style: ElevatedButton.styleFrom(
+                        backgroundColor: kSecondaryColor2),
                         onPressed: () async {
                           context.read<MapScreenCubit>().runShowAllOnMap(_mapController);
                         },
@@ -138,14 +137,21 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
             ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-          floatingActionButton: FloatingActionButton(
-              shape: CircleBorder(),
-              child: Icon(Icons.close),
-              onPressed: (){
-                context.read<MapScreenCubit>().cancelTimers();
-                Navigator.of(context).pop();
-          }
-        ),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: SizedBox(height: 38,width: 38,
+              child: FloatingActionButton(
+                  backgroundColor: kSecondaryColor2,
+                  foregroundColor: Colors.white,
+                  shape: CircleBorder(),
+                  child: Icon(Icons.close),
+                  onPressed: (){
+                    context.read<MapScreenCubit>().cancelTimers();
+                    Navigator.of(context).pop();
+              }
+                      ),
+            ),
+          ),
         );
       },
     );

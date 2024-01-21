@@ -12,6 +12,7 @@ import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
+import 'package:team_tracking/utils/constants.dart';
 
 import '../entity/users.dart';
 
@@ -179,33 +180,35 @@ class TeamTrackingDaoRepository {
     await groupCollection.doc().set(newGroup);
   }
 
-  Future<void> saveGroup(
-      {
-        required BuildContext context,
-        required String name,
-        required String city,
-        required String country,
-        required File? groupImage
-      }) async {
-
-    if(name.isEmpty || city.isEmpty || country.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Warning"),
-            content: Text("Please fill in all fields"),
-            actions: [
-              TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop();
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+  Future<void> saveGroup({
+    required BuildContext context,
+    required String name,
+    required String city,
+    required String country,
+    required File? groupImage,
+  }) async {
+    if (name.isEmpty || city.isEmpty || country.isEmpty) {
+      // Delay the execution of the dialog to allow the saveGroup method to complete
+      await Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor2,
+              title: Text("Warning",style: TextStyle(color: Colors.white),),
+              content: Text("Please fill in all fields!",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK",style: TextStyle(color: Colors.white),),
+                ),
+              ],
+            );
+          },
+        );
+      });
     } else {
       //Upload group image
       String imageUrl = "";
@@ -223,6 +226,8 @@ class TeamTrackingDaoRepository {
         memberIds: memberIds,
         photoUrl: imageUrl,
       );
+      // After the group is saved, navigate back to the GroupsScreen
+      Navigator.pop(context);
     }
   }
 

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 class Users {
@@ -8,6 +10,7 @@ class Users {
   String? phone;
   LatLng? lastLocation;
   List<String>? groups;
+  Timestamp? lastLocationUpdatedAt;
 
   Users({
     required this.id,
@@ -16,7 +19,8 @@ class Users {
     this.photoUrl,
     this.phone,
     this.lastLocation,
-    this.groups
+    this.groups,
+    this.lastLocationUpdatedAt
   });
 
   factory Users.fromMap(String id, Map<String, dynamic> data) {
@@ -32,6 +36,7 @@ class Users {
         data['lastLocation']['longitude'],
       ),
       groups: groups ,
+      lastLocationUpdatedAt: data["lastLocationUpdatedAt"],
     );
   }
 
@@ -48,4 +53,15 @@ class Users {
       'groups' :groups
     };
   }
+
+  // Custom method to format timestamp
+  String formattedLastLocationUpdatedAt() {
+    if (lastLocationUpdatedAt != null) {
+      DateTime dateTime = lastLocationUpdatedAt!.toDate();
+      return DateFormat('dd.MM.yyyy - HH:mm:ss').format(dateTime);
+    } else {
+      return '';
+    }
+  }
+
 }

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
 import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
+import 'package:team_tracking/utils/constants.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -47,7 +48,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       } ,
                       child: groupImageFile == null
                           ? const CircleAvatar(
-                        backgroundColor: Colors.orangeAccent, // CircleAvatar'ın arka plan rengini ayarlayın
+                        backgroundColor: kSecondaryColor2, // CircleAvatar'ın arka plan rengini ayarlayın
                         radius: 100, // Dilediğiniz bir yarıçap değerini belirleyin
                         child: Icon(
                           Icons.add_a_photo,
@@ -83,8 +84,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     controller: _countryController,
                     decoration: InputDecoration(labelText: "Country*"),
                   ),
-                  SizedBox(height: 16),
+                  SizedBox(height: 30),
                   ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: kSecondaryColor2,
+                          foregroundColor: Colors.white),
                       onPressed: (){
                         context.read<CreateGroupScreenCubit>().saveGroup(
                           context: context,
@@ -93,10 +97,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           country: _countryController.text.trim(),
                           groupImage: groupImageFile,
                         );
-                        // After the group is saved, navigate back to the GroupsScreen
-                        Navigator.pop(context);
                       },
-                      child: Text("Create Group"))
+                      child: Text("Create Group",style: TextStyle(fontSize: 20),))
                 ],
               ),
             ),
