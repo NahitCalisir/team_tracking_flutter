@@ -8,11 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
+import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
+import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
 import 'package:team_tracking/utils/constants.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import '../entity/users.dart';
 
@@ -180,7 +184,51 @@ class TeamTrackingDaoRepository {
     await groupCollection.doc().set(newGroup);
   }
 
-  Future<void> saveGroup({
+  //TODO Update Group in the firestore
+  Future<void> updateGroup(
+      {
+        required String groupId,
+        required String name,
+        required String city,
+        required String country,
+        String? photoUrl
+      }) async {
+    var updatedData = {
+      "name": name,
+      "city": city,
+      "country": country,
+      "photoUrl": photoUrl,
+    };
+    await groupCollection.doc(groupId).update(updatedData);
+  }
+
+  //TODO Delete Group from the firestore
+  Future<void> deleteGroupFromFirestore({
+    required String groupId,
+    required String photoUrl,
+  }) async {
+    try {
+      await groupCollection.doc(groupId).delete();
+      print("Group deleted successfully!");
+      await deleteGroupImage(photoUrl);
+    } catch (error) {
+      print("Error deleting group: $error");
+      // Hata durumunda gerekli işlemleri yapabilirsiniz.
+    }
+  }
+
+  Future<void> deleteGroupImage(String imageUrl) async {
+    try {
+      Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+      await storageRef.delete();
+    } catch (e) {
+      print("Error deleting image: $e");
+    }
+  }
+
+
+
+  Future<void> createGroup({
     required BuildContext context,
     required String name,
     required String city,
@@ -200,7 +248,7 @@ class TeamTrackingDaoRepository {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop;
                   },
                   child: Text("OK",style: TextStyle(color: Colors.white),),
                 ),
@@ -216,7 +264,7 @@ class TeamTrackingDaoRepository {
         imageUrl = await uploadGroupImage(groupImage);
       }
       //Register group to firestore
-      String owner = UsersManager().currentUser!.name;
+      String owner = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
       registerGroup(
         name: name,
@@ -230,6 +278,87 @@ class TeamTrackingDaoRepository {
       Navigator.pop(context);
     }
   }
+
+  Future<void> editGroup({
+    required BuildContext context,
+    required String groupId,
+    required String name,
+    required String city,
+    required String country,
+    required File? groupImage,
+  }) async {
+    if (name.isEmpty || city.isEmpty || country.isEmpty) {
+      // Delay the execution of the dialog to allow the saveGroup method to complete
+      await Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: Colors.white),),
+              content: const Text("Please fill in all fields!",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("OK",style: TextStyle(color: Colors.white),),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    } else {
+      //Upload group image
+      String imageUrl = "";
+      if (groupImage != null) {
+        imageUrl = await uploadGroupImage(groupImage);
+      }
+      //Update group in firestore
+      String owner = UsersManager().currentUser!.id;
+      List<String> memberIds = [UsersManager().currentUser!.id];
+      updateGroup(
+        groupId: groupId,
+        name: name,
+        city: city,
+        country: country,
+        photoUrl: imageUrl,
+      );
+      // After the group is saved, navigate back to the GroupsScreen
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> deleteGroup({
+    required BuildContext context,
+    required String groupId,
+    required String photoUrl,
+  }) async {
+      // Delay the execution of the dialog to allow the saveGroup method to complete
+      await Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: Colors.white),),
+              content: const Text("Are you sure you want to delete this group?",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    deleteGroupFromFirestore(groupId: groupId, photoUrl: photoUrl);
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  },
+                  child: Text("Delete",style: TextStyle(color: Colors.red),),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    }
 
 
   //TODO: Upload Group image to firebase storage
@@ -291,6 +420,55 @@ class TeamTrackingDaoRepository {
   }
 
 
+  void checkGroupMembershipAndNavigate(BuildContext context, Groups selectedGroup) {
+    // Grup üyeliğini kontrol et
+    bool isMember = selectedGroup.memberIds.contains(UsersManager().currentUser!.id);
+
+    if (isMember) {
+      // Kullanıcı grup üyesiyse UsersScreen'e git
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupMembersScreen(group: selectedGroup),
+        ),
+      );
+    } else {
+      // Kullanıcı grup üyesi değilse uyarı göster
+      showMembershipAlert(context);
+    }
+  }
+
+  void showMembershipAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: kSecondaryColor,
+          title: Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+          content: Text("You are not a member of this group. Send a request to join.",style: TextStyle(color: Colors.white),),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+            ),
+            TextButton(
+              onPressed: () {
+                sendRequestToJoinGroup();
+              },
+              child: Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void sendRequestToJoinGroup() {
+    // TODO: Grup üyeliği için istek gönderme işlemleri
+    // İstek gönderme işlemleri buraya eklenecek
+    print("istek gönderme başlatıldı");
+  }
 
 
 }

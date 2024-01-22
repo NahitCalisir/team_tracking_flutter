@@ -4,8 +4,11 @@ import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
 import 'package:team_tracking/ui/views/groups_screen/create_group_screen.dart';
+import 'package:team_tracking/ui/views/groups_screen/edit_group_screen.dart';
 import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
+
+import '../../../data/entity/users.dart';
 
 class GroupsScreen extends StatefulWidget {
   const GroupsScreen({super.key});
@@ -45,7 +48,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
             setState(() {
               aramaYapiliyormu = false;
             });
-            context.read<GroupsScreenCubit>().getAllGroups(); // veri tabanından çektiğimizde gerekli
+            context.read<GroupsScreenCubit>().getAllGroups();
           }, icon:Icon(Icons.clear)):
           IconButton(onPressed: (){
             setState(() {
@@ -58,13 +61,18 @@ class _GroupsScreenState extends State<GroupsScreen> {
           builder: (context,groupList){
             if(groupList.isNotEmpty){
               return ListView.builder(
-                  itemCount: groupList.length,
-                  itemBuilder: (context, indeks){
-                    var group = groupList[indeks];
-                    return InkWell(
-                      onTap: () {
-                        checkGroupMembershipAndNavigate(context, group);
-                      },
+                itemCount: groupList.length,
+                itemBuilder: (context, index) {
+                  var group = groupList[index];
+                  Users? currentUser = UsersManager().currentUser;
+                  bool isOwner = group.owner == currentUser?.id;
+                  bool isMember = group.memberIds.contains(currentUser?.id);
+                  return InkWell(
+                    onTap: (){
+                      context.read<GroupsScreenCubit>().checkGroupMembershipAndNavigate(context, group);
+                    },
+                    child: Container(
+                      height: 80, // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
                       child: Card(
                         child: Row(
                           children: [
@@ -76,29 +84,69 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                 child: Image(
                                   image: NetworkImage(group.photoUrl!),
                                   fit: BoxFit.cover,
-                                  width: 50,
-                                  height: 50,
-                                ) ,
+                                  width: 60,
+                                  height: 60,
+                                ),
                               )
-                              : Icon(Icons.groups, size:  50, color: kSecondaryColor2,),
+                                  : Icon(Icons.groups, size: 60, color: kSecondaryColor2),
                             ),
                             SizedBox(width: 8),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(group.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
-                                Text("${group.city} - ${group.country}"),
-                                Text("Admin: ${group.owner} (${group.memberIds.length})"),
-                              ],
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    group.name,
+                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    "${group.city} - ${group.country}",
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
+                            PopupMenuButton<String>(
+                              onSelected: (String result) {
+                                handleMenuSelection(context, result, group, isOwner, isMember);
+                              },
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                if (isMember)
+                                  const PopupMenuItem<String>(
+                                    value: 'watchGroup',
+                                    child: Text('Watch Group'),
+                                  ),
+                                if (isOwner)
+                                  const PopupMenuItem<String>(
+                                    value: 'editGroup',
+                                    child: Text('Edit Group'),
+                                  ),
+                                if (!isOwner && isMember)
+                                  const PopupMenuItem<String>(
+                                    value: 'leaveGroup',
+                                    child: Text('Leave Group'),
+                                  ),
+                                if (!isOwner && !isMember)
+                                  const PopupMenuItem<String>(
+                                    value: 'joinGroup',
+                                    child: Text('Join Group'),
+                                  ),
+                              ],
+                            )
                           ],
                         ),
                       ),
-                    );
-                  });
-            } return const Center();
-          }),
+                    ),
+                  );
+                },
+              );;
+              ;
+                } return const Center();
+              }),
       //FLOATING ACTION BUTTON *********************************
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateGroupScreen()));
@@ -110,59 +158,36 @@ class _GroupsScreenState extends State<GroupsScreen> {
         shape: const CircleBorder( //OR: BeveledRectangleBorder etc.,
           //side: BorderSide(color: Colors.blue, width: 2.0, style: BorderStyle.solid)
         ),
-        //mini: true,
       ),
     );
   }
-}
 
-void checkGroupMembershipAndNavigate(BuildContext context, Groups selectedGroup) {
-  // Grup üyeliğini kontrol et
-  bool isMember = selectedGroup.memberIds.contains(UsersManager().currentUser!.id);
+  void handleMenuSelection(
+      BuildContext context,
+      String result,
+      Groups group,
+      bool isOwner,
+      bool isMember,
+      ) {
+    switch (result) {
+      case 'watchGroup':
+      // Handle "Watch Group"
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => GroupMembersScreen(group: group)));
+        break;
+      case 'editGroup':
+      // Handle "Edit Group"
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditGroupScreen(group: group)));
 
-  if (isMember) {
-    // Kullanıcı grup üyesiyse UsersScreen'e git
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GroupMembersScreen(group: selectedGroup),
-      ),
-    );
-  } else {
-    // Kullanıcı grup üyesi değilse uyarı göster
-    showMembershipAlert(context);
+        break;
+      case 'leaveGroup':
+      // Handle "Leave Group"
+        break;
+      case 'joinGroup':
+      // Handle "Join Group"
+        break;
+    }
   }
+
 }
 
-void showMembershipAlert(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text("Warning"),
-        content: Text("You are not a member of this group. Send a request to join."),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              sendJoinRequest();
-              Navigator.of(context).pop();
-            },
-            child: Text("Send Request"),
-          ),
-        ],
-      );
-    },
-  );
-}
 
-void sendJoinRequest() {
-  // TODO: Grup üyeliği için istek gönderme işlemleri
-  // İstek gönderme işlemlerini buraya ekleyin
-  print("istek gönderme başlatıldı");
-}

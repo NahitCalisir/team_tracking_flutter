@@ -1,7 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
+import 'package:team_tracking/data/entity/user_manager.dart';
+import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
+import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
+import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 
 class GroupsScreenCubit extends Cubit<List<Groups>> {
   GroupsScreenCubit():super(<Groups>[]);
@@ -45,6 +50,15 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
       }
       emit(groupList);
     });
+  }
+
+  void checkGroupMembershipAndNavigate(BuildContext context, Groups selectedGroup) {
+    // Grup üyeliğini kontrol et
+    TeamTrackingDaoRepository.shared.checkGroupMembershipAndNavigate(context, selectedGroup);
+  }
+
+  void sendRequestToJoinGroup() {
+    TeamTrackingDaoRepository.shared.sendRequestToJoinGroup();
   }
 
 }
