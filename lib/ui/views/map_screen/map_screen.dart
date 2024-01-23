@@ -68,7 +68,7 @@ class _MapScreenContentState extends State<MapScreenContent> with AutomaticKeepA
                     maxZoom: 18,
                   ),
                   children: [
-                    SimpleAttributionWidget(
+                    const SimpleAttributionWidget(
                       source: Text('OpenStreetMap '),
                     ),
                     TileLayer(

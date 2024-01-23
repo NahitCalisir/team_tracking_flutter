@@ -57,8 +57,8 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
     TeamTrackingDaoRepository.shared.checkGroupMembershipAndNavigate(context, selectedGroup);
   }
 
-  void sendRequestToJoinGroup() {
-    TeamTrackingDaoRepository.shared.sendRequestToJoinGroup();
+  void sendRequestToJoinGroup(BuildContext context, String groupId) {
+    TeamTrackingDaoRepository.shared.sendRequestToJoinGroup(context, groupId);
   }
 
 }

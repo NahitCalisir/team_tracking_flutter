@@ -7,16 +7,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
 import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
-import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
 import 'package:team_tracking/utils/constants.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../entity/users.dart';
 
@@ -27,7 +24,6 @@ class TeamTrackingDaoRepository {
   //Dikkat: firestore kullanırken arayüzde veri güncelleme yapan metodları
   // (kisileriYukle ve kisiAra gibi) repoda yapıp return edemiyoruz.
   // Direk anasayfa_cubit içerisinde bu metodları yazıyoruz.
-
 
 
   final userCollection = FirebaseFirestore.instance.collection("users");
@@ -171,7 +167,8 @@ class TeamTrackingDaoRepository {
         required String country,
         required String owner,
         required List<String> memberIds,
-        String? photoUrl
+        String? photoUrl,
+        List<String>? joinRequests,
       }) async {
     var newGroup = {
       "name": name,
@@ -180,6 +177,7 @@ class TeamTrackingDaoRepository {
       "owner": owner,
       "memberIds": memberIds,
       "photoUrl": photoUrl,
+      "joinRequests": joinRequests,
     };
     await groupCollection.doc().set(newGroup);
   }
@@ -266,6 +264,7 @@ class TeamTrackingDaoRepository {
       //Register group to firestore
       String owner = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
+      List<String> joinRequests = [];
       registerGroup(
         name: name,
         city: city,
@@ -273,6 +272,7 @@ class TeamTrackingDaoRepository {
         owner:  owner,
         memberIds: memberIds,
         photoUrl: imageUrl,
+        joinRequests: joinRequests,
       );
       // After the group is saved, navigate back to the GroupsScreen
       Navigator.pop(context);
@@ -434,11 +434,11 @@ class TeamTrackingDaoRepository {
       );
     } else {
       // Kullanıcı grup üyesi değilse uyarı göster
-      showMembershipAlert(context);
+      showMembershipAlert(context,selectedGroup.id);
     }
   }
 
-  void showMembershipAlert(BuildContext context) {
+  void showMembershipAlert(BuildContext context, String groupId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -455,7 +455,8 @@ class TeamTrackingDaoRepository {
             ),
             TextButton(
               onPressed: () {
-                sendRequestToJoinGroup();
+                sendRequestToJoinGroup(context, groupId);
+                Navigator.of(context).pop();
               },
               child: Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
             ),
@@ -464,10 +465,39 @@ class TeamTrackingDaoRepository {
       },
     );
   }
-  void sendRequestToJoinGroup() {
-    // TODO: Grup üyeliği için istek gönderme işlemleri
-    // İstek gönderme işlemleri buraya eklenecek
+
+  // TODO: Grup üyeliği için istek gönderme işlemleri
+  void sendRequestToJoinGroup(BuildContext context, String groupId) async {
     print("istek gönderme başlatıldı");
+    String userId = UsersManager().currentUser!.id;
+    await groupCollection.doc(groupId).update(
+        {"joinRequests": FieldValue.arrayUnion([userId])},
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text("Request sent successfully.",style: TextStyle(color: kSecondaryColor),),
+          backgroundColor: kSecondaryColor2,
+          duration: Durations.extralong4
+      ),);
+    notifyGroupOwner(groupId, userId);
+  }
+  // TODO:Notify group owner about join request
+  void notifyGroupOwner(String groupId, String userId) {
+    // notification logic here
+    // Firebase Cloud Messaging (FCM) or push notification
+  }
+  //TODO: accept join request
+  void acceptJoinRequest(String groupId, String userId) async {
+    await groupCollection.doc(groupId).update({
+      "memberIds": FieldValue.arrayUnion([userId]),
+      "joinRequests": FieldValue.arrayRemove([userId]),
+    });
+  }
+  //TODO: reject join request
+  void rejectJoinRequest(String groupId, String userId) async {
+    await groupCollection.doc(groupId).update({
+      "joinRequests": FieldValue.arrayRemove([userId]),
+    });
   }
 
 

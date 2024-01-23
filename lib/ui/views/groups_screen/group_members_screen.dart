@@ -21,6 +21,7 @@ class GroupMembersScreen extends StatefulWidget {
 class _GroupMembersScreenState extends State<GroupMembersScreen> {
 
   bool aramaYapiliyormu = false;
+  DateTime now = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +61,7 @@ class _GroupMembersScreenState extends State<GroupMembersScreen> {
                   itemCount: userList.length,
                   itemBuilder: (context, indeks){
                     var user = userList[indeks];
+                    DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
                     return Card(
                       child: Row(
                         children: [
@@ -78,9 +80,19 @@ class _GroupMembersScreenState extends State<GroupMembersScreen> {
                           const SizedBox(width: 8),
                           Column(crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                              Row(
+                                children: [
+                                  Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                                  const SizedBox(width: 8,),
+                                  Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
+                                ],
+                              ),
                               Text(user.email),
-                              Text("Last Update:${user.formattedLastLocationUpdatedAt()}"),
+                              Text(
+                                  "Last Update: ${user.formattedLastLocationUpdatedAt()}",
+                                style: TextStyle(
+                                    color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
+                              ),
                             ],
                           ),
                         ],

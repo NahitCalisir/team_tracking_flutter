@@ -67,6 +67,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   Users? currentUser = UsersManager().currentUser;
                   bool isOwner = group.owner == currentUser?.id;
                   bool isMember = group.memberIds.contains(currentUser?.id);
+                  bool isWaitingMember = group.joinRequests!.contains(currentUser?.id);
                   return InkWell(
                     onTap: (){
                       context.read<GroupsScreenCubit>().checkGroupMembershipAndNavigate(context, group);
@@ -105,7 +106,15 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                     "${group.city} - ${group.country}",
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ],
+                                  if (isMember && !isOwner)
+                                    const Card(color: kSecondaryColor2,
+                                        child: Text("  Member  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                                  if (isOwner)
+                                    const Card(color: kSecondaryColor2,
+                                        child: Text("  Admin  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                                  if (isWaitingMember)
+                                    const Card(color: kSecondaryColor2,
+                                        child: Text("  Request sent  ",style: TextStyle(color: Colors.white,fontSize: 12),)),                                ],
                               ),
                             ),
                             PopupMenuButton<String>(
@@ -184,6 +193,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
         break;
       case 'joinGroup':
       // Handle "Join Group"
+      context.read<GroupsScreenCubit>().sendRequestToJoinGroup(context,group.id);
         break;
     }
   }
