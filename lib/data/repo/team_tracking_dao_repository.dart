@@ -347,7 +347,7 @@ class TeamTrackingDaoRepository {
           builder: (BuildContext context) {
             return AlertDialog(
               backgroundColor: kSecondaryColor,
-              title: const Text("Warning",style: TextStyle(color: Colors.white),),
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
               content: const Text("Are you sure you want to delete this group?",style: TextStyle(color: Colors.white),),
               actions: [
                 TextButton(
@@ -492,16 +492,22 @@ class TeamTrackingDaoRepository {
     // Firebase Cloud Messaging (FCM) or push notification
   }
   //TODO: accept join request
-  void acceptJoinRequest(Groups group, Users user) async {
+  Future<void> acceptJoinRequest(Groups group, Users user) async {
     await groupCollection.doc(group.id).update({
       "memberIds": FieldValue.arrayUnion([user.id]),
       "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }
   //TODO: reject join request
-  void rejectJoinRequest(Groups group, Users user) async {
+  Future<void> rejectJoinRequest(Groups group, Users user) async {
     await groupCollection.doc(group.id).update({
       "joinRequests": FieldValue.arrayRemove([user.id]),
+    });
+  }
+  //TODO: remove from group
+  Future<void> removeFromGroup(Groups group, Users user) async {
+    await groupCollection.doc(group.id).update({
+      "memberIds": FieldValue.arrayRemove([user.id]),
     });
   }
 

@@ -19,27 +19,8 @@ class GroupMembersScreen extends StatefulWidget {
   _GroupMembersScreenState createState() => _GroupMembersScreenState();
 }
 
-class _GroupMembersScreenState extends State<GroupMembersScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _GroupMembersScreenState extends State<GroupMembersScreen>  {
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(_handleTabChange);
-  }
-
-  void _handleTabChange() {
-    // Aktif sekme değiştiğinde burada state güncellemelerini tetikleyebilirsiniz.
-    final currentTab = _tabController.index;
-    if (currentTab == 0) {
-      context.read<GroupMembersScreenCubit>().getGroupMembers(widget.group);
-    } else if (currentTab == 1) {
-      context.read<GroupMembersScreenCubit>().getMemberRequestList(widget.group);
-    }
-    // Her iki BlocBuilder'ı da güncelleyin
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +66,10 @@ class GroupMembersList extends StatelessWidget {
                   itemCount: userList.length,
                   itemBuilder: (context, indeks){
                     var user = userList[indeks];
+                    Users? currentUser = UsersManager().currentUser;
+                    bool isOwner = group.owner == currentUser?.id;
+                    bool isMember = group.memberIds.contains(currentUser?.id);
+                    bool isWaitingMember = group.joinRequests!.contains(currentUser?.id);
                     DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
                     return InkWell(
                       onTap: (){
@@ -139,6 +124,18 @@ class GroupMembersList extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            Spacer(),
+                            if (isOwner) PopupMenuButton<String>(
+                              onSelected: (String result) {
+                                handleMenuSelectionForMembers(context, result, group, isOwner, isMember,user);
+                              },
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'remove',
+                                  child: Text('Remove'),
+                                ),
+                              ],
+                            )
                           ],
                         ),
                       ),
@@ -177,23 +174,23 @@ class MembershipRequestsList extends StatelessWidget {
                   return InkWell(
                     onTap: (){
                       showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext context){
-                            return Container(
-                              height: 200,
-                              color: Colors.amber,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
+                        context: context,
+                        builder: (BuildContext context){
+                          return Container(
+                            height: 200,
+                            color: Colors.amber,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
 
-                                  ],
-                                ),
+                                ],
                               ),
-                            );
-                          });
-                    },
+                            ),
+                          );
+                        });
+                      },
                     child: Card(
                       child: Row(
                         children: [
@@ -230,7 +227,7 @@ class MembershipRequestsList extends StatelessWidget {
                           Spacer(),
                           if (isOwner) PopupMenuButton<String>(
                             onSelected: (String result) {
-                              handleMenuSelection(context, result, group, isOwner, isMember,user);
+                              handleMenuSelectionForRequests(context, result, group, isOwner, isMember,user);
                             },
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                               const PopupMenuItem<String>(
@@ -254,21 +251,79 @@ class MembershipRequestsList extends StatelessWidget {
   }
 }
 
-void handleMenuSelection(
+void handleMenuSelectionForMembers(
     BuildContext context,
     String result,
     Groups group,
     bool isOwner,
     bool isMember,
     Users user
-    ) {
-  switch (result) {
+    ) async {
+  switch (result)  {
+    case 'remove':
+      print(!isOwner);
+      if(group.owner.contains(user.id)) { //eğer çıkarılmak istenen admin ise
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: const Text("You cannot leave the group because you are the administrator. If you wish, you can delete the group entirely.",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {Navigator.of(context).pop();},
+                  child: Text("OK",style: TextStyle(color: kSecondaryColor2),),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: Text("Are you sure you want to remove ${user.name}  from the group?",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    await context.read<GroupMembersScreenCubit>().removeFromGroup(group, user);
+                    await context.read<GroupMembersScreenCubit>().getGroupMembers(group);
+                    Navigator.of(context).pop();
+                    },
+                  child: Text("Remove",style: TextStyle(color: Colors.red),),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      break;
+  }
+}
+
+void handleMenuSelectionForRequests(
+    BuildContext context,
+    String result,
+    Groups group,
+    bool isOwner,
+    bool isMember,
+    Users user
+    ) async {
+  switch (result)  {
     case 'accept':
-    context.read<GroupMembersScreenCubit>().acceptJoinRequest(group, user);
+    await context.read<GroupMembersScreenCubit>().acceptJoinRequest(group, user);
+    await context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
       break;
     case 'reject':
-      context.read<GroupMembersScreenCubit>().rejectJoinRequest(group, user);
+      await context.read<GroupMembersScreenCubit>().rejectJoinRequest(group, user);
+      await context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
 
       break;
   }
 }
+
+

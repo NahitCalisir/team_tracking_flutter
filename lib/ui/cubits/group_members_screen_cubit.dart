@@ -32,12 +32,12 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
   }
 
   Future<void> getGroupMembers(Groups group) async {
-    //Gruba ait üye ID'leri kullanıcıları getir
     List<Users> groupMembers = [];
+    DocumentSnapshot<Map<String, dynamic>> document = await groupsCollection.doc(group.id).get();
+    Groups updatedGroup = Groups.fromMap(document.id, document.data()!);
 
-    for (String memberId in group.memberIds) {
-      DocumentSnapshot<Map<String, dynamic>> snapshot =
-      await userCollection.doc(memberId).get();
+    for (String memberId in updatedGroup.memberIds) {
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await userCollection.doc(memberId).get();
       if (snapshot.exists) {
         Users user = Users.fromMap(snapshot.id, snapshot.data()!);
         groupMembers.add(user);
@@ -46,11 +46,12 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
     emit(groupMembers);
   }
   Future<void> getMemberRequestList(Groups group) async {
-    //Gruba ait üye ID'leri kullanıcıları getir
     List<Users> groupRequestMembers = [];
+    DocumentSnapshot<Map<String, dynamic>> document = await groupsCollection.doc(group.id).get();
+    Groups updatedGroup = Groups.fromMap(document.id, document.data()!);
 
-    if(group.joinRequests != null){
-      for (String memberId in group.joinRequests!) {
+    if(updatedGroup.joinRequests != null){
+      for (String memberId in updatedGroup.joinRequests!) {
         DocumentSnapshot<Map<String, dynamic>> snapshot =
         await userCollection.doc(memberId).get();
         if (snapshot.exists) {
@@ -87,34 +88,19 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
     // notification logic here
     // Firebase Cloud Messaging (FCM) or push notification
   }
- ////TODO: accept join request
- //void acceptJoinRequest(Groups group, Users user) async {
- //  TeamTrackingDaoRepository.shared.acceptJoinRequest(group, user);
- //  getMemberRequestList(group);
- //}
- ////TODO: reject join request
- //void rejectJoinRequest(Groups group, Users user) async {
- //  TeamTrackingDaoRepository.shared.rejectJoinRequest(group, user);
- //  getMemberRequestList(group);
-
- //}
-
-  //TODO: accept join request
-  void acceptJoinRequest(Groups group, Users user) async {
-    await groupsCollection.doc(group.id).update({
-      "memberIds": FieldValue.arrayUnion([user.id]),
-      "joinRequests": FieldValue.arrayRemove([user.id]),
-    });
-    getMemberRequestList(group);
-    getGroupMembers(group);
+ //TODO: accept join request
+  Future<void> acceptJoinRequest(Groups group, Users user) async {
+   TeamTrackingDaoRepository.shared.acceptJoinRequest(group, user);
+ }
+ //TODO: reject join request
+  Future<void> rejectJoinRequest(Groups group, Users user) async {
+   TeamTrackingDaoRepository.shared.rejectJoinRequest(group, user);
+ }
+  //TODO: remove from group
+  Future<void> removeFromGroup(Groups group, Users user) async {
+    TeamTrackingDaoRepository.shared.removeFromGroup(group, user);
   }
-  //TODO: reject join request
-  void rejectJoinRequest(Groups group, Users user) async {
-    await groupsCollection.doc(group.id).update({
-      "joinRequests": FieldValue.arrayRemove([user.id]),
-    });
-    getMemberRequestList(group);
-    getGroupMembers(group);
-  }
+
+
 
 }
