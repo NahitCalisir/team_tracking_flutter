@@ -131,13 +131,16 @@ class TeamTrackingDaoRepository {
       if (snapshot.exists) {
         String id = snapshot.id;
         Map<String, dynamic>? userData = snapshot.data();
+        print("Current User data firebaseden çekildi");
         return userData;
       } else {
         // Kullanıcı bulundu, ancak veri bulunamadı.
+        print("Kullanıcı bulundu, ancak veri bulunamadı.");
         return null;
       }
     } else {
       // Kullanıcı bulunamadı.
+      print("Kullanıcı bulunamadı.");
       return null;
     }
   }
@@ -145,6 +148,7 @@ class TeamTrackingDaoRepository {
 
   //TODO Register user to firestore
   Future<void> _registerUser({required String uid, required String name, required String email, required String photoUrl}) async {
+    DateTime now = DateTime.now();
     var newUser = {
       "name": name,
       "email": email,
@@ -155,6 +159,7 @@ class TeamTrackingDaoRepository {
         "longitude": 0.0,
       },
       "groups": {""},
+      "lastLocationUpdatedAt": now
     };
     await userCollection.doc(uid).set(newUser);
   }
@@ -487,16 +492,16 @@ class TeamTrackingDaoRepository {
     // Firebase Cloud Messaging (FCM) or push notification
   }
   //TODO: accept join request
-  void acceptJoinRequest(String groupId, String userId) async {
-    await groupCollection.doc(groupId).update({
-      "memberIds": FieldValue.arrayUnion([userId]),
-      "joinRequests": FieldValue.arrayRemove([userId]),
+  void acceptJoinRequest(Groups group, Users user) async {
+    await groupCollection.doc(group.id).update({
+      "memberIds": FieldValue.arrayUnion([user.id]),
+      "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }
   //TODO: reject join request
-  void rejectJoinRequest(String groupId, String userId) async {
-    await groupCollection.doc(groupId).update({
-      "joinRequests": FieldValue.arrayRemove([userId]),
+  void rejectJoinRequest(Groups group, Users user) async {
+    await groupCollection.doc(group.id).update({
+      "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }
 

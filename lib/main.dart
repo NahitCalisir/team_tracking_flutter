@@ -33,27 +33,12 @@ void main() async{
   runApp(const MyApp());
 }
 
-
-
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  Future<User?> checkUserLogin() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      Map<String, dynamic>? userData = await TeamTrackingDaoRepository.shared.getUserData();
-      if (userData != null) {
-        Users currentUser = Users.fromMap(user.uid, userData);
-        await UsersManager().setUser(currentUser);
-        print("Current User: ${currentUser.name}");
-      }
-    }
-    return user;
-  }
 
   @override
   Widget build(BuildContext context) {
-    checkUserLogin();
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (BuildContext context) => AccountsScreenCubit()),
@@ -88,7 +73,7 @@ class MyApp extends StatelessWidget {
               return CircularProgressIndicator();
             } else {
               if(snapshot.data != null)  {
-                checkUserLogin();
+                checkAndSetUserLogin();
                 return const BottomNavigationBarPage();
               } else {
                 return const LoginScreen();
@@ -99,4 +84,16 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+Future<User?> checkAndSetUserLogin() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    Map<String, dynamic>? userData = await TeamTrackingDaoRepository.shared.getUserData();
+    if (userData != null) {
+      Users currentUser = Users.fromMap(user.uid, userData);
+      await UsersManager().setUser(currentUser);
+      print("Current User: ${currentUser.name}");
+    }
+  }
+  return user;
 }

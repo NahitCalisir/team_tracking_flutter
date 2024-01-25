@@ -12,7 +12,7 @@ class SettingsScreenCubit extends Cubit<Users> {
   }
 
   Future<Users?> getCurrentUserInfo() async {
-    Users? curentUser = await  UsersManager().currentUser;
+    Users? curentUser = UsersManager().currentUser;
     if(curentUser != null){
       emit(curentUser);
     }

@@ -20,7 +20,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
   int secilenIndex = 0;
 
   final List<Widget> sayfalar = [
-    //const Homepage(),
+    const Homepage(),
     //const UsersScreen(),
     //const MapScreen(),
     const GroupsScreen(),
@@ -47,11 +47,11 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           mainAxisSize: MainAxisSize.max,
           children: [
-            //buildBottomNavItem(Icons.home, "Home", 0),
+            buildBottomNavItem(Icons.home, "Home", 0),
             //buildBottomNavItem(Icons.person, "Users", 1),
             //buildBottomNavItem(Icons.map, "Map", 2),
-            buildBottomNavItem(Icons.groups, "Groups", 0),
-            buildBottomNavItem(Icons.settings, "Setting", 1),
+            buildBottomNavItem(Icons.groups, "Groups", 1),
+            buildBottomNavItem(Icons.settings, "Setting", 2),
           ],
         ),
       ),
