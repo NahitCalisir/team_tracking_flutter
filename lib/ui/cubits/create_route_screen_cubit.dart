@@ -1,21 +1,17 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 //import 'package:flutter_map/plugin_api.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:team_tracking/data/entity/users.dart';
 
 class CreateRouteScreenCubit extends Cubit<List<LatLng>> {
-  CreateRouteScreenCubit() : super([LatLng(37.4219983, -122.084)]);
+  CreateRouteScreenCubit() : super([const LatLng(37.4219983, -122.084)]);
 
 
 
@@ -52,9 +48,9 @@ class CreateRouteScreenCubit extends Cubit<List<LatLng>> {
     //}
 
     // Harita konumunu güncelle(rotanın bütününü gösterir)
-    if (routePoints.isNotEmpty && controller != null) {
+    if (routePoints.isNotEmpty) {
       LatLngBounds bounds = calculateBoundingBox(routePoints);
-      controller.fitBounds(bounds, options: FitBoundsOptions(padding: EdgeInsets.all(30.0)));
+      controller.fitBounds(bounds, options: const FitBoundsOptions(padding: EdgeInsets.all(30.0)));
     }
     emit(routePoints);
   }

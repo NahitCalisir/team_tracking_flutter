@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:intl/intl.dart';
 import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart'; // Import intl for date formatting
 
 class GroupMembersScreenCubit extends Cubit<List<Users>> {
@@ -71,7 +70,7 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
       var documents = event.docs;
       for (var document in documents) {
         var user = Users(
-            id: document.id as String,
+            id: document.id,
             name: document["name"] as String,
             email: document["email"] as String,
             photoUrl: document["photoURl"] as String ?? "");

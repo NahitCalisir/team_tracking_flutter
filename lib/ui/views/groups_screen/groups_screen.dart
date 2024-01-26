@@ -20,6 +20,7 @@ class GroupsScreen extends StatefulWidget {
 class _GroupsScreenState extends State<GroupsScreen> {
 
   bool aramaYapiliyormu = false;
+  Users? currentUser = UsersManager().currentUser;
 
   @override
   void initState() {
@@ -34,14 +35,14 @@ class _GroupsScreenState extends State<GroupsScreen> {
         //app bar düzenlemesini mainde birkereye mahsus yaptık
         title: aramaYapiliyormu ?
         TextField(
-          style: TextStyle(color: Colors.black87),
+          style: const TextStyle(color: Colors.black87),
           cursorColor: Colors.white,
-          decoration: InputDecoration(hintText: "Search",),
+          decoration: const InputDecoration(hintText: "Search",),
           onChanged: (arananKelime){
             context.read<GroupsScreenCubit>().filtrele(arananKelime);
           },
         ):
-        Text("Groups"),
+        const Text("Groups"),
         actions: [
           aramaYapiliyormu ?
           IconButton(onPressed: (){
@@ -49,12 +50,12 @@ class _GroupsScreenState extends State<GroupsScreen> {
               aramaYapiliyormu = false;
             });
             context.read<GroupsScreenCubit>().getAllGroups();
-          }, icon:Icon(Icons.clear)):
+          }, icon:const Icon(Icons.clear)):
           IconButton(onPressed: (){
             setState(() {
               aramaYapiliyormu = true;
             });
-          }, icon:Icon(Icons.search)),
+          }, icon:const Icon(Icons.search)),
         ],
       ),
       body: BlocBuilder<GroupsScreenCubit,List<Groups>>(
@@ -72,13 +73,13 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     onTap: (){
                       context.read<GroupsScreenCubit>().checkGroupMembershipAndNavigate(context, group);
                     },
-                    child: Container(
+                    child: SizedBox(
                       height: 80, // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
                       child: Card(
                         child: Row(
                           children: [
                             Padding(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: group.photoUrl!.isNotEmpty
                                   ? ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
@@ -89,9 +90,9 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                   height: 60,
                                 ),
                               )
-                                  : Icon(Icons.groups, size: 60, color: kSecondaryColor2),
+                                  : const Icon(Icons.groups, size: 60, color: kSecondaryColor2),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -99,7 +100,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                 children: [
                                   Text(
                                     group.name,
-                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Text(
@@ -114,18 +115,19 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                         child: Text("  Admin  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
                                   if (isWaitingMember)
                                     const Card(color: kSecondaryColor2,
-                                        child: Text("  Request sent  ",style: TextStyle(color: Colors.white,fontSize: 12),)),                                ],
+                                        child: Text("  Request sent  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
+                                ],
                               ),
                             ),
                             PopupMenuButton<String>(
                               onSelected: (String result) {
-                                handleMenuSelection(context, result, group, isOwner, isMember);
+                                handleMenuSelection(context, result, group, isOwner, isMember, currentUser!);
                               },
                               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                                 if (isMember)
                                   const PopupMenuItem<String>(
-                                    value: 'watchGroup',
-                                    child: Text('Watch Group'),
+                                    value: 'groupDetails',
+                                    child: Text('Group Details'),
                                   ),
                                 if (isOwner)
                                   const PopupMenuItem<String>(
@@ -142,6 +144,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                     value: 'joinGroup',
                                     child: Text('Join Group'),
                                   ),
+                                if (isWaitingMember)
+                                  const PopupMenuItem<String>(
+                                    value: 'cancelRequest',
+                                    child: Text('Cancel Request'),
+                                  ),
                               ],
                             )
                           ],
@@ -150,23 +157,22 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     ),
                   );
                 },
-              );;
-              ;
+              );
                 } return const Center();
               }),
       //FLOATING ACTION BUTTON *********************************
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateGroupScreen()));
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateGroupScreen()));
         },
-        child: Icon(Icons.add),
         backgroundColor: kSecondaryColor2,
         foregroundColor: Colors.white,
         elevation: 0,
         shape: const CircleBorder( //OR: BeveledRectangleBorder etc.,
           //side: BorderSide(color: Colors.blue, width: 2.0, style: BorderStyle.solid)
         ),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -177,23 +183,67 @@ class _GroupsScreenState extends State<GroupsScreen> {
       Groups group,
       bool isOwner,
       bool isMember,
+      Users currentUser,
       ) {
     switch (result) {
-      case 'watchGroup':
-      // Handle "Watch Group"
+      case 'groupDetails':
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => GroupMembersScreen(group: group)));
         break;
       case 'editGroup':
-      // Handle "Edit Group"
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => EditGroupScreen(group: group)));
-
         break;
       case 'leaveGroup':
-      // Handle "Leave Group"
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: Text("Are you sure you want to leave  from ${group.name}?",style: const TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () async {Navigator.of(context).pop();},
+                  child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    context.read<GroupsScreenCubit>().removeFromGroup(group, currentUser);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Leave",style: TextStyle(color: Colors.red),),
+                ),
+              ],
+            );
+          },
+        );
         break;
       case 'joinGroup':
-      // Handle "Join Group"
-      context.read<GroupsScreenCubit>().sendRequestToJoinGroup(context,group.id);
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: Text("Send a request to join ${group.name}?",style: const TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () async {Navigator.of(context).pop();},
+                  child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    context.read<GroupsScreenCubit>().sendRequestToJoinGroup(context,group.id);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
+                ),
+              ],
+            );
+          },
+        );
+        break;
+      case 'cancelRequest':
+        context.read<GroupsScreenCubit>().cancelRequest(group, currentUser);
         break;
     }
   }

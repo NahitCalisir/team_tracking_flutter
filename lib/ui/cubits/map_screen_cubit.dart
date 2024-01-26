@@ -1,79 +1,54 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
-//import 'package:flutter_map/plugin_api.dart';
 import 'package:team_tracking/data/entity/users.dart';
 
 class MapScreenCubit extends Cubit<List<Users>> {
   MapScreenCubit() : super([]);
 
-  Timer? _updateMyLocationTimer;
+  final userCollection = FirebaseFirestore.instance.collection("users");
+  final groupCollection = FirebaseFirestore.instance.collection("groups");
+
+
   Timer? _trackMeTimer;
   Timer? _showAllOnMapTimer;
   List<LatLng> allUserLocations = [];
-  List<Users> allUserList = [];
+  //List<Users> allUserList = [];
   LatLng? myLocation;
 
-  void cancelTimers(){
-    print("Timer durduruldu");
+  Future<void> cancelTimers() async{
+    print("Timerlar durduruldu");
     _showAllOnMapTimer?.cancel();
     _trackMeTimer?.cancel();
   }
 
-  Future<void> runUpdateMyLocation() async {
-    await _updateMyLocation();
-    _updateMyLocationTimer = Timer.periodic(Duration(seconds: 11), (timer) async {
-      await _updateMyLocation();
-    });
-  }
+
 
   Future<void> runTrackMe(mapController) async {
     cancelTimers();
     await _trackMe(mapController);
     setMapPositionForMe(mapController);
-    _trackMeTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+    _trackMeTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       await _trackMe(mapController);
     });
   }
 
-  Future<void> runShowAllOnMap(mapController) async {
+  Future<void> _runShowAllOnMap(mapController,memberIds) async {
     cancelTimers();
-    await _showAllOnMap( mapController);
+    await _showAllOnMap( mapController,memberIds);
     setMapPositionForAll(mapController);
-    _showAllOnMapTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
-     await _showAllOnMap( mapController);
+    _showAllOnMapTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await _showAllOnMap( mapController, memberIds);
     });
   }
 
-  //TODO: Update my location, send to firestore method
-  Future<void> _updateMyLocation() async {
 
-    Users? currentUser = UsersManager().currentUser; //Mevcut kullanıcıyı al
-
-    //Son konumu al
-    Position myLastPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
-    if (currentUser != null) {
-      DateTime now = DateTime.now();
-      // Firestore'da kullanıcının son konumunu güncelle
-      await FirebaseFirestore.instance.collection('users').doc(
-          currentUser.id).update({
-        "lastLocation": {
-          "latitude": myLastPosition.latitude,
-          "longitude": myLastPosition.longitude,},
-        "lastLocationUpdatedAt" : now, //son güncelleme tarihi
-      });
-      print("${currentUser.name} son konumum firestora gönerildi");
-    } else {
-      print(" location update çalıştı fakat konum güncellenemedi");
-    }
-  }
 
   //TODO:Track Me Method (Shows only me on map)
   Future<void> _trackMe(MapController controller) async {
@@ -113,48 +88,58 @@ class MapScreenCubit extends Cubit<List<Users>> {
     }
   }
 
+  //TODO: Get group member IDs method -----------
+  Future<void> getGroupMembersAndShowMap(MapController mapController, Groups group) async {
+    try {
+      DocumentSnapshot<
+          Map<String, dynamic>> groupDocument = await groupCollection.doc(
+          group.id).get();
+      Map<String, dynamic>? groupData = groupDocument.data();
+      if (groupData != null) {
+        List<dynamic> memberIdList = groupData["memberIds"];
+        _runShowAllOnMap(mapController, memberIdList);
+      }
+    } catch (e) {
+      print("Firestore veri çekme hatası-3: $e");
+    }
+  }
 
   //TODO: Show all group members method -----------
-  Future<void> _showAllOnMap(MapController mapController) async {
+  Future<void> _showAllOnMap(MapController mapController, List<dynamic> memberIds) async {
 
-    try {
-      QuerySnapshot<Map<String, dynamic>> querySnapshot =
-      await FirebaseFirestore.instance.collection('users').get();
+  List<LatLng> userLocations = [];
+  List<Users> userList = [];
+  DateTime now = DateTime.now();
 
-      List<LatLng> userLocations = [];
-      List<Users> userList = [];
-      DateTime now = DateTime.now();
-
-      for (QueryDocumentSnapshot<Map<String, dynamic>> documentSnapshot in querySnapshot.docs) {
-        if (documentSnapshot.exists) {
-          String id = documentSnapshot.id;
-          Map<String, dynamic>? userData = documentSnapshot.data();
-          if (userData != null && userData.containsKey("lastLocation")) {
-            // Eksik kontrolü
-            if (userData["lastLocation"] is Map<String, dynamic>) {
-              DateTime lastLocationUpdatedAt = (userData["lastLocationUpdatedAt"] as Timestamp).toDate();
-
-              Users u = Users.fromMap(id, userData);
-              // Son konumu belirli bir süre içinde güncellenmiş olanları al
-              if(now.difference(lastLocationUpdatedAt).inMinutes <= 5) {
-                userList.add(u);
-                if (u.lastLocation?.latitude != null && u.lastLocation?.longitude != null) {
-                  userLocations.add(LatLng(u.lastLocation!.latitude, u.lastLocation!.longitude));
-                }
-                print("${u.name} son konumu Firestore'dan alındı: $lastLocationUpdatedAt");
-              } else {
-                print("${u.name} son konumu güncel değil: $lastLocationUpdatedAt");
+    for(var memberIs in memberIds){
+      try {
+        DocumentSnapshot<Map<String, dynamic>> userDocument = await userCollection.doc(memberIs).get();
+        Map<String, dynamic>? userData = userDocument.data();
+        if(userData != null){
+          if (userData["lastLocation"] is Map<String, dynamic>) {
+            DateTime lastLocationUpdatedAt = (userData["lastLocationUpdatedAt"] as Timestamp).toDate();
+            Users u = Users.fromMap(userDocument.id, userData);
+            // Son konumu belirli bir süre içinde güncellenmiş olanları al
+            if(now.difference(lastLocationUpdatedAt).inMinutes <= 5) {
+              userList.add(u);
+              if (u.lastLocation?.latitude != null && u.lastLocation?.longitude != null) {
+                userLocations.add(LatLng(u.lastLocation!.latitude, u.lastLocation!.longitude));
+                print("${u.name} son konumu Firestore'dan alındı: ${u.lastLocation!.latitude} , ${u.lastLocation!.longitude}");
               }
-              emit(userList);
-              allUserList = userList;
-              allUserLocations = userLocations;
+            } else {
+              print("${u.name} son konumu güncel değil: $lastLocationUpdatedAt");
             }
           }
         }
+      }catch (e) {
+        print("Firestore veri çekme hatası-1: $e");
       }
-      //emit(userList);
-    } catch (e) {
-      print("Firestore veri çekme hatası: $e");
+    }
+    allUserLocations = userLocations;
+    emit(userList);
+    print("****** emited users ******");
+    for( var u in userList){
+      print("${u.name} -${u.lastLocation!.longitude} - ${u.lastLocation!.longitude} ");
     }
   }
 
@@ -163,7 +148,7 @@ class MapScreenCubit extends Cubit<List<Users>> {
     // harita konumunu güncelle
     LatLngBounds bounds = calculateBoundingBox(allUserLocations);
     mapController.fitBounds(
-        bounds, options: FitBoundsOptions(padding: EdgeInsets.all(30.0)));
+        bounds, options: const FitBoundsOptions(padding: EdgeInsets.all(30.0)));
   }
 
   Future<void> setMapPositionForMe(mapController) async {

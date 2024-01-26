@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
 
@@ -28,14 +27,14 @@ class _UsersScreenState extends State<UsersScreen> {
         //app bar düzenlemesini mainde birkereye mahsus yaptık
         title: aramaYapiliyormu ?
         TextField(
-          style: TextStyle(color: Colors.black87),
+          style: const TextStyle(color: Colors.black87),
           cursorColor: Colors.white,
-          decoration: InputDecoration(hintText: "Search",),
+          decoration: const InputDecoration(hintText: "Search",),
           onChanged: (arananKelime){
             context.read<AccountsScreenCubit>().filtrele(arananKelime);
           },
         ):
-        Text("Users"),
+        const Text("Users"),
         actions: [
           aramaYapiliyormu ?
           IconButton(onPressed: (){
@@ -43,12 +42,12 @@ class _UsersScreenState extends State<UsersScreen> {
               aramaYapiliyormu = false;
             });
             context.read<AccountsScreenCubit>().getAllUsers(); // veri tabanından çektiğimizde gerekli
-          }, icon:Icon(Icons.clear)):
+          }, icon:const Icon(Icons.clear)):
           IconButton(onPressed: (){
             setState(() {
               aramaYapiliyormu = true;
             });
-          }, icon:Icon(Icons.search)),
+          }, icon:const Icon(Icons.search)),
         ],
       ),
       body: BlocBuilder<AccountsScreenCubit,List<Users>>(
@@ -65,10 +64,10 @@ class _UsersScreenState extends State<UsersScreen> {
                             padding: EdgeInsets.all(8.0),
                             child: Icon(Icons.account_circle,size: 50,color: Colors.orange,),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Column(crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                              Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                               Text(user.email),
                             ],
                           ),

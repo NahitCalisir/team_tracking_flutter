@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
@@ -6,7 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
@@ -30,16 +33,27 @@ class TeamTrackingDaoRepository {
   final groupCollection = FirebaseFirestore.instance.collection("groups");
   final firebaseAuth = FirebaseAuth.instance;
 
+  Future<LatLng> getLocation() async{
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    LatLng firstPositon = LatLng(position.latitude, position.longitude);
+    print(position); //here you will get your Latitude and Longitude
+    return firstPositon;
+  }
+
   //TODO: Sign up with email and password
   Future<void> signUp(BuildContext context, {required String name, required String email, required String password}) async {
     try {
       final UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
       await handleUserSignIn(context, userCredential);
+      LatLng position = await getLocation();
       await _registerUser(
         uid: userCredential.user!.uid,
         name: name ?? "unnamed",
         email: email,
         photoUrl: "",
+        position: LatLng(position.latitude, position.longitude),
       );
     } on FirebaseAuthException catch (e) {
       handleAuthException(context, e);
@@ -53,10 +67,13 @@ class TeamTrackingDaoRepository {
     try {
       final UserCredential userCredential = await firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       await handleUserSignIn(context, userCredential);
+      if(userCredential.user != null){
+        await updateUserLocation(userId: userCredential.user!.uid);
+      }
     } on FirebaseAuthException catch (e) {
       handleAuthException(context, e);
     } catch (e) {
-      // Diğer hatalar
+      print(e);
     }
   }
 
@@ -65,10 +82,10 @@ class TeamTrackingDaoRepository {
     if (userCredential.user != null) {
       Map<String, dynamic>? userData = await getUserData();
       if (userData != null) {
-        Users curentUser = await Users.fromMap(userCredential.user!.uid, userData);
+        Users curentUser = Users.fromMap(userCredential.user!.uid, userData);
         await UsersManager().setUser(curentUser);
       }
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage(),));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage(),));
     }
   }
   void handleAuthException(BuildContext context, FirebaseAuthException e) {
@@ -77,7 +94,7 @@ class TeamTrackingDaoRepository {
 
 
   //TODO: Sign In with Google account
-  Future<User?> signInWithGoogle(BuildContext context,) async {
+  Future<User?> signInWithGoogle(BuildContext context) async {
     // Oturum açma sürecini başlat
     final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
@@ -92,19 +109,22 @@ class TeamTrackingDaoRepository {
     log(userCredential.user!.email.toString());
 
     if (userCredential.user != null) {
+      LatLng position = await getLocation();
       await _registerUser(
         uid: userCredential.user!.uid,
         name: userCredential.user!.displayName ?? "",
         email: userCredential.user!.email ?? "",
         photoUrl: userCredential.user!.photoURL ?? "",
+        position: LatLng(position.latitude, position.longitude),
       );
       if (userCredential.user != null) {
         Map<String, dynamic>? userData = await getUserData();
         if(userData != null){
-          Users curentUser = await Users.fromMap(userCredential.user!.uid, userData);
+          Users curentUser = Users.fromMap(userCredential.user!.uid, userData);
+          await updateUserLocation(userId: curentUser.id);
           await UsersManager().setUser(curentUser);
         }
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage(),));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage(),));
       }
     }
     return userCredential.user;
@@ -123,8 +143,8 @@ class TeamTrackingDaoRepository {
 
   //TODO: Get User Data
   Future<Map<String, dynamic>?> getUserData() async {
-    final _auth = await FirebaseAuth.instance;
-    final currentUser = await _auth.currentUser;
+    final auth = FirebaseAuth.instance;
+    final currentUser = auth.currentUser;
     if (currentUser != null) {
       DocumentSnapshot<Map<String, dynamic>> snapshot =
       await FirebaseFirestore.instance.collection("users").doc(currentUser.uid).get();
@@ -147,7 +167,7 @@ class TeamTrackingDaoRepository {
 
 
   //TODO Register user to firestore
-  Future<void> _registerUser({required String uid, required String name, required String email, required String photoUrl}) async {
+  Future<void> _registerUser({required String uid, required String name, required String email, required String photoUrl, required LatLng position}) async {
     DateTime now = DateTime.now();
     var newUser = {
       "name": name,
@@ -155,8 +175,8 @@ class TeamTrackingDaoRepository {
       "photoUrl": photoUrl,
       "city": "",
       "lastLocation": {
-        "latitude": 0.0,
-        "longitude": 0.0,
+        "latitude": position.latitude,
+        "longitude": position.longitude,
       },
       "groups": {""},
       "lastLocationUpdatedAt": now
@@ -185,6 +205,23 @@ class TeamTrackingDaoRepository {
       "joinRequests": joinRequests,
     };
     await groupCollection.doc().set(newGroup);
+  }
+
+  //TODO Update User location in to firestore
+  Future<void> updateUserLocation(
+      {
+        required String userId
+      }) async {
+    LatLng position = await getLocation();
+    var updatedData = {
+      "lastLocation": {
+        "latitude" : position.latitude,
+        "longitude": position.longitude
+      },
+      "lastLocationUpdatedAt": DateTime.now()
+    };
+    await userCollection.doc(userId).update(updatedData);
+    print("location updated: ${position.latitude} , ${position.longitude}");
   }
 
   //TODO Update Group in the firestore
@@ -246,14 +283,14 @@ class TeamTrackingDaoRepository {
           builder: (BuildContext context) {
             return AlertDialog(
               backgroundColor: kSecondaryColor2,
-              title: Text("Warning",style: TextStyle(color: Colors.white),),
-              content: Text("Please fill in all fields!",style: TextStyle(color: Colors.white),),
+              title: const Text("Warning",style: TextStyle(color: Colors.white),),
+              content: const Text("Please fill in all fields!",style: TextStyle(color: Colors.white),),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop;
                   },
-                  child: Text("OK",style: TextStyle(color: Colors.white),),
+                  child: const Text("OK",style: TextStyle(color: Colors.white),),
                 ),
               ],
             );
@@ -307,7 +344,7 @@ class TeamTrackingDaoRepository {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text("OK",style: TextStyle(color: Colors.white),),
+                  child: const Text("OK",style: TextStyle(color: Colors.white),),
                 ),
               ],
             );
@@ -356,7 +393,7 @@ class TeamTrackingDaoRepository {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                   },
-                  child: Text("Delete",style: TextStyle(color: Colors.red),),
+                  child: const Text("Delete",style: TextStyle(color: Colors.red),),
                 ),
               ],
             );
@@ -418,8 +455,8 @@ class TeamTrackingDaoRepository {
     img.Image resizedImage = img.copyResize(image, width: width.toInt(), height: height.toInt());
 
     // Boyutlandırılmış resmi bir File nesnesine dönüştür
-    File resultFile = await File(imageFile.path)
-      ..writeAsBytesSync(Uint8List.fromList(img.encodePng(resizedImage)!));
+    File resultFile = File(imageFile.path)
+      ..writeAsBytesSync(Uint8List.fromList(img.encodePng(resizedImage)));
 
     return resultFile;
   }
@@ -449,21 +486,21 @@ class TeamTrackingDaoRepository {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: kSecondaryColor,
-          title: Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-          content: Text("You are not a member of this group. Send a request to join.",style: TextStyle(color: Colors.white),),
+          title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+          content: const Text("You are not a member of this group. Send a request to join.",style: TextStyle(color: Colors.white),),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+              child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
             ),
             TextButton(
               onPressed: () {
                 sendRequestToJoinGroup(context, groupId);
                 Navigator.of(context).pop();
               },
-              child: Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
+              child: const Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
             ),
           ],
         );
@@ -509,6 +546,41 @@ class TeamTrackingDaoRepository {
     await groupCollection.doc(group.id).update({
       "memberIds": FieldValue.arrayRemove([user.id]),
     });
+  }
+  //TODO: Cancel request to join group
+  Future<void> cancelRequest(Groups group, Users user) async {
+    await groupCollection.doc(group.id).update({
+      "joinRequests": FieldValue.arrayRemove([user.id]),
+    });
+  }
+
+  //TODO: update curent user last location into firebase with timer when app is open
+  Timer? _updateMyLocationTimer;
+  Future<void> runUpdateMyLocation() async {
+     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      await _updateMyLocation();
+    });
+  }
+  //TODO: Update my location, send to firestore method
+  Future<void> _updateMyLocation() async {
+
+    Users? currentUser = UsersManager().currentUser; //Mevcut kullanıcıyı al
+    Position myLastPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    if (currentUser != null) {
+      DateTime now = DateTime.now();
+      // Firestore'da kullanıcının son konumunu güncelle
+      await FirebaseFirestore.instance.collection('users').doc(
+          currentUser.id).update({
+        "lastLocation": {
+          "latitude": myLastPosition.latitude,
+          "longitude": myLastPosition.longitude,},
+        "lastLocationUpdatedAt" : now, //son güncelleme tarihi
+      });
+      print("${currentUser.name} son konumum firestora gönerildi");
+    } else {
+      print(" location update çalıştı fakat konum güncellenemedi");
+    }
   }
 
 

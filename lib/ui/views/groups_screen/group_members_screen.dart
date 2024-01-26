@@ -4,16 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
 import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
-import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
 import 'package:team_tracking/ui/views/map_screen/map_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 class GroupMembersScreen extends StatefulWidget {
   final Groups group;
 
-  GroupMembersScreen({Key? key, required this.group}) : super(key: key);
+  const GroupMembersScreen({super.key, required this.group});
 
   @override
   _GroupMembersScreenState createState() => _GroupMembersScreenState();
@@ -28,13 +26,21 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
       length: 2, // İki sekme
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Group Members'),
+          title: Text(widget.group.name),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Group Members'),
               Tab(text: 'Membership Requests'),
             ],
           ),
+          actions: [
+            IconButton(
+                onPressed: (){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreen(group: widget.group)))
+                      .then((value) => context.read<GroupMembersScreenCubit>().getGroupMembers(widget.group));
+                },
+                icon: const Icon(Icons.map)),
+          ],
         ),
         body: TabBarView(
           children: [
@@ -50,10 +56,10 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
 class GroupMembersList extends StatelessWidget {
   final Groups group;
 
-  GroupMembersList({required this.group});
+  GroupMembersList({super.key, required this.group});
 
   bool aramaYapiliyormu = false;
-  DateTime now = DateTime.now();
+
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +67,7 @@ class GroupMembersList extends StatelessWidget {
     context.read<GroupMembersScreenCubit>().getGroupMembers(group);
     return BlocBuilder<GroupMembersScreenCubit,List<Users>>(
           builder: (context,userList){
+            DateTime now = DateTime.now();
             if(userList.isNotEmpty){
               return ListView.builder(
                   itemCount: userList.length,
@@ -79,7 +86,7 @@ class GroupMembersList extends StatelessWidget {
                               return Container(
                                 height: 200,
                                 color: Colors.amber,
-                                child: Center(
+                                child: const Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
@@ -95,7 +102,7 @@ class GroupMembersList extends StatelessWidget {
                         child: Row(
                           children: [
                             Padding(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               child: user.photoUrl!.isEmpty ?
                               const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                               ClipOval(
@@ -111,7 +118,7 @@ class GroupMembersList extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                                    Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                                     const SizedBox(width: 8,),
                                     Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
                                   ],
@@ -124,7 +131,7 @@ class GroupMembersList extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            Spacer(),
+                            const Spacer(),
                             if (isOwner) PopupMenuButton<String>(
                               onSelected: (String result) {
                                 handleMenuSelectionForMembers(context, result, group, isOwner, isMember,user);
@@ -150,10 +157,10 @@ class GroupMembersList extends StatelessWidget {
 class MembershipRequestsList extends StatelessWidget {
   final Groups group;
 
-  MembershipRequestsList({required this.group});
+  MembershipRequestsList({super.key, required this.group});
 
   bool aramaYapiliyormu = false;
-  DateTime now = DateTime.now();
+
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +168,7 @@ class MembershipRequestsList extends StatelessWidget {
     context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
     return BlocBuilder<GroupMembersScreenCubit,List<Users>>(
         builder: (context,userList){
+          DateTime now = DateTime.now();
           if(userList.isNotEmpty){
             return ListView.builder(
                 itemCount: userList.length,
@@ -179,7 +187,7 @@ class MembershipRequestsList extends StatelessWidget {
                           return Container(
                             height: 200,
                             color: Colors.amber,
-                            child: Center(
+                            child: const Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
@@ -195,7 +203,7 @@ class MembershipRequestsList extends StatelessWidget {
                       child: Row(
                         children: [
                           Padding(
-                            padding: EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(8.0),
                             child: user.photoUrl!.isEmpty ?
                             const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                             ClipOval(
@@ -211,7 +219,7 @@ class MembershipRequestsList extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  Text(user.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                                  Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                                   const SizedBox(width: 8,),
                                   Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
                                 ],
@@ -224,7 +232,7 @@ class MembershipRequestsList extends StatelessWidget {
                               ),
                             ],
                           ),
-                          Spacer(),
+                          const Spacer(),
                           if (isOwner) PopupMenuButton<String>(
                             onSelected: (String result) {
                               handleMenuSelectionForRequests(context, result, group, isOwner, isMember,user);
@@ -273,7 +281,7 @@ void handleMenuSelectionForMembers(
               actions: [
                 TextButton(
                   onPressed: () {Navigator.of(context).pop();},
-                  child: Text("OK",style: TextStyle(color: kSecondaryColor2),),
+                  child: const Text("OK",style: TextStyle(color: kSecondaryColor2),),
                 ),
               ],
             );
@@ -286,15 +294,19 @@ void handleMenuSelectionForMembers(
             return AlertDialog(
               backgroundColor: kSecondaryColor,
               title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: Text("Are you sure you want to remove ${user.name}  from the group?",style: TextStyle(color: Colors.white),),
+              content: Text("Are you sure you want to remove ${user.name}  from the group?",style: const TextStyle(color: Colors.white),),
               actions: [
+                TextButton(
+                  onPressed: () async {Navigator.of(context).pop();},
+                  child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+                ),
                 TextButton(
                   onPressed: () async {
                     await context.read<GroupMembersScreenCubit>().removeFromGroup(group, user);
                     await context.read<GroupMembersScreenCubit>().getGroupMembers(group);
                     Navigator.of(context).pop();
                     },
-                  child: Text("Remove",style: TextStyle(color: Colors.red),),
+                  child: const Text("Remove",style: TextStyle(color: Colors.red),),
                 ),
               ],
             );

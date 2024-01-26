@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 //import 'package:flutter_bloc/flutter_bloc.dart';
 //import 'package:geocoding/geocoding.dart';
 //import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
@@ -7,14 +6,12 @@ import 'package:flutter/rendering.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 //import 'package:flutter_map/plugin_api.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class MyMarkerLayerWithImage extends StatelessWidget {
   final LatLng markerPoint;
   final String imageUrl;
 
-  const MyMarkerLayerWithImage({required this.markerPoint,required this.imageUrl, Key? key}) : super(key: key);
+  const MyMarkerLayerWithImage({required this.markerPoint,required this.imageUrl, super.key});
 
   @override
   Widget build(BuildContext context) {

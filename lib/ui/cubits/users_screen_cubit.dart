@@ -34,7 +34,7 @@ class AccountsScreenCubit extends Cubit<List<Users>> {
       var documents = event.docs;
       for (var document in documents) {
         var user = Users(
-            id: document.id as String,
+            id: document.id,
             name: document["name"] as String,
             email: document["email"] as String,
             photoUrl: document["photoURl"] as String ?? "");

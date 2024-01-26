@@ -1,10 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
 import 'package:team_tracking/utils/map_markers/my_marker_layer_with_circles.dart';
 import 'package:team_tracking/utils/map_markers/my_marker_layer_with_image.dart';
 import 'package:team_tracking/utils/map_markers/my_marker_layer_with_pin_icon.dart';
@@ -12,13 +7,11 @@ import '../../../utils/myInput.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 //import 'package:flutter_map/plugin_api.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import '../../cubits/create_route_screen_cubit.dart';
 
 class CreateRouteScreen extends StatelessWidget {
-  const CreateRouteScreen({Key? key}) : super(key: key);
+  const CreateRouteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +27,9 @@ class CreateRouteScreenContent extends StatelessWidget {
 
   final TextEditingController start = TextEditingController(text: "34740 bostancı");
   final TextEditingController end = TextEditingController(text: "34870 kartal");
-  MapController _mapController = MapController();
+  final MapController _mapController = MapController();
+
+  CreateRouteScreenContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +43,7 @@ class CreateRouteScreenContent extends StatelessWidget {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    center: routpoints.isNotEmpty ? routpoints[0] : LatLng(0, 0),
+                    center: routpoints.isNotEmpty ? routpoints[0] : const LatLng(0, 0),
                     //zoom: 17,
                     maxZoom: 18,
             ),

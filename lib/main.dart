@@ -8,6 +8,7 @@ import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/create_route_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/edit_group_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/homepage_cubit.dart';
 import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
@@ -34,13 +35,14 @@ void main() async{
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (BuildContext context) => HomepageCubit()),
         BlocProvider(create: (BuildContext context) => AccountsScreenCubit()),
         BlocProvider(create: (BuildContext context) => LoginScreenCubit()),
         BlocProvider(create: (BuildContext context) => GroupsScreenCubit()),
@@ -68,9 +70,9 @@ class MyApp extends StatelessWidget {
           // Kullanıcı oturumu kontrolü
           future: FirebaseAuth.instance.authStateChanges().first,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting)  {
               // Yükleniyor durumundayken bir yükleniyor gösterilebilir.
-              return CircularProgressIndicator();
+              return const CircularProgressIndicator();
             } else {
               if(snapshot.data != null)  {
                 checkAndSetUserLogin();
@@ -92,6 +94,7 @@ Future<User?> checkAndSetUserLogin() async {
     if (userData != null) {
       Users currentUser = Users.fromMap(user.uid, userData);
       await UsersManager().setUser(currentUser);
+      await TeamTrackingDaoRepository.shared.updateUserLocation(userId: currentUser.id);
       print("Current User: ${currentUser.name}");
     }
   }

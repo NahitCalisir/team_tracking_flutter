@@ -5,7 +5,7 @@ import 'package:team_tracking/utils/constants.dart';
 import 'login_content.dart';
 
 class BottomText extends StatefulWidget {
-  const BottomText({Key? key}) : super(key: key);
+  const BottomText({super.key});
 
   @override
   State<BottomText> createState() => _BottomTextState();

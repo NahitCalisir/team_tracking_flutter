@@ -16,6 +16,7 @@ class SettingsScreenCubit extends Cubit<Users> {
     if(curentUser != null){
       emit(curentUser);
     }
+    return null;
   }
 
 }

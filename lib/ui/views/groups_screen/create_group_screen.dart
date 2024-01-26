@@ -1,10 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:team_tracking/data/entity/user_manager.dart';
-import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
 import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
 
@@ -34,7 +30,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       builder: (context, groupImageFile) {
         return Scaffold(
           appBar: AppBar(
-            title: Text("Create Group"),
+            title: const Text("Create Group"),
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -69,22 +65,22 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                             )
                       )
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: " Group Name*"),
+                    decoration: const InputDecoration(labelText: " Group Name*"),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _cityController,
-                    decoration: InputDecoration(labelText: "City*"),
+                    decoration: const InputDecoration(labelText: "City*"),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _countryController,
-                    decoration: InputDecoration(labelText: "Country*"),
+                    decoration: const InputDecoration(labelText: "Country*"),
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: kSecondaryColor2,
@@ -98,7 +94,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           groupImage: groupImageFile,
                         );
                       },
-                      child: Text("Create Group",style: TextStyle(fontSize: 20),))
+                      child: const Text("Create Group",style: TextStyle(fontSize: 20),))
                 ],
               ),
             ),

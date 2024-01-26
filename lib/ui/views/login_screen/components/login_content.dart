@@ -14,7 +14,7 @@ enum Screens {
 }
 
 class LoginContent extends StatefulWidget {
-  const LoginContent({Key? key}) : super(key: key);
+  const LoginContent({super.key});
 
   @override
   State<LoginContent> createState() => _LoginContentState();
@@ -127,7 +127,7 @@ class _LoginContentState extends State<LoginContent>
           const SizedBox(width: 24),
           InkWell(
               onTap: () async{
-                LoginScreenCubit().signInWithGoogle(context).then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => BottomNavigationBarPage())));
+                LoginScreenCubit().signInWithGoogle(context).then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage())));
               },
               child: Image.asset('assets/images/google.png')),
         ],

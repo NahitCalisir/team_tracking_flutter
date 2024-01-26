@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/users.dart';
@@ -7,7 +5,7 @@ import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -34,13 +32,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           height: 100,
                         ),
                       ):
-                      Icon(Icons.account_circle, size: 200, color: kSecondaryColor2),
-                      SizedBox(width: 8),
+                      const Icon(Icons.account_circle, size: 200, color: kSecondaryColor2),
+                      const SizedBox(width: 8),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(currentUser.name,style: TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                            Text(currentUser.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
                             Text(currentUser.email),
                           ],
                         ),
@@ -52,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: (){
                         context.read<SettingsScreenCubit>().signOut(context);
                       },
-                      child: Text("SIGN OUT"))
+                      child: const Text("SIGN OUT"))
                 ],
               )
           ),

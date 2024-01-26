@@ -3,10 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
-import 'package:team_tracking/data/entity/user_manager.dart';
+import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
-import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
-import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 
 class GroupsScreenCubit extends Cubit<List<Groups>> {
   GroupsScreenCubit():super(<Groups>[]);
@@ -22,7 +20,7 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
       var groupList = <Groups>[];
       var documents = event.docs;
       for (var document in documents) {
-        List<String> memberIds = List.from(document["memberIds" as String]);
+        List<String> memberIds = List.from(document["memberIds"]);
 
         var group = Groups.fromMap(document.id, document.data());
         groupList.add(group);
@@ -56,9 +54,16 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
     // Grup üyeliğini kontrol et
     TeamTrackingDaoRepository.shared.checkGroupMembershipAndNavigate(context, selectedGroup);
   }
-
   void sendRequestToJoinGroup(BuildContext context, String groupId) {
     TeamTrackingDaoRepository.shared.sendRequestToJoinGroup(context, groupId);
+  }
+  //TODO: remove from group
+  Future<void> removeFromGroup(Groups group, Users user) async {
+    TeamTrackingDaoRepository.shared.removeFromGroup(group, user);
+  }
+  //TODO: Cancel request to join group
+  Future<void> cancelRequest(Groups group, Users user) async {
+    TeamTrackingDaoRepository.shared.cancelRequest(group, user);
   }
 
 }

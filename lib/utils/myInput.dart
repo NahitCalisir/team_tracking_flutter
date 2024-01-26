@@ -22,10 +22,10 @@ class _MyInputState extends State<myInput> {
     return TextField(
       controller: widget.controller,
       decoration: InputDecoration(
-        enabledBorder: OutlineInputBorder(
+        enabledBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Colors.white)
         ),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide( color: Colors.white)
         ),
         fillColor: Colors.white,

@@ -13,7 +13,7 @@ import 'package:flutter_map/flutter_map.dart';
 class MyMarkerLayerWithPinIcon extends StatelessWidget {
   final LatLng markerPoint;
 
-  const MyMarkerLayerWithPinIcon({required this.markerPoint, Key? key}) : super(key: key);
+  const MyMarkerLayerWithPinIcon({required this.markerPoint, super.key});
 
   @override
   Widget build(BuildContext context) {
