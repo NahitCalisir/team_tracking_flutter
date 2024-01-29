@@ -15,7 +15,8 @@ class EditGroupScreenCubit extends Cubit<File?> {
         required String name,
         required String city,
         required String country,
-        required File? groupImage
+        File? groupImage,
+        String? photoUrl,
       }) async {
     TeamTrackingDaoRepository.shared.editGroup(
       context: context,
@@ -24,6 +25,7 @@ class EditGroupScreenCubit extends Cubit<File?> {
       city: city,
       country: country,
       groupImage: groupImage,
+      photoUrl: photoUrl,
     );
   }
 

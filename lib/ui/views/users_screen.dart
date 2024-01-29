@@ -17,7 +17,7 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AccountsScreenCubit>().getAllUsers();
+    context.read<UsersScreenCubit>().getAllUsers();
   }
 
   @override
@@ -31,7 +31,7 @@ class _UsersScreenState extends State<UsersScreen> {
           cursorColor: Colors.white,
           decoration: const InputDecoration(hintText: "Search",),
           onChanged: (arananKelime){
-            context.read<AccountsScreenCubit>().filtrele(arananKelime);
+            context.read<UsersScreenCubit>().filtrele(arananKelime);
           },
         ):
         const Text("Users"),
@@ -41,7 +41,7 @@ class _UsersScreenState extends State<UsersScreen> {
             setState(() {
               aramaYapiliyormu = false;
             });
-            context.read<AccountsScreenCubit>().getAllUsers(); // veri tabanından çektiğimizde gerekli
+            context.read<UsersScreenCubit>().getAllUsers(); // veri tabanından çektiğimizde gerekli
           }, icon:const Icon(Icons.clear)):
           IconButton(onPressed: (){
             setState(() {
@@ -50,7 +50,7 @@ class _UsersScreenState extends State<UsersScreen> {
           }, icon:const Icon(Icons.search)),
         ],
       ),
-      body: BlocBuilder<AccountsScreenCubit,List<Users>>(
+      body: BlocBuilder<UsersScreenCubit,List<Users>>(
           builder: (context,userList){
             if(userList.isNotEmpty){
               return ListView.builder(

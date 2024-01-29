@@ -14,10 +14,9 @@ import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/login_screen_cubit.dart';
-import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
+import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
-import 'data/entity/users.dart';
-import 'utils/constants.dart';
+import '../../data/entity/users.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (BuildContext context) => HomepageCubit()),
-        BlocProvider(create: (BuildContext context) => AccountsScreenCubit()),
+        BlocProvider(create: (BuildContext context) => UsersScreenCubit()),
         BlocProvider(create: (BuildContext context) => LoginScreenCubit()),
         BlocProvider(create: (BuildContext context) => GroupsScreenCubit()),
         BlocProvider(create: (BuildContext context) => MapScreenCubit()),
@@ -57,26 +56,38 @@ class MyApp extends StatelessWidget {
         title: 'Firebase Auth',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          scaffoldBackgroundColor: kBackgroundColor,
+          appBarTheme: const AppBarTheme(
+              //backgroundColor: kSecondaryColor,
+            //foregroundColor: Colors.white
+          ),
+          //scaffoldBackgroundColor: kSecondaryColor,
           textTheme: Theme
               .of(context)
               .textTheme
               .apply(
-            bodyColor: kPrimaryColor2,
+            //bodyColor: Colors.black87,
             fontFamily: 'Montserrat',
           ),
         ),
         home: FutureBuilder(
-          // Kullanıcı oturumu kontrolü
           future: FirebaseAuth.instance.authStateChanges().first,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting)  {
-              // Yükleniyor durumundayken bir yükleniyor gösterilebilir.
               return const CircularProgressIndicator();
             } else {
-              if(snapshot.data != null)  {
-                checkAndSetUserLogin();
-                return const BottomNavigationBarPage();
+              if (snapshot.data != null)  {
+                return FutureBuilder(
+                  future: checkAndSetUserLogin(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting)  {
+                      // Eğer checkAndSetUserLogin() fonksiyonu hala çalışıyorsa, yükleniyor göster.
+                      return Center(child: const CircularProgressIndicator());
+                    } else {
+                      // checkAndSetUserLogin() fonksiyonu tamamlandıysa, HomePage'e git.
+                      return snapshot.hasData ? const Homepage() : const LoginScreen();
+                    }
+                  },
+                );
               } else {
                 return const LoginScreen();
               }
@@ -87,6 +98,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 Future<User?> checkAndSetUserLogin() async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
@@ -94,7 +106,6 @@ Future<User?> checkAndSetUserLogin() async {
     if (userData != null) {
       Users currentUser = Users.fromMap(user.uid, userData);
       await UsersManager().setUser(currentUser);
-      await TeamTrackingDaoRepository.shared.updateUserLocation(userId: currentUser.id);
       print("Current User: ${currentUser.name}");
     }
   }

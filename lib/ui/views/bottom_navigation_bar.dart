@@ -1,5 +1,9 @@
+/*
+
 import 'package:flutter/material.dart';
-import 'package:team_tracking/ui/views/homepage.dart';
+import 'package:team_tracking/data/entity/user_manager.dart';
+import 'package:team_tracking/data/entity/users.dart';
+import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 import 'package:team_tracking/ui/views/settings_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
@@ -13,6 +17,7 @@ class BottomNavigationBarPage extends StatefulWidget {
 }
 
 class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
+  Users currentUser = UsersManager().currentUser!;
 
   int secilenIndex = 0;
 
@@ -21,7 +26,7 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
     //const UsersScreen(),
     //const MapScreen(),
     const GroupsScreen(),
-    const SettingsScreen(),
+    //SettingsScreen(currentUser: currentUser,),
   ];
 
   void sayfaDegistir(int index) {
@@ -81,3 +86,4 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
     );
   }
 }
+*/

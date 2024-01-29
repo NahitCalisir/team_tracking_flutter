@@ -12,8 +12,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
-import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
 import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
+import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
 import 'package:team_tracking/utils/constants.dart';
@@ -85,7 +85,7 @@ class TeamTrackingDaoRepository {
         Users curentUser = Users.fromMap(userCredential.user!.uid, userData);
         await UsersManager().setUser(curentUser);
       }
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage(),));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const Homepage(),));
     }
   }
   void handleAuthException(BuildContext context, FirebaseAuthException e) {
@@ -109,23 +109,17 @@ class TeamTrackingDaoRepository {
     log(userCredential.user!.email.toString());
 
     if (userCredential.user != null) {
+      //LatLng position = await getLocation();
+      await handleUserSignIn(context, userCredential);
+
       LatLng position = await getLocation();
       await _registerUser(
-        uid: userCredential.user!.uid,
-        name: userCredential.user!.displayName ?? "",
-        email: userCredential.user!.email ?? "",
-        photoUrl: userCredential.user!.photoURL ?? "",
-        position: LatLng(position.latitude, position.longitude),
+          uid: userCredential.user!.uid,
+          name: userCredential.user!.displayName ?? "unnamed",
+          email: userCredential.user!.email ?? "noEmail",
+          photoUrl: "",
+          position: LatLng(position.latitude, position.longitude)
       );
-      if (userCredential.user != null) {
-        Map<String, dynamic>? userData = await getUserData();
-        if(userData != null){
-          Users curentUser = Users.fromMap(userCredential.user!.uid, userData);
-          await updateUserLocation(userId: curentUser.id);
-          await UsersManager().setUser(curentUser);
-        }
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage(),));
-      }
     }
     return userCredential.user;
   }
@@ -173,7 +167,7 @@ class TeamTrackingDaoRepository {
       "name": name,
       "email": email,
       "photoUrl": photoUrl,
-      "city": "",
+      "phone": "",
       "lastLocation": {
         "latitude": position.latitude,
         "longitude": position.longitude,
@@ -208,10 +202,7 @@ class TeamTrackingDaoRepository {
   }
 
   //TODO Update User location in to firestore
-  Future<void> updateUserLocation(
-      {
-        required String userId
-      }) async {
+  Future<void> updateUserLocation({required String userId}) async {
     LatLng position = await getLocation();
     var updatedData = {
       "lastLocation": {
@@ -240,6 +231,22 @@ class TeamTrackingDaoRepository {
       "photoUrl": photoUrl,
     };
     await groupCollection.doc(groupId).update(updatedData);
+  }
+
+  //TODO Update User in the firestore
+  Future<void> updateUser(
+      {
+        required String userId,
+        required String name,
+        required String phone,
+        String? photoUrl
+      }) async {
+    var updatedData = {
+      "name": name,
+      "phone": phone,
+      "photoUrl": photoUrl,
+    };
+    await userCollection.doc(userId).update(updatedData);
   }
 
   //TODO Delete Group from the firestore
@@ -327,7 +334,8 @@ class TeamTrackingDaoRepository {
     required String name,
     required String city,
     required String country,
-    required File? groupImage,
+    File? groupImage,
+    String? photoUrl,
   }) async {
     if (name.isEmpty || city.isEmpty || country.isEmpty) {
       // Delay the execution of the dialog to allow the saveGroup method to complete
@@ -353,7 +361,7 @@ class TeamTrackingDaoRepository {
       });
     } else {
       //Upload group image
-      String imageUrl = "";
+      String imageUrl = photoUrl ?? "";
       if (groupImage != null) {
         imageUrl = await uploadGroupImage(groupImage);
       }
@@ -365,6 +373,56 @@ class TeamTrackingDaoRepository {
         name: name,
         city: city,
         country: country,
+        photoUrl: imageUrl,
+      );
+      // After the group is saved, navigate back to the GroupsScreen
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> editUser({
+    required BuildContext context,
+    required String userId,
+    required String name,
+    required String phone,
+    File? userImage,
+    String? photoUrl,
+  }) async {
+    if (name.isEmpty){
+      // Delay the execution of the dialog to allow the saveGroup method to complete
+      await Future.delayed(Duration.zero, () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: Colors.white),),
+              content: const Text("Please fill in all fields!",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("OK",style: TextStyle(color: Colors.white),),
+                ),
+              ],
+            );
+          },
+        );
+      });
+    } else {
+      //Upload group image
+      String imageUrl = photoUrl ?? "";
+      if (userImage != null) {
+        imageUrl = await uploadGroupImage(userImage);
+      }
+      //Update user in firestore
+      String owner = UsersManager().currentUser!.id;
+      List<String> memberIds = [UsersManager().currentUser!.id];
+      updateUser(
+        userId: userId,
+        name: name,
+        phone: phone,
         photoUrl: imageUrl,
       );
       // After the group is saved, navigate back to the GroupsScreen
@@ -557,7 +615,8 @@ class TeamTrackingDaoRepository {
   //TODO: update curent user last location into firebase with timer when app is open
   Timer? _updateMyLocationTimer;
   Future<void> runUpdateMyLocation() async {
-     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+    await _updateMyLocation();
+     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 300), (timer) async {
       await _updateMyLocation();
     });
   }

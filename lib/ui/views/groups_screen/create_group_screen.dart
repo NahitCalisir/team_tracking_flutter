@@ -53,7 +53,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         ),
                       )
                           : CircleAvatar(
-                        backgroundColor: Colors.deepOrangeAccent,
+                        backgroundColor: kSecondaryColor2,
                         radius: 100,
                         child: ClipOval(
                                 child: Image(

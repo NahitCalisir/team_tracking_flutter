@@ -15,6 +15,6 @@ class UsersManager {
 
   Future<void> setUser(Users user) async {
     _currentUser = user;
-    // Kullanıcı bilgileri güncellendiğinde bu metodu çağırabilirsiniz.
+    // Kullanıcı bilgileri güncellendiğinde bu metodu çağır.
   }
 }

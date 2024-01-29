@@ -23,13 +23,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
   Users? currentUser = UsersManager().currentUser;
 
   @override
-  void initState() {
-    super.initState();
-    context.read<GroupsScreenCubit>().getAllGroups();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    context.read<GroupsScreenCubit>().getAllGroups();
     return Scaffold(
       appBar: AppBar(
         //app bar düzenlemesini mainde birkereye mahsus yaptık
@@ -108,13 +103,13 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   if (isMember && !isOwner)
-                                    const Card(color: kSecondaryColor2,
+                                    const Card(color: Colors.green,
                                         child: Text("  Member  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
                                   if (isOwner)
-                                    const Card(color: kSecondaryColor2,
+                                    const Card(color: Colors.redAccent,
                                         child: Text("  Admin  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
                                   if (isWaitingMember)
-                                    const Card(color: kSecondaryColor2,
+                                    const Card(color: Colors.amber,
                                         child: Text("  Request sent  ",style: TextStyle(color: Colors.white,fontSize: 12),)),
                                 ],
                               ),
@@ -139,7 +134,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                                     value: 'leaveGroup',
                                     child: Text('Leave Group'),
                                   ),
-                                if (!isOwner && !isMember)
+                                if (!isOwner && !isMember && !isWaitingMember)
                                   const PopupMenuItem<String>(
                                     value: 'joinGroup',
                                     child: Text('Join Group'),

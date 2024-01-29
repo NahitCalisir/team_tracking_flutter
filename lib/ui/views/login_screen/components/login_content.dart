@@ -127,7 +127,7 @@ class _LoginContentState extends State<LoginContent>
           const SizedBox(width: 24),
           InkWell(
               onTap: () async{
-                LoginScreenCubit().signInWithGoogle(context).then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage())));
+                LoginScreenCubit().signInWithGoogle(context);//.then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage())));
               },
               child: Image.asset('assets/images/google.png')),
         ],
@@ -170,26 +170,27 @@ class _LoginContentState extends State<LoginContent>
       forgotPassword(),
     ];
 
-    ChangeScreenAnimation.initialize(
-      vsync: this,
-      createAccountItems: createAccountContent.length,
-      loginItems: loginContent.length,
-    );
-
-    for (var i = 0; i < createAccountContent.length; i++) {
-      createAccountContent[i] = HelperFunctions.wrapWithAnimatedBuilder(
-        animation: ChangeScreenAnimation.createAccountAnimations[i],
-        child: createAccountContent[i],
+    if (!ChangeScreenAnimation.isPlaying) {
+      ChangeScreenAnimation.initialize(
+        vsync: this,
+        createAccountItems: createAccountContent.length,
+        loginItems: loginContent.length,
       );
-    }
 
-    for (var i = 0; i < loginContent.length; i++) {
-      loginContent[i] = HelperFunctions.wrapWithAnimatedBuilder(
-        animation: ChangeScreenAnimation.loginAnimations[i],
-        child: loginContent[i],
-      );
-    }
+      for (var i = 0; i < createAccountContent.length; i++) {
+        createAccountContent[i] = HelperFunctions.wrapWithAnimatedBuilder(
+          animation: ChangeScreenAnimation.createAccountAnimations[i],
+          child: createAccountContent[i],
+        );
+      }
 
+      for (var i = 0; i < loginContent.length; i++) {
+        loginContent[i] = HelperFunctions.wrapWithAnimatedBuilder(
+          animation: ChangeScreenAnimation.loginAnimations[i],
+          child: loginContent[i],
+        );
+      }
+    }
     super.initState();
   }
 

@@ -6,7 +6,7 @@ class Users {
   String id; // Doküman ID'sini tutacak alan
   String name;
   String email;
-  String? photoUrl;
+  String photoUrl;
   String? phone;
   LatLng? lastLocation;
   List<String>? groups;
@@ -16,7 +16,7 @@ class Users {
     required this.id,
     required this.name,
     required this.email,
-    this.photoUrl,
+    required this.photoUrl,
     this.phone,
     this.lastLocation,
     this.groups,

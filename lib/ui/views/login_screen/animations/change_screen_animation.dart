@@ -30,52 +30,73 @@ class ChangeScreenAnimation {
       ),
     );
   }
-
+  static bool isInitialized = false;
   static void initialize({
     required TickerProvider vsync,
     required int createAccountItems,
     required int loginItems,
   }) {
-    topTextController = AnimationController(
-      vsync: vsync,
-      duration: const Duration(milliseconds: 200),
-    );
-
-    topTextAnimation = _createAnimation(
-      begin: Offset.zero,
-      end: const Offset(-1.2, 0),
-      parent: topTextController,
-    );
-
-    bottomTextController = AnimationController(
-      vsync: vsync,
-      duration: const Duration(milliseconds: 200),
-    );
-
-    bottomTextAnimation = _createAnimation(
-      begin: Offset.zero,
-      end: const Offset(0, 1.7),
-      parent: bottomTextController,
-    );
-
-    for (var i = 0; i < createAccountItems; i++) {
-      createAccountControllers.add(
-        AnimationController(
-          vsync: vsync,
-          duration: const Duration(milliseconds: 200),
-        ),
+    if (!isInitialized) {
+      topTextController = AnimationController(
+        vsync: vsync,
+        duration: const Duration(milliseconds: 200),
       );
 
-      createAccountAnimations.add(
-        _createAnimation(
-          begin: Offset.zero,
-          end: const Offset(-1, 0),
-          parent: createAccountControllers[i],
-        ),
+      topTextAnimation = _createAnimation(
+        begin: Offset.zero,
+        end: const Offset(-1.2, 0),
+        parent: topTextController,
       );
+
+      bottomTextController = AnimationController(
+        vsync: vsync,
+        duration: const Duration(milliseconds: 200),
+      );
+
+      bottomTextAnimation = _createAnimation(
+        begin: Offset.zero,
+        end: const Offset(0, 1.7),
+        parent: bottomTextController,
+      );
+
+      for (var i = 0; i < createAccountItems; i++) {
+        createAccountControllers.add(
+          AnimationController(
+            vsync: vsync,
+            duration: const Duration(milliseconds: 200),
+          ),
+        );
+
+        createAccountAnimations.add(
+          _createAnimation(
+            begin: Offset.zero,
+            end: const Offset(-1, 0),
+            parent: createAccountControllers[i],
+          ),
+        );
+      }
+
+      for (var i = 0; i < loginItems; i++) {
+        loginControllers.add(
+          AnimationController(
+            vsync: vsync,
+            duration: const Duration(milliseconds: 200),
+          ),
+        );
+
+        loginAnimations.add(
+          _createAnimation(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+            parent: loginControllers[i],
+          ),
+        );
+      }
+
+      isInitialized = true;
     }
 
-    for (var i = 0; i < loginItems; i++) {
+  for (var i = 0; i < loginItems; i++) {
       loginControllers.add(
         AnimationController(
           vsync: vsync,

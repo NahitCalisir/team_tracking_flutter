@@ -23,7 +23,8 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
         var user = Users(
           id: document.id,
           name: document["name"] as String,
-          email: document["email"] as String,);
+          email: document["email"] as String,
+          photoUrl: document["photoUrl"] as String,);
         userList.add(user);
       }
       emit(userList);

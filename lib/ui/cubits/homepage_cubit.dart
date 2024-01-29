@@ -7,4 +7,9 @@ class HomepageCubit extends Cubit<void> {
   Future<void> runUpdateMyLocation() async {
     await TeamTrackingDaoRepository.shared.runUpdateMyLocation();
   }
+
+  ////Update User location in to firestore
+  //Future<void> updateUserLocation({required String userId}) async {
+  //  TeamTrackingDaoRepository.shared.updateUserLocation(userId: userId);
+  //}
 }

@@ -106,14 +106,15 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                               city: _cityController.text.trim(),
                               country: _countryController.text.trim(),
                               groupImage: groupImageFile,
+                              photoUrl: widget.group.photoUrl
                             );
                           },
                           child: const Text("Save Group",style: TextStyle(fontSize: 20),)),
                       const SizedBox(height: 30,),
                       ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: kSecondaryColor2,
-                              foregroundColor: Colors.white),
+                         //style: ElevatedButton.styleFrom(
+                         //    backgroundColor: kSecondaryColor2,
+                         //    foregroundColor: Colors.white),
                           onPressed: (){
                             context.read<EditGroupScreenCubit>().deleteGroup(
                               context: context,

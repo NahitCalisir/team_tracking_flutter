@@ -30,14 +30,14 @@ class MapScreenCubit extends Cubit<List<Users>> {
 
 
 
-  Future<void> runTrackMe(mapController) async {
-    cancelTimers();
-    await _trackMe(mapController);
-    setMapPositionForMe(mapController);
-    _trackMeTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      await _trackMe(mapController);
-    });
-  }
+  //Future<void> runTrackMe(mapController) async {
+  //  cancelTimers();
+  //  await _trackMe(mapController);
+  //  setMapPositionForMe(mapController);
+  //  _trackMeTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+  //    await _trackMe(mapController);
+  //  });
+  //}
 
   Future<void> _runShowAllOnMap(mapController,memberIds) async {
     cancelTimers();

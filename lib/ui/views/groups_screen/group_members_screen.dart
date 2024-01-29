@@ -28,6 +28,9 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
         appBar: AppBar(
           title: Text(widget.group.name),
           bottom: const TabBar(
+            //labelColor: kSecondaryColor2,
+            //unselectedLabelColor: Colors.white60 ,
+            //indicatorColor: kSecondaryColor2,
             tabs: [
               Tab(text: 'Group Members'),
               Tab(text: 'Membership Requests'),
@@ -39,7 +42,7 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreen(group: widget.group)))
                       .then((value) => context.read<GroupMembersScreenCubit>().getGroupMembers(widget.group));
                 },
-                icon: const Icon(Icons.map)),
+                icon: const Icon(Icons.map_outlined,color: Colors.indigo,size: 30,)),
           ],
         ),
         body: TabBarView(

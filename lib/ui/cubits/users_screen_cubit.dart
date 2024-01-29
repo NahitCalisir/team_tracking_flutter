@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/users.dart';
 
-class AccountsScreenCubit extends Cubit<List<Users>> {
-  AccountsScreenCubit():super(<Users>[]);
+class UsersScreenCubit extends Cubit<List<Users>> {
+  UsersScreenCubit():super(<Users>[]);
 
   final userCollection = FirebaseFirestore.instance.collection("users");
   final firebaseAuth = FirebaseAuth.instance;
@@ -20,7 +20,8 @@ class AccountsScreenCubit extends Cubit<List<Users>> {
         var user = Users(
             id: document.id,
             name: document["name"] as String,
-            email: document["email"] as String,);
+            email: document["email"] as String,
+            photoUrl: document["photoUrl"] as String,);
         userList.add(user);
       }
       emit(userList);
