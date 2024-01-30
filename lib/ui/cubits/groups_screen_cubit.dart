@@ -13,9 +13,6 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
   final firebaseAuth = FirebaseAuth.instance;
 
   Future<void> getAllGroups() async {
-    //Firebase kullanırken repo içersinde veriyi çekip retun edemiyoruz.
-    // direk cubit içeriside yapıyoruz.
-    //bu metod veri tabanını sürekli dinliyor ve veri tabanında bir değişiklik olduğu an emit ediyor.
     groupCollection.snapshots().listen((event) {
       var groupList = <Groups>[];
       var documents = event.docs;
@@ -29,24 +26,45 @@ class GroupsScreenCubit extends Cubit<List<Groups>> {
     });
   }
 
-  Future<void> filtrele(String aramaTerimi) async {
+  Future<void> getMyGroups(Users currentUser) async {
     groupCollection.snapshots().listen((event) {
-      var groupList = <Groups>[];
-
+      var myGroupList = <Groups>[];
       var documents = event.docs;
       for (var document in documents) {
-        var group = Groups(
-            id: document.id,
-            name: document["name"] as String,
-            city: document["city"] as String,
-            country: document["country"] as String,
-            owner: document["owner"] as String,
-            memberIds: document["memberIds"] as List<String>);
-        if(group.name.toLowerCase().contains(aramaTerimi.toLowerCase())){
-          groupList.add(group);
+        List<String> memberIds = List.from(document["memberIds"]);
+        if(memberIds.contains(currentUser.id)) {
+          var group = Groups.fromMap(document.id, document.data());
+          myGroupList.add(group);
         }
       }
-      emit(groupList);
+      emit(myGroupList);
+    });
+  }
+
+  Future<void> filteredGroupList(Users currentUser,String searchText, int tabIndex) async {
+    groupCollection.snapshots().listen((event) {
+      var myGroupList = <Groups>[];
+      var documents = event.docs;
+      if(tabIndex == 1) {
+        for (var document in documents) {
+          var group = Groups.fromMap(document.id, document.data());
+          if(group.name.toLowerCase().contains(searchText.toLowerCase())) {
+            myGroupList.add(group);
+          }
+        }
+      }
+      if(tabIndex == 0) {
+        for (var document in documents) {
+          List<String> memberIds = List.from(document["memberIds"]);
+          if(memberIds.contains(currentUser.id)) {
+            var group = Groups.fromMap(document.id, document.data());
+            if(group.name.toLowerCase().contains(searchText.toLowerCase())) {
+              myGroupList.add(group);
+            }
+          }
+        }
+      }
+      emit(myGroupList);
     });
   }
 

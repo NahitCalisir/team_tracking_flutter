@@ -25,7 +25,7 @@ class _HomepageState extends State<Homepage> {
     var menu1 = MenuItems(
         title: "Group Tracking",
         image: "assets/images/team.jpg",
-        sayfa: GroupsScreen(),
+        sayfa: const GroupsScreen(),
         detailText: "You can create any group, such as your business team or family members, and track their live locations whenever you want.");
     var menu2 = MenuItems(
         title: "Activity Tracking",
@@ -63,15 +63,12 @@ class _HomepageState extends State<Homepage> {
               actions: [
                 GestureDetector(
                   onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsScreen(currentUser: currentUser,)));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsScreen()));
                     },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
                     child: ClipOval(
-                      child: (currentUser.photoUrl != "")
-                          ? SizedBox(height: 100,
-                          child: Image.network(currentUser.photoUrl,))
-                          :const Icon(Icons.account_circle,color: Colors.white,size: 40,),
+                      child: Icon(Icons.account_circle,color: Colors.white,size: 40,),
                     ),
                   ),
                 )],

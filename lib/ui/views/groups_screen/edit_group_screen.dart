@@ -19,6 +19,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   final _nameController = TextEditingController();
   final _cityController = TextEditingController();
   final _countryController = TextEditingController();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -44,8 +45,10 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
               child: Column(
                 children: [
                   GestureDetector(
-                      onTap: (){
-                        context.read<EditGroupScreenCubit>().pickImage();
+                      onTap: () async {
+                        setState(() {isLoading = true;});
+                        await context.read<EditGroupScreenCubit>().pickImage();
+                        setState(() {isLoading = false;});
                       } ,
                       child: groupImageFile == null ?
                       widget.group.photoUrl == "" ?
@@ -54,7 +57,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         child: const Icon(
                           Icons.add_a_photo,
                           color: kSecondaryColor2, // İkonun rengini belirleyin
-                          size: 200, // İkonun boyutunu belirleyin
+                          size: 150, // İkonun boyutunu belirleyin
                         ),
                       ):
                       ClipRRect(
@@ -62,8 +65,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         child: Image(
                           image: NetworkImage(widget.group.photoUrl!),
                           fit: BoxFit.cover,
-                          width: 200,
-                          height: 200,
+                          width: 150,
+                          height: 150,
                         ),
                       )
                           : ClipRRect(
@@ -71,11 +74,12 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         child: Image(
                           image: FileImage(groupImageFile),
                           fit: BoxFit.cover,
-                          height: 198,
-                          width: 198,
+                          height: 150,
+                          width: 150,
                         )
                       )
                   ),
+                  if(isLoading) CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _nameController,
@@ -132,6 +136,50 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class EditGroupScreenState {
+  final File? groupImageFile;
+  final bool isLoading;
+  final String? error;
+
+  EditGroupScreenState({
+    required this.groupImageFile,
+    required this.isLoading,
+    required this.error,
+  });
+
+  factory EditGroupScreenState.init() {
+    return EditGroupScreenState(
+      groupImageFile: null,
+      isLoading: false,
+      error: null,
+    );
+  }
+
+  factory EditGroupScreenState.loading() {
+    return EditGroupScreenState(
+      groupImageFile: null,
+      isLoading: true,
+      error: null,
+    );
+  }
+
+  factory EditGroupScreenState.success(File? groupImageFile) {
+    return EditGroupScreenState(
+      groupImageFile: groupImageFile,
+      isLoading: false,
+      error: null,
+    );
+  }
+
+  factory EditGroupScreenState.failure(String error) {
+    return EditGroupScreenState(
+      groupImageFile: null,
+      isLoading: false,
+      error: error,
     );
   }
 }

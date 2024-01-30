@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
-  Users currentUser;
-  SettingsScreen({super.key,required this.currentUser});
+  SettingsScreen({super.key});
 
 
   @override
@@ -19,12 +19,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  bool isLoading = false;
+  Users? currentUser;
 
   @override
-  void initState() {
+  void initState()  {
+    currentUser =  UsersManager().currentUser;
     context.read<SettingsScreenCubit>().resetImage();
-    _nameController.text = widget.currentUser.name ?? "";
-    _phoneController.text = widget.currentUser.phone ?? "";
+    _nameController.text = currentUser!.name ?? "";
+    _phoneController.text = currentUser!.phone ?? "";
     super.initState();
   }
 
@@ -42,11 +45,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   children: [
                     GestureDetector(
-                        onTap: (){
-                          context.read<SettingsScreenCubit>().pickImage();
+                        onTap: () async {
+                          setState(() {isLoading = true;});
+                          await context.read<SettingsScreenCubit>().pickImage();
+                          setState(() {isLoading = false;});
                         } ,
                         child: userImageFile == null ?
-                        widget.currentUser.photoUrl == "" ?
+                        currentUser!.photoUrl == "" ?
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: const Icon(
@@ -57,7 +62,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ):
                         ClipOval(
                           child: Image(
-                            image: NetworkImage(widget.currentUser.photoUrl!),
+                            image: NetworkImage(currentUser!.photoUrl),
                             fit: BoxFit.cover,
                             width: 150,
                             height: 150,
@@ -67,11 +72,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Image(
                               image: FileImage(userImageFile),
                               fit: BoxFit.cover,
-                              height: 198,
-                              width: 198,
+                              height: 150,
+                              width: 150,
                             )
                         )
                     ),
+                    const SizedBox(height: 16),
+                    Text(currentUser!.email),
+                    if(isLoading) CircularProgressIndicator(),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _nameController,
@@ -92,11 +100,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             onPressed: () async {
                               await context.read<SettingsScreenCubit>().editUser(
                                   context: context,
-                                  userId: widget.currentUser.id,
+                                  userId: currentUser!.id,
                                   name: _nameController.text.trim(),
                                   phone: _phoneController.text.trim(),
                                   userImage: userImageFile,
-                                  photoUrl: widget.currentUser.photoUrl,
+                                  photoUrl: currentUser!.photoUrl,
                               );
                             },
                             child: const Text("Save",style: TextStyle(fontSize: 20),)),

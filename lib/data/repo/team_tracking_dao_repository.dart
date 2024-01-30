@@ -77,6 +77,51 @@ class TeamTrackingDaoRepository {
     }
   }
 
+  Future<User?> signInWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        // Kullanıcı işlemi iptal etti.
+        return null;
+      }
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.additionalUserInfo?.isNewUser == true) {
+        // Yeni kaydedilen kullanıcı
+        log("New user signed in with Google: ${userCredential.user?.displayName}");
+
+        // Yeni kullanıcıya dair işlemleri burada yapabilirsiniz.
+        LatLng position = await getLocation();
+        await _registerUser(
+          uid: userCredential.user!.uid,
+          name: userCredential.user!.displayName ?? "unnamed",
+          email: userCredential.user!.email ?? "noEmail",
+          photoUrl: "",
+          position: LatLng(position.latitude, position.longitude),
+        );
+      } else {
+        // Zaten kayıtlı olan kullanıcı
+        log("Existing user signed in with Google: ${userCredential.user?.displayName}");
+      }
+
+      // Kullanıcı girişini handle et
+      await handleUserSignIn(context, userCredential);
+
+      return userCredential.user;
+    } catch (e) {
+      // Hata durumunda handle et
+      print("Error signing in with Google: $e");
+      //handleAuthException(context, e);
+      return null;
+    }
+  }
+
   //TODO: Handle Mettods for sig in and sign up
   Future<void> handleUserSignIn(BuildContext context, UserCredential userCredential) async {
     if (userCredential.user != null) {
@@ -90,38 +135,6 @@ class TeamTrackingDaoRepository {
   }
   void handleAuthException(BuildContext context, FirebaseAuthException e) {
     Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
-  }
-
-
-  //TODO: Sign In with Google account
-  Future<User?> signInWithGoogle(BuildContext context) async {
-    // Oturum açma sürecini başlat
-    final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
-
-    // Süreç içerisinden bilgileri al
-    final GoogleSignInAuthentication gAuth = await gUser!.authentication;
-
-    // Kullanıcı nesnesi oluştur
-    final credential = GoogleAuthProvider.credential(accessToken: gAuth.accessToken, idToken: gAuth.idToken);
-
-    // Kullanıcı girişini sağla
-    final UserCredential userCredential = await firebaseAuth.signInWithCredential(credential);
-    log(userCredential.user!.email.toString());
-
-    if (userCredential.user != null) {
-      //LatLng position = await getLocation();
-      await handleUserSignIn(context, userCredential);
-
-      LatLng position = await getLocation();
-      await _registerUser(
-          uid: userCredential.user!.uid,
-          name: userCredential.user!.displayName ?? "unnamed",
-          email: userCredential.user!.email ?? "noEmail",
-          photoUrl: "",
-          position: LatLng(position.latitude, position.longitude)
-      );
-    }
-    return userCredential.user;
   }
 
   //TODO: Sign Out Method
@@ -366,7 +379,7 @@ class TeamTrackingDaoRepository {
         imageUrl = await uploadGroupImage(groupImage);
       }
       //Update group in firestore
-      String owner = UsersManager().currentUser!.id;
+      String currentUser = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
       updateGroup(
         groupId: groupId,
@@ -417,7 +430,6 @@ class TeamTrackingDaoRepository {
         imageUrl = await uploadGroupImage(userImage);
       }
       //Update user in firestore
-      String owner = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
       updateUser(
         userId: userId,
@@ -425,6 +437,18 @@ class TeamTrackingDaoRepository {
         phone: phone,
         photoUrl: imageUrl,
       );
+      //get updated user data
+      DocumentSnapshot<Map<String, dynamic>> snapshot =
+      await FirebaseFirestore.instance.collection("users").doc(userId).get();
+      if (snapshot.exists) {
+        String id = snapshot.id;
+        Map<String, dynamic>? userData = snapshot.data();
+        Users updatedUser = Users.fromMap(id, userData!);
+        await UsersManager().setUser(updatedUser);
+        print("Current User set edildi");
+      } else {
+        print("Kullanıcıya ait  veri bulunamadı.");
+      }
       // After the group is saved, navigate back to the GroupsScreen
       Navigator.pop(context);
     }

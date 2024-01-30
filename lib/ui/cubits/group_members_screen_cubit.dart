@@ -13,18 +13,13 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
   final firebaseAuth = FirebaseAuth.instance;
 
   Future<void> getAllUsers() async {
-    //Firebase kullanırken repo içersinde veriyi çekip retun edemiyoruz.
-    // direk cubit içeriside yapıyoruz.
-    //bu metod veri tabanını sürekli dinliyor ve veri tabanında bir değişiklik olduğu an emit ediyor.
     userCollection.snapshots().listen((event) {
       var userList = <Users>[];
       var documents = event.docs;
       for (var document in documents) {
-        var user = Users(
-          id: document.id,
-          name: document["name"] as String,
-          email: document["email"] as String,
-          photoUrl: document["photoUrl"] as String,);
+        List<String> memberIds = List.from(document["memberIds"]);
+
+        var user = Users.fromMap(document.id, document.data());
         userList.add(user);
       }
       emit(userList);
@@ -64,22 +59,18 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
     emit(groupRequestMembers);
   }
 
-  Future<void> filtrele(String aramaTerimi) async {
-    userCollection.snapshots().listen((event) {
-      var userList = <Users>[];
 
+  Future<void> filteredMemberList(String searchText) async {
+    userCollection.snapshots().listen((event) {
+      var filteredMemberList = <Users>[];
       var documents = event.docs;
       for (var document in documents) {
-        var user = Users(
-            id: document.id,
-            name: document["name"] as String,
-            email: document["email"] as String,
-            photoUrl: document["photoURl"] as String ?? "");
-        if(user.name.toLowerCase().contains(aramaTerimi.toLowerCase())){
-          userList.add(user);
+        var user = Users.fromMap(document.id, document.data());
+        if(user.name.toLowerCase().contains(searchText.toLowerCase())) {
+          filteredMemberList.add(user);
         }
       }
-      emit(userList);
+      emit(filteredMemberList);
     });
   }
 
