@@ -23,15 +23,16 @@ class _GroupsScreenState extends State<GroupsScreen>
   late TabController _tabController;
   Users? currentUser = UsersManager().currentUser;
 
+
   @override
   void initState() {
-    super.initState();
     // TabController'ı doğrudan oluşturma
     _tabController = TabController(length: 2, vsync: this);
     // Tab değişikliklerini dinlemek için listener ekledik
     _tabController.addListener(_onTabChanged);
     // İlk başta varsayılan olarak 0. index seçili olacak şekilde metodu çağırın
     context.read<GroupsScreenCubit>().getMyGroups(currentUser!);
+    super.initState();
   }
 
   // Tab değişikliklerini dinleyen metod
@@ -113,6 +114,7 @@ class _GroupsScreenState extends State<GroupsScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
+          GroupList(),
           GroupList(),
         ],
       ),

@@ -38,16 +38,16 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       width: 1.5 * screenWidth,
       height: 1.5 * screenWidth,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
           begin: Alignment(0.6, -1.1),
           end: Alignment(0.7, 0.8),
           colors: [
-            //Color(0xDB4BE8CC),
-            //Color(0x005CDBCF),
-            Colors.amber,
-            Color(0x00EA3323),
+            Color(0x00332C2C),
+            Colors.brown.shade100,
+            //Color(0x00EA3323),
+            Colors.white
           ],
         ),
       ),
@@ -57,7 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Stack(
         children: [

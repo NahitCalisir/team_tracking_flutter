@@ -17,10 +17,10 @@ class LoginContent extends StatefulWidget {
   const LoginContent({super.key});
 
   @override
-  State<LoginContent> createState() => _LoginContentState();
+  State<LoginContent> createState() => LoginContentState();
 }
 
-class _LoginContentState extends State<LoginContent>
+class LoginContentState extends State<LoginContent>
     with TickerProviderStateMixin {
   late final List<Widget> createAccountContent;
   late final List<Widget> loginContent;
@@ -28,6 +28,8 @@ class _LoginContentState extends State<LoginContent>
   final _tName = TextEditingController();
   final _tEmail = TextEditingController();
   final _tPassword = TextEditingController();
+
+  bool isLoading = false;
 
   Widget inputField(TextEditingController controller, String hint, IconData iconData) {
     return Padding(
@@ -60,7 +62,7 @@ class _LoginContentState extends State<LoginContent>
 
   Widget actionButton(String title, {Function()? onTap}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 135, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
       child: ElevatedButton(
         onPressed: () {
          if (onTap != null) {
@@ -68,7 +70,7 @@ class _LoginContentState extends State<LoginContent>
          }
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14), backgroundColor: kSecondaryColor2,
+          padding: const EdgeInsets.symmetric(vertical: 8), backgroundColor: kSecondaryColor2,
           shape: const StadiumBorder(),
           elevation: 8,
           shadowColor: Colors.black87,
@@ -99,7 +101,7 @@ class _LoginContentState extends State<LoginContent>
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'ya da',
+              'OR',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -119,18 +121,36 @@ class _LoginContentState extends State<LoginContent>
 
   Widget logos() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset('assets/images/facebook.png'),
-          const SizedBox(width: 24),
-          InkWell(
-              onTap: () async{
-                LoginScreenCubit().signInWithGoogle(context);//.then((value) => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const BottomNavigationBarPage())));
-              },
-              child: Image.asset('assets/images/google.png')),
-        ],
+      padding: const EdgeInsets.symmetric(vertical: 8,horizontal: 36),
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            backgroundColor: Colors.white,
+            shape: const StadiumBorder(),
+            elevation: 8,
+            shadowColor: Colors.black87,
+          ),
+          onPressed: () async {
+            setState(() {isLoading = true;});
+            await LoginScreenCubit().signInWithGoogle(context);
+            setState(() {isLoading = false;});
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/images/google.png'),
+                const SizedBox(width: 8,),
+                Text(
+                  "Sin In With Google",
+                  style: TextStyle(
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18
+                  ),),
+              ],
+            ),
+          )
       ),
     );
   }
@@ -141,7 +161,7 @@ class _LoginContentState extends State<LoginContent>
       child: TextButton(
         onPressed: () {},
         child: const Text(
-          'Şifremi Unuttum',
+          'Forgot Password?',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -155,18 +175,29 @@ class _LoginContentState extends State<LoginContent>
   @override
   void initState() {
     createAccountContent = [
-      inputField(_tName, 'İsim', Ionicons.person_outline),
+      inputField(_tName, 'Name', Ionicons.person_outline),
       inputField(_tEmail, 'Email', Ionicons.mail_outline),
-      inputField(_tPassword, 'Şifre', Ionicons.lock_closed_outline),
-      actionButton('Kayıt Ol', onTap: () => LoginScreenCubit().signUp(context, name: _tName.text, email: _tEmail.text, password: _tPassword.text),),
+      inputField(_tPassword, 'Password', Ionicons.lock_closed_outline),
+      actionButton('Sign Up',
+        onTap: () {
+          setState(() {isLoading = true;});
+          LoginScreenCubit().signUp(context, name: _tName.text, email: _tEmail.text, password: _tPassword.text);
+          setState(() {isLoading = false;});
+        },
+      ),
       orDivider(),
       logos(),
     ];
 
     loginContent = [
       inputField(_tEmail, 'Email', Ionicons.mail_outline),
-      inputField(_tPassword, 'Şifre', Ionicons.lock_closed_outline),
-      actionButton('Giriş Yap', onTap: () => LoginScreenCubit().signIn(context, email: _tEmail.text, password: _tPassword.text),),
+      inputField(_tPassword, 'Password', Ionicons.lock_closed_outline),
+      actionButton('Log In',
+          onTap: () {
+            setState(() {isLoading = true;});
+            LoginScreenCubit().signIn(context, email: _tEmail.text, password: _tPassword.text);
+            setState(() {isLoading = false;});
+          }),
       forgotPassword(),
     ];
 
@@ -197,7 +228,6 @@ class _LoginContentState extends State<LoginContent>
   @override
   void dispose() {
     ChangeScreenAnimation.dispose();
-
     super.dispose();
   }
 
@@ -211,7 +241,7 @@ class _LoginContentState extends State<LoginContent>
           child: TopText(),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 100),
+          padding: const EdgeInsets.only(top: 30),
           child: Stack(
             children: [
               Column(
@@ -224,13 +254,14 @@ class _LoginContentState extends State<LoginContent>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: loginContent,
               ),
+              if(isLoading) const Center(child: CircularProgressIndicator()),
             ],
           ),
         ),
         const Align(
           alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: EdgeInsets.only(bottom: 50),
+            padding: EdgeInsets.only(bottom: 15),
             child: BottomText(),
           ),
         ),

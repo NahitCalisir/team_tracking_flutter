@@ -102,6 +102,7 @@ class MyApp extends StatelessWidget {
 Future<User?> checkAndSetUserLogin() async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
+    print("current user ID: ${user.uid}");
     Map<String, dynamic>? userData = await TeamTrackingDaoRepository.shared.getUserData();
     if (userData != null) {
       Users currentUser = Users.fromMap(user.uid, userData);

@@ -20,14 +20,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   bool isLoading = false;
-  Users? currentUser;
+  Users? currentUser =  UsersManager().currentUser;
 
   @override
-  void initState()  {
-    currentUser =  UsersManager().currentUser;
+  void initState() {
     context.read<SettingsScreenCubit>().resetImage();
-    _nameController.text = currentUser!.name ?? "";
-    _phoneController.text = currentUser!.phone ?? "";
+    _nameController.text = currentUser?.name ?? "";
+    _phoneController.text = currentUser?.phone ?? "";
     super.initState();
   }
 
@@ -51,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           setState(() {isLoading = false;});
                         } ,
                         child: userImageFile == null ?
-                        currentUser!.photoUrl == "" ?
+                        currentUser?.photoUrl == "" ?
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: const Icon(
@@ -62,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ):
                         ClipOval(
                           child: Image(
-                            image: NetworkImage(currentUser!.photoUrl),
+                            image: NetworkImage(currentUser?.photoUrl ?? ""),
                             fit: BoxFit.cover,
                             width: 150,
                             height: 150,
@@ -111,8 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                             //style: ElevatedButton.styleFrom(backgroundColor: kSecondaryColor2,foregroundColor: Colors.white),
-                            onPressed: (){
-                              context.read<SettingsScreenCubit>().signOut(context);
+                            onPressed: () async {
+                              await context.read<SettingsScreenCubit>().signOut(context);
                             },
                             child: const Text("Sign Out",style: TextStyle(fontSize: 20,color: Colors.red)))
                       ],
@@ -127,41 +126,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
-/*
-          body: Center(
-              child: Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      currentUser.photoUrl != null && currentUser.photoUrl!.isNotEmpty ?
-                      ClipOval(
-                        child: Image(
-                          image: NetworkImage(currentUser.photoUrl!,),
-                          width: 100,
-                          height: 100,
-                        ),
-                      ):
-                      const Icon(Icons.account_circle, size: 200, color: kSecondaryColor2),
-                      const SizedBox(width: 8),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(currentUser.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
-                            Text(currentUser.email),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: kSecondaryColor2,foregroundColor: Colors.white),
-                      onPressed: (){
-                        context.read<SettingsScreenCubit>().signOut(context);
-                      },
-                      child: const Text("SIGN OUT"))
-                ],
-              )
-          ),
- */

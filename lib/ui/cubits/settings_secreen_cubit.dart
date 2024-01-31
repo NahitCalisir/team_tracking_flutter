@@ -34,13 +34,13 @@ class SettingsScreenCubit extends Cubit<File?> {
   }
 
   Future<void> pickImage() async {
-    File? groupImageFile;
+    File? userImageFile;
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if(image != null) {
-      groupImageFile = File(image.path);
-      File resizedImage = await TeamTrackingDaoRepository.shared.resizeImage(groupImageFile, 300, 300);
+      userImageFile = File(image.path);
+      File resizedImage = await TeamTrackingDaoRepository.shared.resizeImage(userImageFile, 300, 300);
       emit(resizedImage);
     }
   }

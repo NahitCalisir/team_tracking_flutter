@@ -37,12 +37,7 @@ class _HomepageState extends State<Homepage> {
     return menuItemList;
   }
 
-  late Users currentUser;
-  @override
-  void initState() {
-    currentUser = UsersManager().currentUser!;
-    super.initState();
-  }
+  Users? currentUser = UsersManager().currentUser;
 
   @override
   Widget build(BuildContext context) {

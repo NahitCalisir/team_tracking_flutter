@@ -16,6 +16,7 @@ import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
+import 'package:team_tracking/ui/views/main.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 import '../entity/users.dart';
@@ -32,6 +33,7 @@ class TeamTrackingDaoRepository {
   final userCollection = FirebaseFirestore.instance.collection("users");
   final groupCollection = FirebaseFirestore.instance.collection("groups");
   final firebaseAuth = FirebaseAuth.instance;
+  double _lastSpeed = 0;
 
   Future<LatLng> getLocation() async{
     LocationPermission permission;
@@ -46,7 +48,6 @@ class TeamTrackingDaoRepository {
   Future<void> signUp(BuildContext context, {required String name, required String email, required String password}) async {
     try {
       final UserCredential userCredential = await firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-      await handleUserSignIn(context, userCredential);
       LatLng position = await getLocation();
       await _registerUser(
         uid: userCredential.user!.uid,
@@ -55,6 +56,7 @@ class TeamTrackingDaoRepository {
         photoUrl: "",
         position: LatLng(position.latitude, position.longitude),
       );
+      await handleUserSignIn(context, userCredential);
     } on FirebaseAuthException catch (e) {
       handleAuthException(context, e);
     } catch (e) {
@@ -129,8 +131,10 @@ class TeamTrackingDaoRepository {
       if (userData != null) {
         Users curentUser = Users.fromMap(userCredential.user!.uid, userData);
         await UsersManager().setUser(curentUser);
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const Homepage(),));
       }
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const Homepage(),));
+    } else {
+      print(" kullanıcı bilgisi alnımadı ve set edilemedi");
     }
   }
   void handleAuthException(BuildContext context, FirebaseAuthException e) {
@@ -139,10 +143,10 @@ class TeamTrackingDaoRepository {
 
   //TODO: Sign Out Method
   Future<void> signOut(BuildContext context) async {
-    final navigator = Navigator.of(context);
     try {
+      _updateMyLocationTimer?.cancel();//konum göndermeyi durdur
       await firebaseAuth.signOut();
-      navigator.push(MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MyApp()));
     } on FirebaseAuthException catch(e) {
       Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
     }
@@ -186,7 +190,8 @@ class TeamTrackingDaoRepository {
         "longitude": position.longitude,
       },
       "groups": {""},
-      "lastLocationUpdatedAt": now
+      "lastLocationUpdatedAt": now,
+      "lastSpeed": 0.1,
     };
     await userCollection.doc(uid).set(newUser);
   }
@@ -274,15 +279,6 @@ class TeamTrackingDaoRepository {
     } catch (error) {
       print("Error deleting group: $error");
       // Hata durumunda gerekli işlemleri yapabilirsiniz.
-    }
-  }
-
-  Future<void> deleteGroupImage(String imageUrl) async {
-    try {
-      Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
-      await storageRef.delete();
-    } catch (e) {
-      print("Error deleting image: $e");
     }
   }
 
@@ -376,6 +372,7 @@ class TeamTrackingDaoRepository {
       //Upload group image
       String imageUrl = photoUrl ?? "";
       if (groupImage != null) {
+        deleteGroupImage(photoUrl ?? "");
         imageUrl = await uploadGroupImage(groupImage);
       }
       //Update group in firestore
@@ -402,7 +399,7 @@ class TeamTrackingDaoRepository {
     String? photoUrl,
   }) async {
     if (name.isEmpty){
-      // Delay the execution of the dialog to allow the saveGroup method to complete
+      // Delay the execution of the dialog to allow the saveUser method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
           context: context,
@@ -424,10 +421,11 @@ class TeamTrackingDaoRepository {
         );
       });
     } else {
-      //Upload group image
+      //Upload user image
       String imageUrl = photoUrl ?? "";
       if (userImage != null) {
-        imageUrl = await uploadGroupImage(userImage);
+        deleteUserImage(photoUrl ?? "");
+        imageUrl = await uploadUserImage(userImage);
       }
       //Update user in firestore
       List<String> memberIds = [UsersManager().currentUser!.id];
@@ -449,7 +447,7 @@ class TeamTrackingDaoRepository {
       } else {
         print("Kullanıcıya ait  veri bulunamadı.");
       }
-      // After the group is saved, navigate back to the GroupsScreen
+      // After the user is saved, navigate back to the GroupMemberScreen
       Navigator.pop(context);
     }
   }
@@ -489,8 +487,9 @@ class TeamTrackingDaoRepository {
   Future<String> uploadGroupImage(File imageFile) async {
     try {
       String userId = FirebaseAuth.instance.currentUser!.uid;
+      String? userName = FirebaseAuth.instance.currentUser?.displayName ?? "";
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      String fileName = 'group_images/$userId/$timestamp.jpeg';
+      String fileName = 'group_images/${userId}_$userName/$timestamp.jpeg';
 
       // Upload the resized image to Firebase Storage
       File resizedImageFile = await resizeImage(imageFile, 200, 200);
@@ -507,25 +506,44 @@ class TeamTrackingDaoRepository {
   }
 
   //TODO: Upload User profile image to firebase storage
- //Future<String> uploadUserImage(File imageFile) async {
- //  try {
- //    String userId = FirebaseAuth.instance.currentUser!.uid;
- //    String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
- //    String fileName = 'user_images/$userId/$timestamp.jpeg';
+  Future<String> uploadUserImage(File imageFile) async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      String? userName = FirebaseAuth.instance.currentUser?.displayName ?? "";
+      String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      String fileName = 'user_images/${userId}_$userName/$timestamp.jpeg';
 
- //    // Upload the resized image to Firebase Storage
- //    //File resizedImageFile = await resizeImage(imageFile, 200, 200);
- //    await FirebaseStorage.instance.ref(fileName).putFile(imageFile);
+      // Upload the resized image to Firebase Storage
+      File resizedImageFile = await resizeImage(imageFile, 200, 200);
+      await FirebaseStorage.instance.ref(fileName).putFile(resizedImageFile);
 
- //    // Get the download URL of the uploaded image
- //    String imageUrl = await FirebaseStorage.instance.ref(fileName).getDownloadURL();
+      // Get the download URL of the uploaded image
+      String imageUrl = await FirebaseStorage.instance.ref(fileName).getDownloadURL();
 
- //    return imageUrl;
- //  } catch (e) {
- //    print("Error uploading image: $e");
- //    return "";
- //  }
- //}
+      return imageUrl;
+    } catch (e) {
+      print("Error uploading image: $e");
+      return "";
+    }
+  }
+
+  Future<void> deleteGroupImage(String imageUrl) async {
+    try {
+      Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+      await storageRef.delete();
+    } catch (e) {
+      print("Error deleting image: $e");
+    }
+  }
+
+  Future<void> deleteUserImage(String imageUrl) async {
+    try {
+      Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+      await storageRef.delete();
+    } catch (e) {
+      print("Error deleting image: $e");
+    }
+  }
 
 
   Future<File> resizeImage(File imageFile, double width, double height) async {
@@ -639,32 +657,48 @@ class TeamTrackingDaoRepository {
   //TODO: update curent user last location into firebase with timer when app is open
   Timer? _updateMyLocationTimer;
   Future<void> runUpdateMyLocation() async {
+    _updateMyLocationTimer?.cancel();
     await _updateMyLocation();
-     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 300), (timer) async {
+     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
       await _updateMyLocation();
     });
   }
-  //TODO: Update my location, send to firestore method
+  //TODO: Update my location and speed, send to firestore method
   Future<void> _updateMyLocation() async {
-
-    Users? currentUser = UsersManager().currentUser; //Mevcut kullanıcıyı al
+    Users? currentUser = UsersManager().currentUser; // Mevcut kullanıcıyı al
     Position myLastPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
     if (currentUser != null) {
       DateTime now = DateTime.now();
+
+      // Hızı hesapla (m/s cinsinden)
+      double speed = myLastPosition.speed ?? 0;
+      double speedInKmPerHour = myLastPosition.speed != null ? myLastPosition.speed * 3.6 : 0;
+
+      // Hız 0 ise ve önceki hız da 0 ise konum güncellemesini yapma
+      if (speed == 0 && _lastSpeed == 0) {
+        return;
+      }
+
       // Firestore'da kullanıcının son konumunu güncelle
-      await FirebaseFirestore.instance.collection('users').doc(
-          currentUser.id).update({
+      await FirebaseFirestore.instance.collection('users').doc(currentUser.id).update({
         "lastLocation": {
           "latitude": myLastPosition.latitude,
-          "longitude": myLastPosition.longitude,},
-        "lastLocationUpdatedAt" : now, //son güncelleme tarihi
+          "longitude": myLastPosition.longitude,
+        },
+        "lastSpeed": speedInKmPerHour, // Hızı güncelle
+        "lastLocationUpdatedAt": now, // Son güncelleme tarihi
       });
-      print("${currentUser.name} son konumum firestora gönerildi");
+
+      // Hızı güncelle
+      _lastSpeed = speed;
+
+      print("${currentUser.name} son konumu Firestore'a gönderildi, Hız: $speedInKmPerHour m/s");
     } else {
-      print(" location update çalıştı fakat konum güncellenemedi");
+      print("Konum güncellenemedi, çünkü kullanıcı bulunamadı");
     }
   }
+
 
 
 }

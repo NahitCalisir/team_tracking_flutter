@@ -28,10 +28,10 @@ class _TopTextState extends State<TopText> {
       animation: ChangeScreenAnimation.topTextAnimation,
       child: Text(
         ChangeScreenAnimation.currentScreen == Screens.signUp
-            ? 'Hesap\nOluştur'
-            : 'Tekrar\nHoşgeldin',
+            ? ' Create\n Account'
+            : ' Welcome\n Back',
         style: const TextStyle(
-          fontSize: 40,
+          fontSize: 30,
           fontWeight: FontWeight.w600,
         ),
       ),

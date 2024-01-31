@@ -51,21 +51,23 @@ class _BottomTextState extends State<BottomText> {
                 TextSpan(
                   text: ChangeScreenAnimation.currentScreen ==
                           Screens.signUp
-                      ? 'Bir hesabın var mı? '
-                      : 'Hesabın yok mu? ',
+                      ? 'Do you have an account? '
+                      : "Don't you have an account? ",
                   style: const TextStyle(
-                    color: kPrimaryColor2,
+                    color: Colors.black87,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 TextSpan(
                   text: ChangeScreenAnimation.currentScreen ==
                           Screens.signUp
-                      ? 'Giriş Yap'
-                      : 'Kayıt Ol',
-                  style: const TextStyle(
-                    color: kSecondaryColor2,
+                      ? 'Log In'
+                      : 'Sign Up',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.blue.shade800,
                     fontWeight: FontWeight.bold,
+                    decoration: TextDecoration.underline
                   ),
                 ),
               ],

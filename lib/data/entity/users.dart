@@ -11,6 +11,7 @@ class Users {
   LatLng? lastLocation;
   List<String>? groups;
   Timestamp? lastLocationUpdatedAt;
+  double? lastSpeed;
 
   Users({
     required this.id,
@@ -20,7 +21,8 @@ class Users {
     this.phone,
     this.lastLocation,
     this.groups,
-    this.lastLocationUpdatedAt
+    this.lastLocationUpdatedAt,
+    this.lastSpeed,
   });
 
   factory Users.fromMap(String id, Map<String, dynamic> data) {
@@ -37,6 +39,7 @@ class Users {
       ),
       groups: groups ,
       lastLocationUpdatedAt: data["lastLocationUpdatedAt"],
+      lastSpeed: data['lastSpeed'] as double,
     );
   }
 
@@ -50,7 +53,9 @@ class Users {
         'latitude': lastLocation?.latitude,
         'longitude': lastLocation?.longitude,
       },
-      'groups' :groups
+      'groups' :groups,
+      'lastLocationUpdatedAt' : lastLocationUpdatedAt,
+      'lastSpeed' : lastSpeed,
     };
   }
 
