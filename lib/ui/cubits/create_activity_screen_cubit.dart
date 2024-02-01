@@ -3,37 +3,37 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/activity_tracking_dao_repository.dart';
 
-class CreateGroupScreenCubit extends Cubit<File?> {
-  CreateGroupScreenCubit(): super(null);
+class CreateActivityScreenCubit extends Cubit<File?> {
+  CreateActivityScreenCubit(): super(null);
 
-  Future<void> saveGroup(
+  Future<void> saveActivity(
       {
         required BuildContext context,
         required String name,
         required String city,
         required String country,
-        required File? groupImage
+        required File? activityImage
       }) async {
-    GroupTrackingDaoRepository.shared.createGroup(
+    ActivityTrackingDaoRepository.shared.createActivity(
       context: context,
       name: name,
       city: city,
       country: country,
-      groupImage: groupImage,
+      activityImage: activityImage,
     );
   }
 
   Future<void> pickImage() async {
-    File? groupImageFile;
+    File? activityImageFile;
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
 
     if(image != null) {
-      groupImageFile = File(image.path);
-      File resizedImage = await GroupTrackingDaoRepository.shared.resizeImage(groupImageFile, 300, 300);
+      activityImageFile = File(image.path);
+      File resizedImage = await ActivityTrackingDaoRepository.shared.resizeImage(activityImageFile, 300, 300);
       emit(resizedImage);
     }
   }

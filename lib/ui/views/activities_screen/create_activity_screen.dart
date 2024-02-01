@@ -1,17 +1,17 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/create_activity_screen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
 
-class CreateGroupScreen extends StatefulWidget {
-  const CreateGroupScreen({super.key});
+class CreateActivityScreen extends StatefulWidget {
+  const CreateActivityScreen({super.key});
 
   @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+  State<CreateActivityScreen> createState() => _CreateActivityScreenState();
 }
 
-class _CreateGroupScreenState extends State<CreateGroupScreen> {
+class _CreateActivityScreenState extends State<CreateActivityScreen> {
 
   final _nameController = TextEditingController();
   final _cityController = TextEditingController();
@@ -20,18 +20,18 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
   @override
   void initState() {
-    context.read<CreateGroupScreenCubit>().resetImage();
+    context.read<CreateActivityScreenCubit>().resetImage();
     super.initState();
   }
 
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CreateGroupScreenCubit, File?>(
-      builder: (context, groupImageFile) {
+    return BlocBuilder<CreateActivityScreenCubit, File?>(
+      builder: (context, activityImageFile) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text("Create Group"),
+            title: const Text("Create Activity"),
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -42,10 +42,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   GestureDetector(
                       onTap: (){
                         setState(() {isLoading = true;});
-                        context.read<CreateGroupScreenCubit>().pickImage();
+                        context.read<CreateActivityScreenCubit>().pickImage();
                         setState(() {isLoading = false;});
                       } ,
-                      child: groupImageFile == null
+                      child: activityImageFile == null
                           ? const CircleAvatar(
                         backgroundColor: kSecondaryColor2, // CircleAvatar'ın arka plan rengini ayarlayın
                         radius: 100, // Dilediğiniz bir yarıçap değerini belirleyin
@@ -60,7 +60,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         radius: 100,
                         child: ClipOval(
                                 child: Image(
-                                  image: FileImage(groupImageFile),
+                                  image: FileImage(activityImageFile),
                                   fit: BoxFit.cover,
                                   height: 198,
                                   width: 198,
@@ -72,7 +72,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: " Group Name*"),
+                    decoration: const InputDecoration(labelText: " Activity Name*"),
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -90,15 +90,15 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           backgroundColor: kSecondaryColor2,
                           foregroundColor: Colors.white),
                       onPressed: (){
-                        context.read<CreateGroupScreenCubit>().saveGroup(
+                        context.read<CreateActivityScreenCubit>().saveActivity(
                           context: context,
                           name: _nameController.text.trim(),
                           city: _cityController.text.trim(),
                           country: _countryController.text.trim(),
-                          groupImage: groupImageFile,
+                          activityImage: activityImageFile,
                         );
                       },
-                      child: const Text("Create Group",style: TextStyle(fontSize: 20),))
+                      child: const Text("Create Activity",style: TextStyle(fontSize: 20),))
                 ],
               ),
             ),

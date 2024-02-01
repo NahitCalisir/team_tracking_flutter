@@ -9,8 +9,8 @@ import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 
-class MapScreenCubit extends Cubit<List<Users>> {
-  MapScreenCubit() : super([]);
+class MapScreenForGroupCubit extends Cubit<List<Users>> {
+  MapScreenForGroupCubit() : super([]);
 
   final userCollection = FirebaseFirestore.instance.collection("users");
   final groupCollection = FirebaseFirestore.instance.collection("groups");

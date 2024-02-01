@@ -1,23 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:team_tracking/data/entity/groups.dart';
+import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
-import 'package:team_tracking/ui/views/map_screen/map_screen_for_group.dart';
+import 'package:team_tracking/ui/cubits/activity_members_screen_cubit.dart';
+import 'package:team_tracking/ui/views/map_screen/map_screen_for_activity.dart';
 import 'package:team_tracking/utils/constants.dart';
 
-class GroupMembersScreen extends StatefulWidget {
-  final Groups group;
+class ActivityMembersScreen extends StatefulWidget {
+  final Activities activity;
 
-  const GroupMembersScreen({super.key, required this.group});
+  const ActivityMembersScreen({super.key, required this.activity});
 
   @override
-  _GroupMembersScreenState createState() => _GroupMembersScreenState();
+  _ActivityMembersScreenState createState() => _ActivityMembersScreenState();
 }
 
-class _GroupMembersScreenState extends State<GroupMembersScreen>  {
+class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
 
 
   @override
@@ -26,29 +26,29 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
       length: 2, // İki sekme
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.group.name),
+          title: Text(widget.activity.name),
           bottom: const TabBar(
             //labelColor: kSecondaryColor2,
             //unselectedLabelColor: Colors.white60 ,
             //indicatorColor: kSecondaryColor2,
             tabs: [
-              Tab(text: 'Group Members'),
+              Tab(text: 'Activity Members'),
               Tab(text: 'Membership Requests'),
             ],
           ),
           actions: [
             IconButton(
                 onPressed: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForGroup(group: widget.group)))
-                      .then((value) => context.read<GroupMembersScreenCubit>().getGroupMembers(widget.group));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForActivity(activity: widget.activity)))
+                      .then((value) => context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity));
                 },
                 icon: const Icon(Icons.map_outlined,color: Colors.indigo,size: 30,)),
           ],
         ),
         body: TabBarView(
           children: [
-            GroupMembersList(group: widget.group),
-            MembershipRequestsList(group: widget.group),
+            ActivityMembersList(activity: widget.activity),
+            MembershipRequestsList(activity: widget.activity),
           ],
         ),
       ),
@@ -56,19 +56,19 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
   }
 }
 
-class GroupMembersList extends StatelessWidget {
-  final Groups group;
+class ActivityMembersList extends StatelessWidget {
+  final Activities activity;
 
-  GroupMembersList({super.key, required this.group});
+  ActivityMembersList({super.key, required this.activity});
 
   bool aramaYapiliyormu = false;
 
 
   @override
   Widget build(BuildContext context) {
-    // GroupMembersScreenCubit ile grup üyelerini getir
-    context.read<GroupMembersScreenCubit>().getGroupMembers(group);
-    return BlocBuilder<GroupMembersScreenCubit,List<Users>>(
+    // ActivityMembersScreenCubit ile grup üyelerini getir
+    context.read<ActivityMembersScreenCubit>().getActivityMembers(activity);
+    return BlocBuilder<ActivityMembersScreenCubit,List<Users>>(
           builder: (context,userList){
             DateTime now = DateTime.now();
             if(userList.isNotEmpty){
@@ -77,9 +77,9 @@ class GroupMembersList extends StatelessWidget {
                   itemBuilder: (context, indeks){
                     var user = userList[indeks];
                     Users? currentUser = UsersManager().currentUser;
-                    bool isOwner = group.owner == currentUser?.id;
-                    bool isMember = group.memberIds.contains(currentUser?.id);
-                    bool isWaitingMember = group.joinRequests!.contains(currentUser?.id);
+                    bool isOwner = activity.owner == currentUser?.id;
+                    bool isMember = activity.memberIds.contains(currentUser?.id);
+                    bool isWaitingMember = activity.joinRequests!.contains(currentUser?.id);
                     DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
                     return InkWell(
                       onTap: (){
@@ -137,7 +137,7 @@ class GroupMembersList extends StatelessWidget {
                             const Spacer(),
                             if (isOwner) PopupMenuButton<String>(
                               onSelected: (String result) {
-                                handleMenuSelectionForMembers(context, result, group, isOwner, isMember,user);
+                                handleMenuSelectionForMembers(context, result, activity, isOwner, isMember,user);
                               },
                               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                                 const PopupMenuItem<String>(
@@ -158,18 +158,18 @@ class GroupMembersList extends StatelessWidget {
 }
 
 class MembershipRequestsList extends StatelessWidget {
-  final Groups group;
+  final Activities activity;
 
-  MembershipRequestsList({super.key, required this.group});
+  MembershipRequestsList({super.key, required this.activity});
 
   bool aramaYapiliyormu = false;
 
 
   @override
   Widget build(BuildContext context) {
-    // GroupMembersScreenCubit ile grup üyelerini getir
-    context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
-    return BlocBuilder<GroupMembersScreenCubit,List<Users>>(
+    // ActivityMembersScreenCubit ile grup üyelerini getir
+    context.read<ActivityMembersScreenCubit>().getMemberRequestList(activity);
+    return BlocBuilder<ActivityMembersScreenCubit,List<Users>>(
         builder: (context,userList){
           DateTime now = DateTime.now();
           if(userList.isNotEmpty){
@@ -178,9 +178,9 @@ class MembershipRequestsList extends StatelessWidget {
                 itemBuilder: (context, indeks){
                   var user = userList[indeks];
                   Users? currentUser = UsersManager().currentUser;
-                  bool isOwner = group.owner == currentUser?.id;
-                  bool isMember = group.memberIds.contains(currentUser?.id);
-                  bool isWaitingMember = group.joinRequests!.contains(currentUser?.id);
+                  bool isOwner = activity.owner == currentUser?.id;
+                  bool isMember = activity.memberIds.contains(currentUser?.id);
+                  bool isWaitingMember = activity.joinRequests!.contains(currentUser?.id);
                   DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
                   return InkWell(
                     onTap: (){
@@ -238,7 +238,7 @@ class MembershipRequestsList extends StatelessWidget {
                           const Spacer(),
                           if (isOwner) PopupMenuButton<String>(
                             onSelected: (String result) {
-                              handleMenuSelectionForRequests(context, result, group, isOwner, isMember,user);
+                              handleMenuSelectionForRequests(context, result, activity, isOwner, isMember,user);
                             },
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                               const PopupMenuItem<String>(
@@ -265,7 +265,7 @@ class MembershipRequestsList extends StatelessWidget {
 void handleMenuSelectionForMembers(
     BuildContext context,
     String result,
-    Groups group,
+    Activities activity,
     bool isOwner,
     bool isMember,
     Users user
@@ -273,14 +273,14 @@ void handleMenuSelectionForMembers(
   switch (result)  {
     case 'remove':
       print(!isOwner);
-      if(group.owner.contains(user.id)) { //eğer çıkarılmak istenen admin ise
+      if(activity.owner.contains(user.id)) { //eğer çıkarılmak istenen admin ise
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               backgroundColor: kSecondaryColor,
               title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: const Text("You cannot leave the group because you are the administrator. If you wish, you can delete the group entirely.",style: TextStyle(color: Colors.white),),
+              content: const Text("You cannot leave the activity because you are the administrator. If you wish, you can delete the activity entirely.",style: TextStyle(color: Colors.white),),
               actions: [
                 TextButton(
                   onPressed: () {Navigator.of(context).pop();},
@@ -297,7 +297,7 @@ void handleMenuSelectionForMembers(
             return AlertDialog(
               backgroundColor: kSecondaryColor,
               title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: Text("Are you sure you want to remove ${user.name}  from the group?",style: const TextStyle(color: Colors.white),),
+              content: Text("Are you sure you want to remove ${user.name}  from the activity?",style: const TextStyle(color: Colors.white),),
               actions: [
                 TextButton(
                   onPressed: () async {Navigator.of(context).pop();},
@@ -305,8 +305,8 @@ void handleMenuSelectionForMembers(
                 ),
                 TextButton(
                   onPressed: () async {
-                    await context.read<GroupMembersScreenCubit>().removeFromGroup(group, user);
-                    await context.read<GroupMembersScreenCubit>().getGroupMembers(group);
+                    await context.read<ActivityMembersScreenCubit>().removeFromActivity(activity, user);
+                    await context.read<ActivityMembersScreenCubit>().getActivityMembers(activity);
                     Navigator.of(context).pop();
                     },
                   child: const Text("Remove",style: TextStyle(color: Colors.red),),
@@ -323,19 +323,19 @@ void handleMenuSelectionForMembers(
 void handleMenuSelectionForRequests(
     BuildContext context,
     String result,
-    Groups group,
+    Activities activity,
     bool isOwner,
     bool isMember,
     Users user
     ) async {
   switch (result)  {
     case 'accept':
-    await context.read<GroupMembersScreenCubit>().acceptJoinRequest(group, user);
-    await context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
+    await context.read<ActivityMembersScreenCubit>().acceptJoinRequest(activity, user);
+    await context.read<ActivityMembersScreenCubit>().getMemberRequestList(activity);
       break;
     case 'reject':
-      await context.read<GroupMembersScreenCubit>().rejectJoinRequest(group, user);
-      await context.read<GroupMembersScreenCubit>().getMemberRequestList(group);
+      await context.read<ActivityMembersScreenCubit>().rejectJoinRequest(activity, user);
+      await context.read<ActivityMembersScreenCubit>().getMemberRequestList(activity);
 
       break;
   }

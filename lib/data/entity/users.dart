@@ -3,14 +3,13 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 class Users {
-  String id; // Doküman ID'sini tutacak alan
+  String id;
   String name;
   String email;
   String photoUrl;
   String? phone;
   LatLng? lastLocation;
-  List<String>? groups;
-  Timestamp? lastLocationUpdatedAt;
+  DateTime? lastLocationUpdatedAt;
   double? lastSpeed;
 
   Users({
@@ -20,26 +19,27 @@ class Users {
     required this.photoUrl,
     this.phone,
     this.lastLocation,
-    this.groups,
     this.lastLocationUpdatedAt,
     this.lastSpeed,
   });
 
   factory Users.fromMap(String id, Map<String, dynamic> data) {
-    List<String> groups = List.from(data["groups"]);
     return Users(
       id: id,
       name: data['name'],
       email: data['email'],
       photoUrl: data['photoUrl'],
       phone: data['phone'],
-      lastLocation: LatLng(
+      lastLocation: data['lastLocation'] != null
+          ? LatLng(
         data['lastLocation']['latitude'],
         data['lastLocation']['longitude'],
-      ),
-      groups: groups ,
-      lastLocationUpdatedAt: data["lastLocationUpdatedAt"],
-      lastSpeed: data['lastSpeed'] as double,
+      )
+          : null,
+      lastLocationUpdatedAt: data["lastLocationUpdatedAt"] != null
+          ? (data["lastLocationUpdatedAt"] as Timestamp).toDate()
+          : null,
+      lastSpeed: (data['lastSpeed'] ?? 0).toDouble(),
     );
   }
 
@@ -47,26 +47,25 @@ class Users {
     return {
       'name': name,
       'email': email,
-      'photoUrl' : photoUrl,
-      'phone' : phone,
+      'photoUrl': photoUrl,
+      'phone': phone,
       'lastLocation': {
         'latitude': lastLocation?.latitude,
         'longitude': lastLocation?.longitude,
       },
-      'groups' :groups,
-      'lastLocationUpdatedAt' : lastLocationUpdatedAt,
-      'lastSpeed' : lastSpeed,
+      'lastLocationUpdatedAt': lastLocationUpdatedAt != null
+          ? Timestamp.fromDate(lastLocationUpdatedAt!)
+          : null,
+      'lastSpeed': lastSpeed,
     };
   }
 
-  // Custom method to format timestamp
   String formattedLastLocationUpdatedAt() {
     if (lastLocationUpdatedAt != null) {
-      DateTime dateTime = lastLocationUpdatedAt!.toDate();
-      return DateFormat('dd.MM.yyyy - HH:mm:ss').format(dateTime);
+      return DateFormat('dd.MM.yyyy - HH:mm:ss').format(lastLocationUpdatedAt!);
     } else {
       return '';
     }
   }
-
 }
+

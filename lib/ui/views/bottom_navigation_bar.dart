@@ -1,4 +1,4 @@
-/*
+
 
 import 'package:flutter/material.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
@@ -86,4 +86,3 @@ class _BottomNavigationBarPageState extends State<BottomNavigationBarPage> {
     );
   }
 }
-*/

@@ -2,14 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
-import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
 import 'package:team_tracking/firebase_options.dart';
+import 'package:team_tracking/ui/cubits/activities_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/activity_members_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/create_activity_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/create_group_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/create_route_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/edit_activity_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/edit_group_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/group_members_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/homepage_cubit.dart';
-import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
+import 'package:team_tracking/ui/cubits/map_screen_for_group_cubit.dart';
 import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/ui/cubits/users_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
@@ -45,12 +50,17 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (BuildContext context) => UsersScreenCubit()),
         BlocProvider(create: (BuildContext context) => LoginScreenCubit()),
         BlocProvider(create: (BuildContext context) => GroupsScreenCubit()),
-        BlocProvider(create: (BuildContext context) => MapScreenCubit()),
+        BlocProvider(create: (BuildContext context) => ActivitiesScreenCubit()),
+        BlocProvider(create: (BuildContext context) => MapScreenForGroupCubit()),
+        BlocProvider(create: (BuildContext context) => MapScreenForActivityCubit()),
         BlocProvider(create: (BuildContext context) => SettingsScreenCubit()),
         BlocProvider(create: (BuildContext context) => CreateRouteScreenCubit()),
         BlocProvider(create: (BuildContext context) => CreateGroupScreenCubit()),
+        BlocProvider(create: (BuildContext context) => CreateActivityScreenCubit()),
         BlocProvider(create: (BuildContext context) => EditGroupScreenCubit()),
+        BlocProvider(create: (BuildContext context) => EditActivityScreenCubit()),
         BlocProvider(create: (BuildContext context) => GroupMembersScreenCubit()),
+        BlocProvider(create: (BuildContext context) => ActivityMembersScreenCubit()),
       ],
       child: MaterialApp(
         title: 'Firebase Auth',
@@ -103,7 +113,7 @@ Future<User?> checkAndSetUserLogin() async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     print("current user ID: ${user.uid}");
-    Map<String, dynamic>? userData = await TeamTrackingDaoRepository.shared.getUserData();
+    Map<String, dynamic>? userData = await GroupTrackingDaoRepository.shared.getUserData();
     if (userData != null) {
       Users currentUser = Users.fromMap(user.uid, userData);
       await UsersManager().setUser(currentUser);

@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:simple_progress_indicators/simple_progress_indicators.dart';
-import 'package:team_tracking/data/entity/groups.dart';
+import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/ui/cubits/map_screen_cubit.dart';
+import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:team_tracking/utils/constants.dart';
 
-class MapScreen extends StatefulWidget {
-  final Groups group;
-  const MapScreen({Key? key, required this.group}) : super(key: key);
+class MapScreenForActivity extends StatefulWidget {
+  final Activities activity;
+  const MapScreenForActivity({Key? key, required this.activity}) : super(key: key);
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  State<MapScreenForActivity> createState() => _MapScreenForActivityState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _MapScreenForActivityState extends State<MapScreenForActivity> {
   final TextEditingController start = TextEditingController(text: "34740 bostancı");
   final TextEditingController end = TextEditingController(text: "34870 kartal");
   final MapController _mapController = MapController();
@@ -24,14 +24,14 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    context.read<MapScreenCubit>().getGroupMembersAndShowMap(_mapController, widget.group);
+    context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
 
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
-        context.read<MapScreenCubit>().cancelTimers();
+        context.read<MapScreenForActivityCubit>().cancelTimers();
       },
-      child: BlocBuilder<MapScreenCubit, List<Users>>(
+      child: BlocBuilder<MapScreenForActivityCubit, List<Users>>(
         builder: (context, userList) {
           return Scaffold(
             backgroundColor: Colors.grey.shade300,
@@ -139,7 +139,7 @@ class _MapScreenState extends State<MapScreen> {
                             //backgroundColor: kSecondaryColor2,
                           ),
                           onPressed: () async {
-                            context.read<MapScreenCubit>().getGroupMembersAndShowMap(_mapController, widget.group);
+                            context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
                           },
                           child: const Text("Show All"),
                         ),
@@ -176,7 +176,7 @@ class _MapScreenState extends State<MapScreen> {
                   shape: const CircleBorder(),
                   child: const Icon(Icons.close),
                   onPressed: () {
-                    context.read<MapScreenCubit>().cancelTimers();
+                    context.read<MapScreenForActivityCubit>().cancelTimers();
                     Navigator.of(context).pop();
                   },
                 ),

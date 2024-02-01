@@ -10,9 +10,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:team_tracking/data/entity/groups.dart';
+import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
-import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
+import 'package:team_tracking/ui/views/activities_screen/activity_members_screen.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
@@ -21,9 +21,9 @@ import 'package:team_tracking/utils/constants.dart';
 
 import '../entity/users.dart';
 
-class TeamTrackingDaoRepository {
+class ActivityTrackingDaoRepository {
 
-  static TeamTrackingDaoRepository shared = TeamTrackingDaoRepository();
+  static ActivityTrackingDaoRepository shared = ActivityTrackingDaoRepository();
 
   //Dikkat: firestore kullanırken arayüzde veri güncelleme yapan metodları
   // (kisileriYukle ve kisiAra gibi) repoda yapıp return edemiyoruz.
@@ -31,7 +31,7 @@ class TeamTrackingDaoRepository {
 
 
   final userCollection = FirebaseFirestore.instance.collection("users");
-  final groupCollection = FirebaseFirestore.instance.collection("groups");
+  final activityCollection = FirebaseFirestore.instance.collection("activities");
   final firebaseAuth = FirebaseAuth.instance;
   double _lastSpeed = 0;
 
@@ -189,15 +189,14 @@ class TeamTrackingDaoRepository {
         "latitude": position.latitude,
         "longitude": position.longitude,
       },
-      "groups": {""},
       "lastLocationUpdatedAt": now,
       "lastSpeed": 0.1,
     };
     await userCollection.doc(uid).set(newUser);
   }
 
-  //TODO Register Group to the firestore
-  Future<void> registerGroup(
+  //TODO Register Activity to the firestore
+  Future<void> registerActivity(
       {
         required String name,
         required String city,
@@ -207,7 +206,7 @@ class TeamTrackingDaoRepository {
         String? photoUrl,
         List<String>? joinRequests,
       }) async {
-    var newGroup = {
+    var newActivity = {
       "name": name,
       "city": city,
       "country": country,
@@ -216,7 +215,7 @@ class TeamTrackingDaoRepository {
       "photoUrl": photoUrl,
       "joinRequests": joinRequests,
     };
-    await groupCollection.doc().set(newGroup);
+    await activityCollection.doc().set(newActivity);
   }
 
   //TODO Update User location in to firestore
@@ -233,10 +232,10 @@ class TeamTrackingDaoRepository {
     print("location updated: ${position.latitude} , ${position.longitude}");
   }
 
-  //TODO Update Group in the firestore
-  Future<void> updateGroup(
+  //TODO Update Activity in the firestore
+  Future<void> updateActivity(
       {
-        required String groupId,
+        required String activityId,
         required String name,
         required String city,
         required String country,
@@ -248,7 +247,7 @@ class TeamTrackingDaoRepository {
       "country": country,
       "photoUrl": photoUrl,
     };
-    await groupCollection.doc(groupId).update(updatedData);
+    await activityCollection.doc(activityId).update(updatedData);
   }
 
   //TODO Update User in the firestore
@@ -267,32 +266,32 @@ class TeamTrackingDaoRepository {
     await userCollection.doc(userId).update(updatedData);
   }
 
-  //TODO Delete Group from the firestore
-  Future<void> deleteGroupFromFirestore({
-    required String groupId,
+  //TODO Delete Activity from the firestore
+  Future<void> deleteActivityFromFirestore({
+    required String activityId,
     required String photoUrl,
   }) async {
     try {
-      await groupCollection.doc(groupId).delete();
-      print("Group deleted successfully!");
-      await deleteGroupImage(photoUrl);
+      await activityCollection.doc(activityId).delete();
+      print("Activity deleted successfully!");
+      await deleteActivityImage(photoUrl);
     } catch (error) {
-      print("Error deleting group: $error");
+      print("Error deleting activity: $error");
       // Hata durumunda gerekli işlemleri yapabilirsiniz.
     }
   }
 
 
 
-  Future<void> createGroup({
+  Future<void> createActivity({
     required BuildContext context,
     required String name,
     required String city,
     required String country,
-    required File? groupImage,
+    required File? activityImage,
   }) async {
     if (name.isEmpty || city.isEmpty || country.isEmpty) {
-      // Delay the execution of the dialog to allow the saveGroup method to complete
+      // Delay the execution of the dialog to allow the saveActivity method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
           context: context,
@@ -314,16 +313,16 @@ class TeamTrackingDaoRepository {
         );
       });
     } else {
-      //Upload group image
+      //Upload activity image
       String imageUrl = "";
-      if (groupImage != null) {
-        imageUrl = await uploadGroupImage(groupImage);
+      if (activityImage != null) {
+        imageUrl = await uploadActivityImage(activityImage);
       }
-      //Register group to firestore
+      //Register activity to firestore
       String owner = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
       List<String> joinRequests = [];
-      registerGroup(
+      registerActivity(
         name: name,
         city: city,
         country: country,
@@ -332,22 +331,22 @@ class TeamTrackingDaoRepository {
         photoUrl: imageUrl,
         joinRequests: joinRequests,
       );
-      // After the group is saved, navigate back to the GroupsScreen
+      // After the activity is saved, navigate back to the ActivitiesScreen
       Navigator.pop(context);
     }
   }
 
-  Future<void> editGroup({
+  Future<void> editActivity({
     required BuildContext context,
-    required String groupId,
+    required String activityId,
     required String name,
     required String city,
     required String country,
-    File? groupImage,
+    File? activityImage,
     String? photoUrl,
   }) async {
     if (name.isEmpty || city.isEmpty || country.isEmpty) {
-      // Delay the execution of the dialog to allow the saveGroup method to complete
+      // Delay the execution of the dialog to allow the saveActivity method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
           context: context,
@@ -369,23 +368,23 @@ class TeamTrackingDaoRepository {
         );
       });
     } else {
-      //Upload group image
+      //Upload activity image
       String imageUrl = photoUrl ?? "";
-      if (groupImage != null) {
-        deleteGroupImage(photoUrl ?? "");
-        imageUrl = await uploadGroupImage(groupImage);
+      if (activityImage != null) {
+        deleteActivityImage(photoUrl ?? "");
+        imageUrl = await uploadActivityImage(activityImage);
       }
-      //Update group in firestore
+      //Update activity in firestore
       String currentUser = UsersManager().currentUser!.id;
       List<String> memberIds = [UsersManager().currentUser!.id];
-      updateGroup(
-        groupId: groupId,
+      updateActivity(
+        activityId: activityId,
         name: name,
         city: city,
         country: country,
         photoUrl: imageUrl,
       );
-      // After the group is saved, navigate back to the GroupsScreen
+      // After the activity is saved, navigate back to the ActivitiesScreen
       Navigator.pop(context);
     }
   }
@@ -447,17 +446,17 @@ class TeamTrackingDaoRepository {
       } else {
         print("Kullanıcıya ait  veri bulunamadı.");
       }
-      // After the user is saved, navigate back to the GroupMemberScreen
+      // After the user is saved, navigate back to the ActivityMemberScreen
       Navigator.pop(context);
     }
   }
 
-  Future<void> deleteGroup({
+  Future<void> deleteActivity({
     required BuildContext context,
-    required String groupId,
+    required String activityId,
     required String photoUrl,
   }) async {
-      // Delay the execution of the dialog to allow the saveGroup method to complete
+      // Delay the execution of the dialog to allow the saveActivity method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
           context: context,
@@ -465,11 +464,11 @@ class TeamTrackingDaoRepository {
             return AlertDialog(
               backgroundColor: kSecondaryColor,
               title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: const Text("Are you sure you want to delete this group?",style: TextStyle(color: Colors.white),),
+              content: const Text("Are you sure you want to delete this activity?",style: TextStyle(color: Colors.white),),
               actions: [
                 TextButton(
                   onPressed: () {
-                    deleteGroupFromFirestore(groupId: groupId, photoUrl: photoUrl);
+                    deleteActivityFromFirestore(activityId: activityId, photoUrl: photoUrl);
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                   },
@@ -483,13 +482,13 @@ class TeamTrackingDaoRepository {
     }
 
 
-  //TODO: Upload Group image to firebase storage
-  Future<String> uploadGroupImage(File imageFile) async {
+  //TODO: Upload Activity image to firebase storage
+  Future<String> uploadActivityImage(File imageFile) async {
     try {
       String userId = FirebaseAuth.instance.currentUser!.uid;
       String? userName = FirebaseAuth.instance.currentUser?.displayName ?? "";
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      String fileName = 'group_images/${userId}_$userName/$timestamp.jpeg';
+      String fileName = 'activity_images/${userId}_$userName/$timestamp.jpeg';
 
       // Upload the resized image to Firebase Storage
       File resizedImageFile = await resizeImage(imageFile, 200, 200);
@@ -527,7 +526,7 @@ class TeamTrackingDaoRepository {
     }
   }
 
-  Future<void> deleteGroupImage(String imageUrl) async {
+  Future<void> deleteActivityImage(String imageUrl) async {
     try {
       Reference storageRef = FirebaseStorage.instance.refFromURL(imageUrl);
       await storageRef.delete();
@@ -562,32 +561,32 @@ class TeamTrackingDaoRepository {
   }
 
 
-  void checkGroupMembershipAndNavigate(BuildContext context, Groups selectedGroup) {
+  void checkActivityMembershipAndNavigate(BuildContext context, Activities selectedActivity) {
     // Grup üyeliğini kontrol et
-    bool isMember = selectedGroup.memberIds.contains(UsersManager().currentUser!.id);
+    bool isMember = selectedActivity.memberIds.contains(UsersManager().currentUser!.id);
 
     if (isMember) {
       // Kullanıcı grup üyesiyse UsersScreen'e git
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => GroupMembersScreen(group: selectedGroup),
+          builder: (context) => ActivityMembersScreen(activity: selectedActivity),
         ),
       );
     } else {
       // Kullanıcı grup üyesi değilse uyarı göster
-      showMembershipAlert(context,selectedGroup.id);
+      showMembershipAlert(context,selectedActivity.id);
     }
   }
 
-  void showMembershipAlert(BuildContext context, String groupId) {
+  void showMembershipAlert(BuildContext context, String activityId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: kSecondaryColor,
           title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-          content: const Text("You are not a member of this group. Send a request to join.",style: TextStyle(color: Colors.white),),
+          content: const Text("You are not a member of this activity. Send a request to join.",style: TextStyle(color: Colors.white),),
           actions: [
             TextButton(
               onPressed: () {
@@ -597,7 +596,7 @@ class TeamTrackingDaoRepository {
             ),
             TextButton(
               onPressed: () {
-                sendRequestToJoinGroup(context, groupId);
+                sendRequestToJoinActivity(context, activityId);
                 Navigator.of(context).pop();
               },
               child: const Text("Send Request",style: TextStyle(color: kSecondaryColor2),),
@@ -609,10 +608,10 @@ class TeamTrackingDaoRepository {
   }
 
   // TODO: Grup üyeliği için istek gönderme işlemleri
-  void sendRequestToJoinGroup(BuildContext context, String groupId) async {
+  void sendRequestToJoinActivity(BuildContext context, String activityId) async {
     print("istek gönderme başlatıldı");
     String userId = UsersManager().currentUser!.id;
-    await groupCollection.doc(groupId).update(
+    await activityCollection.doc(activityId).update(
         {"joinRequests": FieldValue.arrayUnion([userId])},
     );
     ScaffoldMessenger.of(context).showSnackBar(
@@ -621,35 +620,35 @@ class TeamTrackingDaoRepository {
           backgroundColor: kSecondaryColor2,
           duration: Durations.extralong4
       ),);
-    notifyGroupOwner(groupId, userId);
+    notifyActivityOwner(activityId, userId);
   }
-  // TODO:Notify group owner about join request
-  void notifyGroupOwner(String groupId, String userId) {
+  // TODO:Notify activity owner about join request
+  void notifyActivityOwner(String activityId, String userId) {
     // notification logic here
     // Firebase Cloud Messaging (FCM) or push notification
   }
   //TODO: accept join request
-  Future<void> acceptJoinRequest(Groups group, Users user) async {
-    await groupCollection.doc(group.id).update({
+  Future<void> acceptJoinRequest(Activities activity, Users user) async {
+    await activityCollection.doc(activity.id).update({
       "memberIds": FieldValue.arrayUnion([user.id]),
       "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }
   //TODO: reject join request
-  Future<void> rejectJoinRequest(Groups group, Users user) async {
-    await groupCollection.doc(group.id).update({
+  Future<void> rejectJoinRequest(Activities activity, Users user) async {
+    await activityCollection.doc(activity.id).update({
       "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }
-  //TODO: remove from group
-  Future<void> removeFromGroup(Groups group, Users user) async {
-    await groupCollection.doc(group.id).update({
+  //TODO: remove from activity
+  Future<void> removeFromActivity(Activities activity, Users user) async {
+    await activityCollection.doc(activity.id).update({
       "memberIds": FieldValue.arrayRemove([user.id]),
     });
   }
-  //TODO: Cancel request to join group
-  Future<void> cancelRequest(Groups group, Users user) async {
-    await groupCollection.doc(group.id).update({
+  //TODO: Cancel request to join activity
+  Future<void> cancelRequest(Activities activity, Users user) async {
+    await activityCollection.doc(activity.id).update({
       "joinRequests": FieldValue.arrayRemove([user.id]),
     });
   }

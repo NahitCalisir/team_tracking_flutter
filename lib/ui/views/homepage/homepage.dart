@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/cubits/homepage_cubit.dart';
+import 'package:team_tracking/ui/views/activities_screen/activities_screen.dart';
 import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
 import 'package:team_tracking/ui/views/homepage/menu_items.dart';
 import 'package:team_tracking/ui/views/settings_screen.dart';
@@ -30,7 +31,7 @@ class _HomepageState extends State<Homepage> {
     var menu2 = MenuItems(
         title: "Activity Tracking",
         image: "assets/images/activity.jpg",
-        sayfa: const GroupsScreen(),
+        sayfa: const ActivitiesScreen(),
         detailText: 'You can create group activities for a certain period of time and track live location of participants.');
     menuItemList.add(menu1);
     menuItemList.add(menu2);

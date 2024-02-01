@@ -99,8 +99,7 @@ class _GroupsScreenState extends State<GroupsScreen>
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => const CreateGroupScreen()));
             },
-            icon: const Icon(Icons.group_add),
-            color: kSecondaryColor2,
+            icon: const Icon(Icons.add),
           )
         ],
         bottom: TabBar(

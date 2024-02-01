@@ -5,13 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/data/repo/team_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
 
 class SettingsScreenCubit extends Cubit<File?> {
   SettingsScreenCubit(): super(null);
 
   Future<void> signOut(BuildContext context) async {
-    TeamTrackingDaoRepository.shared.signOut(context);
+    GroupTrackingDaoRepository.shared.signOut(context);
   }
 
   Future<void> editUser(
@@ -23,7 +23,7 @@ class SettingsScreenCubit extends Cubit<File?> {
         File? userImage,
         String? photoUrl,
       }) async {
-    TeamTrackingDaoRepository.shared.editUser(
+    GroupTrackingDaoRepository.shared.editUser(
       context: context,
       userId: userId,
       name: name,
@@ -40,7 +40,7 @@ class SettingsScreenCubit extends Cubit<File?> {
 
     if(image != null) {
       userImageFile = File(image.path);
-      File resizedImage = await TeamTrackingDaoRepository.shared.resizeImage(userImageFile, 300, 300);
+      File resizedImage = await GroupTrackingDaoRepository.shared.resizeImage(userImageFile, 300, 300);
       emit(resizedImage);
     }
   }
