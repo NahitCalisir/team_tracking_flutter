@@ -153,7 +153,7 @@ class ActivityList extends StatelessWidget {
                     .checkActivityMembershipAndNavigate(context, activity);
               },
               child: SizedBox(
-                height: 125,
+                height: 195,
                 // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8,right: 8,top: 8),
@@ -177,56 +177,83 @@ class ActivityList extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: SizedBox(height: 125,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    activity.name,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                        fontSize: 17,
-                                    ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  activity.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                      fontSize: 17,
                                   ),
-                                  Text(
-                                    "${activity.city} - ${activity.country}",
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Text("Status         : ",style: TextStyle(color: Colors.grey),),
+                                    if(activity.getActivityStatus() == ActivityStatus.notStarted)
+                                      const Text("Not Started",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.green,
+                                          )),
+                                    if(activity.getActivityStatus() == ActivityStatus.finished)
+                                      const Text("Finished",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                          )),
+                                    if(activity.getActivityStatus() == ActivityStatus.continues)
+                                      const Text("Continues",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.yellow,
+                                          )),
+                                  ],
+                                ),
+                                Text("Start Time : ${activity.formattedTimestamp(activity.timeStart)}",
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                  if (isMember && !isOwner)
-                                    Card(
-                                        color: Colors.green.shade100,
-                                        child: const Text(
-                                          "  Member  ",
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                  if (isOwner)
-                                    Card(
-                                        color: Colors.red.shade200,
-                                        child: const Text(
-                                          "  Admin  ",
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                  if (isWaitingMember)
-                                    Card(
-                                        color: Colors.amber.shade100,
-                                        child: const Text(
-                                          "  Request sent  ",
-                                          style: TextStyle(fontSize: 12),
-                                        )),
-                                  const Spacer(),
-                                ],
-                              ),
+                                    style: const TextStyle(color: Colors.grey)),
+                                Text("End   Time : ${activity.formattedTimestamp(activity.timeEnd)}",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.grey)),
+                                Text("Location    : ${activity.city} - ${activity.country}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                if (isMember && !isOwner)
+                                  Card(
+                                      color: Colors.green.shade100,
+                                      child: const Text(
+                                        "  Member  ",
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                if (isOwner)
+                                  Card(
+                                      color: Colors.red.shade200,
+                                      child: const Text(
+                                        "  Admin  ",
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                if (isWaitingMember)
+                                  Card(
+                                      color: Colors.amber.shade100,
+                                      child: const Text(
+                                        "  Request sent  ",
+                                        style: TextStyle(fontSize: 12),
+                                      )),
+                                const Spacer(),
+                              ],
                             ),
                           ),
                         ),
                         PopupMenuButton<String>(iconSize: 30,
-                          iconColor: Colors.grey,
+                          iconColor: Colors.white,
                           color: Colors.grey.shade900,
                           onSelected: (String result) {
                             handleMenuSelection(context, result, activity, isOwner,

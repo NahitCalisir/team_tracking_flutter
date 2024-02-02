@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/ui/cubits/edit_activity_screen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
@@ -20,6 +22,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
   final _cityController = TextEditingController();
   final _countryController = TextEditingController();
   bool isLoading = false;
+  late DateTime timeStart;
+  late DateTime timeEnd;
 
   @override
   void initState() {
@@ -27,6 +31,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
     _nameController.text = widget.activity.name;
     _cityController.text = widget.activity.city;
     _countryController.text = widget.activity.country;
+    timeStart = widget.activity.timeStart.toDate();
+    timeEnd = widget.activity.timeEnd.toDate();
     super.initState();
   }
 
@@ -57,7 +63,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                         child: const Icon(
                           Icons.add_a_photo,
                           color: kSecondaryColor2, // İkonun rengini belirleyin
-                          size: 150, // İkonun boyutunu belirleyin
+                          size: 100, // İkonun boyutunu belirleyin
                         ),
                       ):
                       ClipRRect(
@@ -65,8 +71,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                         child: Image(
                           image: NetworkImage(widget.activity.photoUrl!),
                           fit: BoxFit.cover,
-                          width: 150,
-                          height: 150,
+                          width: 100,
+                          height: 100,
                         ),
                       )
                           : ClipRRect(
@@ -74,8 +80,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                         child: Image(
                           image: FileImage(activityImageFile),
                           fit: BoxFit.cover,
-                          height: 150,
-                          width: 150,
+                          height: 100,
+                          width: 100,
                         )
                       )
                   ),
@@ -95,6 +101,68 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                     controller: _countryController,
                     decoration: const InputDecoration(labelText: "Country*"),
                   ),
+                  const SizedBox(height: 8),
+                  // Başlangıç tarihini ve saati seçmek için
+                  InkWell(
+                    onTap: () async {
+                      Timestamp? selectedTimestamp =
+                      await _selectDateTime(context, timeStart ?? DateTime.now());
+
+                      if (selectedTimestamp != null) {
+                        DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                        setState(() {
+                          timeStart = selectedDateTime;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Start Date and Time*',
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            timeStart != null
+                                ? DateFormat('MM/dd/yyyy - HH:mm').format(timeStart)
+                                : 'Select Start Date and Time',
+                          ),
+                          const Icon(Icons.calendar_today),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Bitiş tarihini ve saati seçmek için
+                  InkWell(
+                    onTap: () async {
+                      Timestamp? selectedTimestamp =
+                      await _selectDateTime(context, timeEnd ?? DateTime.now());
+
+                      if (selectedTimestamp != null) {
+                        DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                        setState(() {
+                          timeEnd = selectedDateTime;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'End Date and Time*',
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            timeEnd != null
+                                ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd!)
+                                : 'Select End Date and Time',
+                          ),
+                          const Icon(Icons.calendar_today),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
                   Column(crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -102,7 +170,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                           style: ElevatedButton.styleFrom(
                               backgroundColor: kSecondaryColor2,
                               foregroundColor: Colors.white),
-                          onPressed: (){
+                          onPressed: () async {
                             context.read<EditActivityScreenCubit>().editActivity(
                               context: context,
                               activityId: widget.activity.id,
@@ -110,7 +178,9 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                               city: _cityController.text.trim(),
                               country: _countryController.text.trim(),
                               activityImage: activityImageFile,
-                              photoUrl: widget.activity.photoUrl
+                              photoUrl: widget.activity.photoUrl,
+                              timeStart: Timestamp.fromDate(timeStart),
+                              timeEnd: Timestamp.fromDate(timeEnd),
                             );
                           },
                           child: const Text("Save Activity",style: TextStyle(fontSize: 20),)),
@@ -140,46 +210,31 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
   }
 }
 
-class EditActivityScreenState {
-  final File? activityImageFile;
-  final bool isLoading;
-  final String? error;
+Future<Timestamp> _selectDateTime(
+    BuildContext context,
+    DateTime initialDateTime
+    ) async {
+  DateTime selectedDateTime = await showDatePicker(
+    context: context,
+    initialDate: initialDateTime,
+    firstDate: DateTime.now(),
+    lastDate: DateTime(2101),
+  ) ?? DateTime.now();
 
-  EditActivityScreenState({
-    required this.activityImageFile,
-    required this.isLoading,
-    required this.error,
-  });
+  TimeOfDay selectedTime = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+  ) ?? TimeOfDay.fromDateTime(DateTime.now());
 
-  factory EditActivityScreenState.init() {
-    return EditActivityScreenState(
-      activityImageFile: null,
-      isLoading: false,
-      error: null,
-    );
-  }
+  selectedDateTime = DateTime(
+    selectedDateTime.year,
+    selectedDateTime.month,
+    selectedDateTime.day,
+    selectedTime.hour,
+    selectedTime.minute,
+  );
 
-  factory EditActivityScreenState.loading() {
-    return EditActivityScreenState(
-      activityImageFile: null,
-      isLoading: true,
-      error: null,
-    );
-  }
-
-  factory EditActivityScreenState.success(File? activityImageFile) {
-    return EditActivityScreenState(
-      activityImageFile: activityImageFile,
-      isLoading: false,
-      error: null,
-    );
-  }
-
-  factory EditActivityScreenState.failure(String error) {
-    return EditActivityScreenState(
-      activityImageFile: null,
-      isLoading: false,
-      error: error,
-    );
-  }
+  // Convert selectedDateTime to Timestamp
+  Timestamp timestamp = Timestamp.fromDate(selectedDateTime);
+  return timestamp;
 }

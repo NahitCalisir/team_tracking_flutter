@@ -9,7 +9,7 @@ class Users {
   String photoUrl;
   String? phone;
   LatLng? lastLocation;
-  DateTime? lastLocationUpdatedAt;
+  Timestamp? lastLocationUpdatedAt;
   double? lastSpeed;
 
   Users({
@@ -31,15 +31,10 @@ class Users {
       photoUrl: data['photoUrl'],
       phone: data['phone'],
       lastLocation: data['lastLocation'] != null
-          ? LatLng(
-        data['lastLocation']['latitude'],
-        data['lastLocation']['longitude'],
-      )
+          ? LatLng(data['lastLocation']['latitude'], data['lastLocation']['longitude'])
           : null,
-      lastLocationUpdatedAt: data["lastLocationUpdatedAt"] != null
-          ? (data["lastLocationUpdatedAt"] as Timestamp).toDate()
-          : null,
-      lastSpeed: (data['lastSpeed'] ?? 0).toDouble(),
+      lastLocationUpdatedAt: data['lastLocationUpdatedAt'],
+      lastSpeed: data['lastSpeed']?.toDouble(),
     );
   }
 
@@ -49,23 +44,21 @@ class Users {
       'email': email,
       'photoUrl': photoUrl,
       'phone': phone,
-      'lastLocation': {
-        'latitude': lastLocation?.latitude,
-        'longitude': lastLocation?.longitude,
-      },
-      'lastLocationUpdatedAt': lastLocationUpdatedAt != null
-          ? Timestamp.fromDate(lastLocationUpdatedAt!)
+      'lastLocation': lastLocation != null
+          ? {'latitude': lastLocation!.latitude, 'longitude': lastLocation!.longitude}
           : null,
+      'lastLocationUpdatedAt': lastLocationUpdatedAt,
       'lastSpeed': lastSpeed,
     };
   }
 
+  // Custom method to format timestamp
   String formattedLastLocationUpdatedAt() {
     if (lastLocationUpdatedAt != null) {
-      return DateFormat('dd.MM.yyyy - HH:mm:ss').format(lastLocationUpdatedAt!);
+      DateTime dateTime = lastLocationUpdatedAt!.toDate();
+      return DateFormat('dd.MM.yyyy - HH:mm:ss').format(dateTime);
     } else {
-      return '';
+      return 'No timestamp available';
     }
   }
 }
-

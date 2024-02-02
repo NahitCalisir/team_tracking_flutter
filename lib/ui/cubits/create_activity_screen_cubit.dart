@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,7 +15,9 @@ class CreateActivityScreenCubit extends Cubit<File?> {
         required String name,
         required String city,
         required String country,
-        required File? activityImage
+        required File? activityImage,
+        required Timestamp timeStart,
+        required Timestamp timeEnd,
       }) async {
     ActivityTrackingDaoRepository.shared.createActivity(
       context: context,
@@ -22,6 +25,8 @@ class CreateActivityScreenCubit extends Cubit<File?> {
       city: city,
       country: country,
       activityImage: activityImage,
+      timeStart: timeStart,
+      timeEnd: timeEnd,
     );
   }
 

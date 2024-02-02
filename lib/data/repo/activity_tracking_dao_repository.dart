@@ -14,7 +14,6 @@ import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/activities_screen/activity_members_screen.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
-import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'package:image/image.dart' as img;
 import 'package:team_tracking/ui/views/main.dart';
 import 'package:team_tracking/utils/constants.dart';
@@ -203,6 +202,8 @@ class ActivityTrackingDaoRepository {
         required String country,
         required String owner,
         required List<String> memberIds,
+        required Timestamp timeStart,
+        required Timestamp timeEnd,
         String? photoUrl,
         List<String>? joinRequests,
       }) async {
@@ -214,6 +215,8 @@ class ActivityTrackingDaoRepository {
       "memberIds": memberIds,
       "photoUrl": photoUrl,
       "joinRequests": joinRequests,
+      "timeStart" : timeStart ,
+      "timeEnd" : timeEnd,
     };
     await activityCollection.doc().set(newActivity);
   }
@@ -239,13 +242,17 @@ class ActivityTrackingDaoRepository {
         required String name,
         required String city,
         required String country,
-        String? photoUrl
+        String? photoUrl,
+        required Timestamp timeStart,
+        required Timestamp timeEnd,
       }) async {
     var updatedData = {
       "name": name,
       "city": city,
       "country": country,
       "photoUrl": photoUrl,
+      "timeStart" : timeStart ,
+      "timeEnd" : timeEnd,
     };
     await activityCollection.doc(activityId).update(updatedData);
   }
@@ -289,8 +296,10 @@ class ActivityTrackingDaoRepository {
     required String city,
     required String country,
     required File? activityImage,
+    required Timestamp timeStart,
+    required Timestamp timeEnd,
   }) async {
-    if (name.isEmpty || city.isEmpty || country.isEmpty) {
+    if (name.isEmpty || city.isEmpty || country.isEmpty || timeStart == null || timeEnd == null) {
       // Delay the execution of the dialog to allow the saveActivity method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
@@ -330,6 +339,8 @@ class ActivityTrackingDaoRepository {
         memberIds: memberIds,
         photoUrl: imageUrl,
         joinRequests: joinRequests,
+        timeStart : timeStart ,
+        timeEnd : timeEnd,
       );
       // After the activity is saved, navigate back to the ActivitiesScreen
       Navigator.pop(context);
@@ -344,8 +355,10 @@ class ActivityTrackingDaoRepository {
     required String country,
     File? activityImage,
     String? photoUrl,
+    required Timestamp timeStart,
+    required Timestamp timeEnd,
   }) async {
-    if (name.isEmpty || city.isEmpty || country.isEmpty) {
+    if (name.isEmpty || city.isEmpty || country.isEmpty || timeStart == null || timeEnd == null) {
       // Delay the execution of the dialog to allow the saveActivity method to complete
       await Future.delayed(Duration.zero, () {
         showDialog(
@@ -383,6 +396,8 @@ class ActivityTrackingDaoRepository {
         city: city,
         country: country,
         photoUrl: imageUrl,
+        timeStart : timeStart ,
+        timeEnd : timeEnd,
       );
       // After the activity is saved, navigate back to the ActivitiesScreen
       Navigator.pop(context);
