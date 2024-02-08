@@ -24,7 +24,7 @@ class ActivityDaoRepository {
   final activityCollection = FirebaseFirestore.instance.collection("activities");
 
 
-  //TODO Register Activity to the firestore
+  //TODO Register Activity in to firestore
   Future<void> registerActivity(
       {
         required String name,
@@ -37,6 +37,7 @@ class ActivityDaoRepository {
         String? photoUrl,
         List<String>? joinRequests,
         required String routeUrl,
+        required String routeName,
       }) async {
     var newActivity = {
       "name": name,
@@ -49,6 +50,7 @@ class ActivityDaoRepository {
       "timeStart" : timeStart ,
       "timeEnd" : timeEnd,
       "routeUrl" :routeUrl,
+      "routeName" :routeName,
     };
     await activityCollection.doc().set(newActivity);
   }
@@ -63,6 +65,8 @@ class ActivityDaoRepository {
         String? photoUrl,
         required Timestamp timeStart,
         required Timestamp timeEnd,
+        required String routeUrl,
+        required String routeName,
       }) async {
     var updatedData = {
       "name": name,
@@ -71,6 +75,8 @@ class ActivityDaoRepository {
       "photoUrl": photoUrl,
       "timeStart" : timeStart ,
       "timeEnd" : timeEnd,
+      "routeUrl" :routeUrl,
+      "routeName" :routeName,
     };
     await activityCollection.doc(activityId).update(updatedData);
   }
@@ -85,6 +91,7 @@ class ActivityDaoRepository {
     required Timestamp timeStart,
     required Timestamp timeEnd,
     required String routeUrl,
+    required String routeName,
   }) async {
     if (name.isNotEmpty && city.isNotEmpty && country.isNotEmpty && timeStart.toString().isNotEmpty && timeEnd.toString().isNotEmpty) {
       if(timeEnd.toDate().isAfter(timeStart.toDate())) {
@@ -108,6 +115,7 @@ class ActivityDaoRepository {
           timeStart : timeStart ,
           timeEnd : timeEnd,
           routeUrl : routeUrl,
+          routeName : routeName,
         );
         Navigator.pop(context);
       } else {
@@ -162,6 +170,8 @@ class ActivityDaoRepository {
     String? photoUrl,
     required Timestamp timeStart,
     required Timestamp timeEnd,
+    required String routeUrl,
+    required String routeName,
   }) async {
     if (name.isNotEmpty && city.isNotEmpty && country.isNotEmpty && timeStart.toString().isNotEmpty && timeEnd.toString().isNotEmpty) {
       if(timeEnd.toDate().isAfter(timeStart.toDate())) {
@@ -182,6 +192,8 @@ class ActivityDaoRepository {
           photoUrl: imageUrl,
           timeStart : timeStart ,
           timeEnd : timeEnd,
+          routeUrl : routeUrl,
+          routeName : routeName,
         );
         Navigator.pop(context);
       } else {

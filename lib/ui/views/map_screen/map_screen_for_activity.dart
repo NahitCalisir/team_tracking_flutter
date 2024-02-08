@@ -30,15 +30,16 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
 
   @override
   void initState()  {
-    getGpxPoint();
+    if(widget.activity.routeUrl!.isNotEmpty  || widget.activity.routeUrl != "" ) {
+      getGpxPoint();
+    }
     _googleAds.loadBannerAd();
     super.initState();
   }
 
-  void getGpxPoint() async {
-    if(widget.activity.routeUrl != null) {
+  Future<void> getGpxPoint() async {
+    if(widget.activity.routeUrl!.isNotEmpty || widget.activity.routeUrl != null || widget.activity.routeUrl != "" ) {
       gpxPoints = await context.read<MapScreenForActivityCubit>().extractGpxPointsFromFile(widget.activity.routeUrl!);
-      print(gpxPoints);
     }
   }
 

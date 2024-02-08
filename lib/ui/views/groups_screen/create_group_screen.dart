@@ -33,75 +33,80 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           appBar: AppBar(
             title: const Text("Create Group"),
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GestureDetector(
-                      onTap: (){
-                        setState(() {isLoading = true;});
-                        context.read<CreateGroupScreenCubit>().pickImage();
-                        setState(() {isLoading = false;});
-                      } ,
-                      child: groupImageFile == null
-                          ? const CircleAvatar(
-                        backgroundColor: kSecondaryColor2, // CircleAvatar'ın arka plan rengini ayarlayın
-                        radius: 100, // Dilediğiniz bir yarıçap değerini belirleyin
-                        child: Icon(
-                          Icons.add_a_photo,
-                          color: Colors.white, // İkonun rengini belirleyin
-                          size: 100, // İkonun boyutunu belirleyin
-                        ),
-                      )
-                          : CircleAvatar(
-                        backgroundColor: kSecondaryColor2,
-                        radius: 100,
-                        child: ClipOval(
-                                child: Image(
-                                  image: FileImage(groupImageFile),
-                                  fit: BoxFit.cover,
-                                  height: 198,
-                                  width: 198,
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GestureDetector(
+                          onTap: () async {
+                            setState(() {isLoading = true;});
+                            await context.read<CreateGroupScreenCubit>().pickImage();
+                            setState(() {isLoading = false;});
+                          } ,
+                          child: groupImageFile == null
+                              ? const CircleAvatar(
+                            backgroundColor: kSecondaryColor2, // CircleAvatar'ın arka plan rengini ayarlayın
+                            radius: 100, // Dilediğiniz bir yarıçap değerini belirleyin
+                            child: Icon(
+                              Icons.add_a_photo,
+                              color: Colors.white, // İkonun rengini belirleyin
+                              size: 100, // İkonun boyutunu belirleyin
+                            ),
+                          )
+                              : CircleAvatar(
+                            backgroundColor: kSecondaryColor2,
+                            radius: 100,
+                            child: ClipOval(
+                                    child: Image(
+                                      image: FileImage(groupImageFile),
+                                      fit: BoxFit.cover,
+                                      height: 198,
+                                      width: 198,
+                                    )
                                 )
-                            )
-                      )
+                          )
+                      ),
+                      if(isLoading) CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(labelText: " Group Name*"),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _cityController,
+                        decoration: const InputDecoration(labelText: "City*"),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _countryController,
+                        decoration: const InputDecoration(labelText: "Country*"),
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: kSecondaryColor2,
+                              foregroundColor: Colors.white),
+                          onPressed: (){
+                            context.read<CreateGroupScreenCubit>().saveGroup(
+                              context: context,
+                              name: _nameController.text.trim(),
+                              city: _cityController.text.trim(),
+                              country: _countryController.text.trim(),
+                              groupImage: groupImageFile,
+                            );
+                          },
+                          child: const Text("Create Group",style: TextStyle(fontSize: 20),))
+                    ],
                   ),
-                  if(isLoading) CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: " Group Name*"),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _cityController,
-                    decoration: const InputDecoration(labelText: "City*"),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _countryController,
-                    decoration: const InputDecoration(labelText: "Country*"),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: kSecondaryColor2,
-                          foregroundColor: Colors.white),
-                      onPressed: (){
-                        context.read<CreateGroupScreenCubit>().saveGroup(
-                          context: context,
-                          name: _nameController.text.trim(),
-                          city: _cityController.text.trim(),
-                          country: _countryController.text.trim(),
-                          groupImage: groupImageFile,
-                        );
-                      },
-                      child: const Text("Create Group",style: TextStyle(fontSize: 20),))
-                ],
+                ),
               ),
-            ),
+
+            ],
           ),
         );
       },

@@ -21,6 +21,8 @@ class EditActivityScreenCubit extends Cubit<File?> {
         String? photoUrl,
         required Timestamp timeStart,
         required Timestamp timeEnd,
+        required String routeUrl,
+        required String routeName,
       }) async {
     ActivityDaoRepository.shared.editActivity(
       context: context,
@@ -32,6 +34,8 @@ class EditActivityScreenCubit extends Cubit<File?> {
       photoUrl: photoUrl,
       timeStart: timeStart,
       timeEnd: timeEnd,
+      routeUrl: routeUrl,
+      routeName: routeName,
     );
   }
 

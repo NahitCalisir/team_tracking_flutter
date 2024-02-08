@@ -39,185 +39,184 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
           appBar: AppBar(
             title: const Text("Create Activity"),
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isLoading = true;
-                      });
-                      context.read<CreateActivityScreenCubit>().pickImage();
-                      setState(() {
-                        isLoading = false;
-                      });
-                    },
-                    child: activityImageFile == null
-                        ? const CircleAvatar(
-                            backgroundColor: kSecondaryColor2,
-                            radius: 50,
-                            child: Icon(
-                              Icons.add_a_photo,
-                              color: Colors.white,
-                              size: 50,
-                            ),
-                          )
-                        : CircleAvatar(
-                            backgroundColor: kSecondaryColor2,
-                            radius: 50,
-                            child: ClipOval(
-                              child: Image(
-                                image: FileImage(activityImageFile),
-                                fit: BoxFit.cover,
-                                height: 100,
-                                width: 100,
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          setState(() {isLoading = true;});
+                          await context.read<CreateActivityScreenCubit>().pickImage();
+                          setState(() {isLoading = false;});
+                        },
+                        child: activityImageFile == null
+                            ? const CircleAvatar(
+                                backgroundColor: kSecondaryColor2,
+                                radius: 50,
+                                child: Icon(
+                                  Icons.add_a_photo,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                              )
+                            : CircleAvatar(
+                                backgroundColor: kSecondaryColor2,
+                                radius: 50,
+                                child: ClipOval(
+                                  child: Image(
+                                    image: FileImage(activityImageFile),
+                                    fit: BoxFit.cover,
+                                    height: 100,
+                                    width: 100,
+                                  ),
+                                ),
                               ),
-                            ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _nameController,
+                        decoration:
+                            const InputDecoration(labelText: " Activity Name*"),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _cityController,
+                        decoration: const InputDecoration(labelText: "City*"),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _countryController,
+                        decoration: const InputDecoration(labelText: "Country*"),
+                      ),
+                      const SizedBox(height: 8),
+                      // Başlangıç tarihini ve saati seçmek için
+                      InkWell(
+                        onTap: () async {
+                          Timestamp? selectedTimestamp =
+                          await _selectDateTime(context, timeStart);
+
+                          if (selectedTimestamp != null) {
+                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                            setState(() {
+                              timeStart = selectedDateTime;
+                            });
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Start Date and Time*',
                           ),
-                  ),
-                  if (isLoading) const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _nameController,
-                    decoration:
-                        const InputDecoration(labelText: " Activity Name*"),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _cityController,
-                    decoration: const InputDecoration(labelText: "City*"),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _countryController,
-                    decoration: const InputDecoration(labelText: "Country*"),
-                  ),
-                  const SizedBox(height: 8),
-                  // Başlangıç tarihini ve saati seçmek için
-                  InkWell(
-                    onTap: () async {
-                      Timestamp? selectedTimestamp =
-                      await _selectDateTime(context, timeStart ?? DateTime.now());
-
-                      if (selectedTimestamp != null) {
-                        DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                        setState(() {
-                          timeStart = selectedDateTime;
-                        });
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Start Date and Time*',
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            timeStart != null
-                                ? DateFormat('MM/dd/yyyy - HH:mm').format(timeStart)
-                                : 'Select Start Date and Time',
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                timeStart != null
+                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeStart)
+                                    : 'Select Start Date and Time',
+                              ),
+                              const Icon(Icons.calendar_today),
+                            ],
                           ),
-                          const Icon(Icons.calendar_today),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Bitiş tarihini ve saati seçmek için
-                  InkWell(
-                    onTap: () async {
-                      Timestamp? selectedTimestamp =
-                      await _selectDateTime(context, timeEnd ?? DateTime.now());
+                      const SizedBox(height: 8),
+                      // Bitiş tarihini ve saati seçmek için
+                      InkWell(
+                        onTap: () async {
+                          Timestamp? selectedTimestamp =
+                          await _selectDateTime(context, timeEnd ?? DateTime.now());
 
-                      if (selectedTimestamp != null) {
-                        DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                        setState(() {
-                          timeEnd = selectedDateTime;
-                        });
-                      }
-                    },
-                    child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'End Date and Time*',
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            timeEnd != null
-                                ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd)
-                                : 'Select End Date and Time',
+                          if (selectedTimestamp != null) {
+                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                            setState(() {
+                              timeEnd = selectedDateTime;
+                            });
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'End Date and Time*',
                           ),
-                          const Icon(Icons.calendar_today),
-                        ],
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                timeEnd != null
+                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd)
+                                    : 'Select End Date and Time',
+                              ),
+                              const Icon(Icons.calendar_today),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: TextEditingController(text: selectedRouteName),
-                    readOnly: true, //veri girişini engeller
-                    decoration: InputDecoration(
-                      labelText: "Selected Route",
-                      suffixIcon: IconButton(
-                          onPressed: () async {
-                            FilePickerResult? result  = await context.read<CreateActivityScreenCubit>().pickRouteFile();
-                            if(result != null) {
-                              selectedRoutePath = result.files.single.path;
-                              String fileName = selectedRoutePath!.split('/').last;
-                              routeDownloadUrl = await context.read<CreateActivityScreenCubit>().uploadPickerResultToFirestore(result);
-                              setState(() {
-                                selectedRouteName = fileName;
-                              });
-                            }
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: TextEditingController(text: selectedRouteName),
+                        readOnly: true, //veri girişini engeller
+                        decoration: InputDecoration(
+                          labelText: "Selected Route",
+                          suffixIcon: IconButton(
+                              onPressed: () async {
+                                setState(() {isLoading = true;});
+                                FilePickerResult? result  = await context.read<CreateActivityScreenCubit>().pickRouteFile();
+                                if(result != null) {
+                                  selectedRoutePath = result.files.single.path;
+                                  String fileName = selectedRoutePath!.split('/').last;
+                                  routeDownloadUrl = await context.read<CreateActivityScreenCubit>().uploadPickerResultToFirestore(result);
+                                  setState(() {
+                                    selectedRouteName = fileName;
+                                    isLoading = false;
+                                  });
+                                }
 
-                          },
-                          icon: const Icon(Icons.upload_file)),
-                    ),
-
+                              },
+                              icon: const Icon(Icons.upload_file)),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 10,
+                          backgroundColor: kSecondaryColor2,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                            context.read<CreateActivityScreenCubit>().saveActivity(
+                              context: context,
+                              name: _nameController.text.trim(),
+                              city: _cityController.text.trim(),
+                              country: _countryController.text.trim(),
+                              activityImage: activityImageFile,
+                              timeStart: Timestamp.fromDate(timeStart),
+                              timeEnd: Timestamp.fromDate(timeEnd),
+                              routeUrl: routeDownloadUrl ?? "",
+                              routeName: selectedRouteName ?? "",
+                            );
+                        },
+                        child: const Text("Create Activity",
+                            style: TextStyle(fontSize: 20)),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 30),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 10,
-                      backgroundColor: kSecondaryColor2,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () async {
-                        context.read<CreateActivityScreenCubit>().saveActivity(
-                          context: context,
-                          name: _nameController.text.trim(),
-                          city: _cityController.text.trim(),
-                          country: _countryController.text.trim(),
-                          activityImage: activityImageFile,
-                          timeStart: Timestamp.fromDate(timeStart),
-                          timeEnd: Timestamp.fromDate(timeEnd),
-                          routeUrl: routeDownloadUrl ?? "",
-                        );
-                    },
-                    child: const Text("Create Activity",
-                        style: TextStyle(fontSize: 20)),
-                  ),
-                ],
+                ),
               ),
-            ),
+              Center(
+                child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if(isLoading) const CircularProgressIndicator(),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
     );
-  }
-
-// Rota seçilip seçilmediğini kontrol etme
-  bool isRouteSelected() {
-    return selectedRoutePath != null && selectedRoutePath!.isNotEmpty;
-  }
-
-  void uploadRouteFile() {
-    //TODO: upload selected gpx file to firestore
   }
 
   Future<Timestamp> _selectDateTime(

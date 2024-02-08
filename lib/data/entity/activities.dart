@@ -19,6 +19,7 @@ class Activities {
   Timestamp timeStart;
   Timestamp timeEnd;
   String? routeUrl;
+  String? routeName;
 
   Activities({
     required this.id,
@@ -32,6 +33,7 @@ class Activities {
     required this.timeStart,
     required this.timeEnd,
     this.routeUrl,
+    this.routeName,
   });
 
   factory Activities.fromMap(String id, Map<String, dynamic>? data) {
@@ -54,6 +56,7 @@ class Activities {
       timeStart: data["timeStart"] ?? Timestamp.now(),
       timeEnd: data["timeEnd"] ?? Timestamp.now(),
       routeUrl: data["routeUrl"] ?? "",
+      routeName: data["routeName"] ?? "",
     );
   }
 
@@ -68,7 +71,8 @@ class Activities {
       "joinRequests": joinRequests,
       "timeStart": timeStart,
       "timeEnd": timeEnd,
-      "routeUrl": routeUrl
+      "routeUrl": routeUrl,
+      "routeName": routeName,
     };
   }
 

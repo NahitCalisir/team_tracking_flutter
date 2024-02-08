@@ -20,6 +20,7 @@ class CreateActivityScreenCubit extends Cubit<File?> {
         required Timestamp timeStart,
         required Timestamp timeEnd,
         required String routeUrl,
+        required String routeName,
       }) async {
     ActivityDaoRepository.shared.createActivity(
       context: context,
@@ -30,6 +31,7 @@ class CreateActivityScreenCubit extends Cubit<File?> {
       timeStart: timeStart,
       timeEnd: timeEnd,
       routeUrl: routeUrl,
+      routeName: routeName,
     );
   }
 

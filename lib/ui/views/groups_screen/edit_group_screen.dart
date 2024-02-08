@@ -56,8 +56,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         borderRadius: BorderRadius.circular(10),
                         child: const Icon(
                           Icons.add_a_photo,
-                          color: kSecondaryColor2, // İkonun rengini belirleyin
-                          size: 150, // İkonun boyutunu belirleyin
+                          color: kSecondaryColor2,
+                          size: 150,
                         ),
                       ):
                       ClipRRect(
