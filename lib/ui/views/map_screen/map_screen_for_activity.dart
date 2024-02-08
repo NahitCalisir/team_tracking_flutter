@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:simple_progress_indicators/simple_progress_indicators.dart';
 import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/users.dart';
+import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -22,10 +24,28 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
   final MapController _mapController = MapController();
   final ValueNotifier<bool> _isSatelliteView = ValueNotifier<bool>(false);
 
+  List<LatLng> gpxPoints = [];
+  GoogleAds _googleAds = GoogleAds();
+
+
+  @override
+  void initState()  {
+    getGpxPoint();
+    _googleAds.loadBannerAd();
+    super.initState();
+  }
+
+  void getGpxPoint() async {
+    if(widget.activity.routeUrl != null) {
+      gpxPoints = await context.read<MapScreenForActivityCubit>().extractGpxPointsFromFile(widget.activity.routeUrl!);
+      print(gpxPoints);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
-
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
@@ -54,6 +74,15 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                             ? 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}'
                             : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                         subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                      ),
+                      PolylineLayer(
+                        polylineCulling: false,
+                        polylines: [
+                          Polyline(
+                              points: gpxPoints,
+                              color: Colors.blue,
+                              strokeWidth: 6),
+                        ],
                       ),
                       MarkerLayer(
                         markers: userList.map((user) {
@@ -132,35 +161,47 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: ElevatedButton(
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             //backgroundColor: kSecondaryColor2,
+                            elevation: 10,
                           ),
                           onPressed: () async {
                             context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
                           },
                           child: const Text("Show All"),
                         ),
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isSatelliteView,
+                        builder: (context, isSatelliteView, _) {
+                          return ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              //backgroundColor: kSecondaryColor2,
+                              elevation: 10,
+                            ),
+                            onPressed: () {
+                              _isSatelliteView.value = !_isSatelliteView.value;
+                              // Harita görünümünü değiştirmek için uydu görünümü butonuna tıklandığında yapılacak işlemler
+                            },
+                            child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  Positioned(bottom: 8,right: 8,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isSatelliteView,
-                      builder: (context, isSatelliteView, _) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            //backgroundColor: kSecondaryColor2,
-                          ),
-                          onPressed: () {
-                            _isSatelliteView.value = !_isSatelliteView.value;
-                            // Harita görünümünü değiştirmek için uydu görünümü butonuna tıklandığında yapılacak işlemler
-                          },
-                          child: Text(isSatelliteView ? "Switch to Map View" : "Switch to Satellite View", ),
-                        );
-                      },
+                  if (_googleAds.bannerAd != null)
+                    Positioned(bottom: 0,
+                      child: SizedBox(
+                        width: _googleAds.bannerAd!.size.width.toDouble(),
+                        height: _googleAds.bannerAd!.size.height.toDouble(),
+                        child: AdWidget(ad: _googleAds.bannerAd!),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -188,3 +229,4 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
     );
   }
 }
+

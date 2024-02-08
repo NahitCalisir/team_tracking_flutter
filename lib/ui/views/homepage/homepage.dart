@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
+import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/homepage_cubit.dart';
 import 'package:team_tracking/ui/views/activities_screen/activities_screen.dart';
 import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
@@ -21,24 +22,14 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
 
-  Future<List<MenuItems>> loadMenuItems() async {
-    var menuItemList = <MenuItems>[];
-    var menu1 = MenuItems(
-        title: "Group Tracking",
-        image: "assets/images/team.jpg",
-        sayfa: const GroupsScreen(),
-        detailText: "You can create any group, such as your business team or family members, and track their live locations whenever you want.");
-    var menu2 = MenuItems(
-        title: "Activity Tracking",
-        image: "assets/images/activity.jpg",
-        sayfa: const ActivitiesScreen(),
-        detailText: 'You can create group activities for a certain period of time and track live location of participants.');
-    menuItemList.add(menu1);
-    menuItemList.add(menu2);
-    return menuItemList;
-  }
+  final Users? currentUser = UsersManager().currentUser;
+  final GoogleAds _googleAds = GoogleAds();
 
-  Users? currentUser = UsersManager().currentUser;
+  @override
+  void initState() {
+    _googleAds.loadInterstitialAd();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +77,7 @@ class _HomepageState extends State<Homepage> {
                                 builder: (context) => menu.sayfa,
                               ),
                             );
+                            GoogleAds().showInterstitialAd();
                           },
                           child: Padding(
                             padding:  EdgeInsets.symmetric(horizontal: 8,vertical: 20),
@@ -146,6 +138,23 @@ class _HomepageState extends State<Homepage> {
         );
       },
     );
+  }
+
+  Future<List<MenuItems>> loadMenuItems() async {
+    var menuItemList = <MenuItems>[];
+    var menu1 = MenuItems(
+        title: "Group Tracking",
+        image: "assets/images/team.jpg",
+        sayfa: const GroupsScreen(),
+        detailText: "You can create any group, such as your business team or family members, and track their live locations whenever you want.");
+    var menu2 = MenuItems(
+        title: "Activity Tracking",
+        image: "assets/images/activity.jpg",
+        sayfa: const ActivitiesScreen(),
+        detailText: 'You can create group activities for a certain period of time and track live location of participants.');
+    menuItemList.add(menu1);
+    menuItemList.add(menu2);
+    return menuItemList;
   }
 }
 

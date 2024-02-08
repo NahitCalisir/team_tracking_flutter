@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/data/repo/activity_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/activity_dao_repository.dart';
 
 class ActivitiesScreenCubit extends Cubit<List<Activities>> {
   ActivitiesScreenCubit():super(<Activities>[]);
@@ -70,18 +70,18 @@ class ActivitiesScreenCubit extends Cubit<List<Activities>> {
 
   void checkActivityMembershipAndNavigate(BuildContext context, Activities selectedActivity) {
     // Grup üyeliğini kontrol et
-    ActivityTrackingDaoRepository.shared.checkActivityMembershipAndNavigate(context, selectedActivity);
+    ActivityDaoRepository.shared.checkActivityMembershipAndNavigate(context, selectedActivity);
   }
   void sendRequestToJoinActivity(BuildContext context, String activityId) {
-    ActivityTrackingDaoRepository.shared.sendRequestToJoinActivity(context, activityId);
+    ActivityDaoRepository.shared.sendRequestToJoinActivity(context, activityId);
   }
   //TODO: remove from activity
   Future<void> removeFromActivity(Activities activity, Users user) async {
-    ActivityTrackingDaoRepository.shared.removeFromActivity(activity, user);
+    ActivityDaoRepository.shared.removeFromActivity(activity, user);
   }
   //TODO: Cancel request to join activity
   Future<void> cancelRequest(Activities activity, Users user) async {
-    ActivityTrackingDaoRepository.shared.cancelRequest(activity, user);
+    ActivityDaoRepository.shared.cancelRequest(activity, user);
   }
 
 }

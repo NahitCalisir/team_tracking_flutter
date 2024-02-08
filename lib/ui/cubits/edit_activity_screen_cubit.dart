@@ -1,10 +1,11 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:team_tracking/data/repo/activity_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/activity_dao_repository.dart';
+import 'package:team_tracking/utils/helper_functions.dart';
 
 class EditActivityScreenCubit extends Cubit<File?> {
   EditActivityScreenCubit(): super(null);
@@ -21,7 +22,7 @@ class EditActivityScreenCubit extends Cubit<File?> {
         required Timestamp timeStart,
         required Timestamp timeEnd,
       }) async {
-    ActivityTrackingDaoRepository.shared.editActivity(
+    ActivityDaoRepository.shared.editActivity(
       context: context,
       activityId: activityId,
       name: name,
@@ -41,7 +42,7 @@ class EditActivityScreenCubit extends Cubit<File?> {
 
     if(image != null) {
       activityImageFile = File(image.path);
-      File resizedImage = await ActivityTrackingDaoRepository.shared.resizeImage(activityImageFile, 300, 300);
+      File resizedImage = await HelperFunctions.resizeImage(activityImageFile, 300, 300);
       emit(resizedImage);
     }
   }
@@ -55,10 +56,19 @@ class EditActivityScreenCubit extends Cubit<File?> {
         required String activityId,
         required String photoUrl,
       }) async {
-    ActivityTrackingDaoRepository.shared.deleteActivity(
+    ActivityDaoRepository.shared.deleteActivity(
       context: context,
       activityId: activityId, photoUrl: photoUrl,
     );
+  }
+
+  // Dosya seçme işlemi
+  Future<FilePickerResult?> pickRouteFile() async {
+    return ActivityDaoRepository.shared.pickRouteFile();
+  }
+
+  Future<String?> uploadPickerResultToFirestore(FilePickerResult pickerResult) async {
+    return ActivityDaoRepository.shared.uploadPickerResultToFirestore(pickerResult);
   }
 
 }

@@ -107,9 +107,18 @@ class MapScreenForGroupCubit extends Cubit<List<Users>> {
   //TODO: Show all group members method -----------
   Future<void> _showAllOnMap(MapController mapController, List<dynamic> memberIds) async {
 
-  List<LatLng> userLocations = [];
-  List<Users> userList = [];
-  DateTime now = DateTime.now();
+    List<LatLng> userLocations = [];
+    List<Users> userList = [];
+    DateTime now = DateTime.now();
+
+    // Kullanıcının konum izinlerini kontrol et
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      // Konum izni yoksa, izin iste
+      await _requestLocationPermission();
+      return;
+    }
 
     for(var memberIs in memberIds){
       try {
@@ -176,4 +185,15 @@ class MapScreenForGroupCubit extends Cubit<List<Users>> {
     );
   }
 
+  //Konum izni isteme metodu
+  Future<void> _requestLocationPermission() async {
+    // Konum izni iste
+    LocationPermission permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.denied) {
+      // Kullanıcı izni reddetti
+      // Burada kullanıcıya bir bildirim veya açıklama gösterilebilir
+      print('Konum izni reddedildi.');
+    }
+  }
 }

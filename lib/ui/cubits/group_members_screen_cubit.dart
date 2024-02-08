@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/users.dart';
-import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart'; // Import intl for date formatting
+import 'package:team_tracking/data/repo/group_dao_repository.dart'; // Import intl for date formatting
 
 class GroupMembersScreenCubit extends Cubit<List<Users>> {
   GroupMembersScreenCubit():super(<Users>[]);
@@ -81,15 +81,15 @@ class GroupMembersScreenCubit extends Cubit<List<Users>> {
   }
  //TODO: accept join request
   Future<void> acceptJoinRequest(Groups group, Users user) async {
-   GroupTrackingDaoRepository.shared.acceptJoinRequest(group, user);
+   GroupDaoRepository.shared.acceptJoinRequest(group, user);
  }
  //TODO: reject join request
   Future<void> rejectJoinRequest(Groups group, Users user) async {
-   GroupTrackingDaoRepository.shared.rejectJoinRequest(group, user);
+   GroupDaoRepository.shared.rejectJoinRequest(group, user);
  }
   //TODO: remove from group
   Future<void> removeFromGroup(Groups group, Users user) async {
-    GroupTrackingDaoRepository.shared.removeFromGroup(group, user);
+    GroupDaoRepository.shared.removeFromGroup(group, user);
   }
 
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:team_tracking/ui/cubits/login_screen_cubit.dart';
 import 'package:team_tracking/ui/views/bottom_navigation_bar.dart';
@@ -159,7 +160,30 @@ class LoginContentState extends State<LoginContent>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 110),
       child: TextButton(
-        onPressed: () {},
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (context) {
+                final tMail = TextEditingController();
+                return AlertDialog(
+                  content: TextField(
+                    controller:  tMail,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                        //prefixIcon: Icon(Icons.email_outlined),
+                        hintText: "Email Address",
+                        hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(onPressed: () {
+                      context.read<LoginScreenCubit>().forgotPassword(context, email: tMail.text.trim());
+                    }, child: const Text("Send Reset Mail"))
+                  ],
+                );
+              },
+          );
+        },
         child: const Text(
           'Forgot Password?',
           style: TextStyle(

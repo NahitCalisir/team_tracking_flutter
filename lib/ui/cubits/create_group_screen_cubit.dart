@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/group_dao_repository.dart';
+import 'package:team_tracking/utils/helper_functions.dart';
 
 class CreateGroupScreenCubit extends Cubit<File?> {
   CreateGroupScreenCubit(): super(null);
@@ -16,7 +16,7 @@ class CreateGroupScreenCubit extends Cubit<File?> {
         required String country,
         required File? groupImage
       }) async {
-    GroupTrackingDaoRepository.shared.createGroup(
+    GroupDaoRepository.shared.createGroup(
       context: context,
       name: name,
       city: city,
@@ -33,7 +33,7 @@ class CreateGroupScreenCubit extends Cubit<File?> {
 
     if(image != null) {
       groupImageFile = File(image.path);
-      File resizedImage = await GroupTrackingDaoRepository.shared.resizeImage(groupImageFile, 300, 300);
+      File resizedImage = await HelperFunctions.resizeImage(groupImageFile, 300, 300);
       emit(resizedImage);
     }
   }

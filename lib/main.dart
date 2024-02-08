@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
-import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/user_dao_repository.dart';
 import 'package:team_tracking/firebase_options.dart';
 import 'package:team_tracking/ui/cubits/activities_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/activity_members_screen_cubit.dart';
@@ -21,12 +22,13 @@ import 'package:team_tracking/ui/cubits/groups_screen_cubit.dart';
 import 'package:team_tracking/ui/cubits/login_screen_cubit.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
-import '../../data/entity/users.dart';
+import 'data/entity/users.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -113,7 +115,7 @@ Future<User?> checkAndSetUserLogin() async {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     print("current user ID: ${user.uid}");
-    Map<String, dynamic>? userData = await GroupTrackingDaoRepository.shared.getUserData();
+    Map<String, dynamic>? userData = await UserDaoRepository.shared.getUserData();
     if (userData != null) {
       Users currentUser = Users.fromMap(user.uid, userData);
       await UsersManager().setUser(currentUser);

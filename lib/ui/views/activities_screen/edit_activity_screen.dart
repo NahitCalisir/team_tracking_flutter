@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -24,6 +25,9 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
   bool isLoading = false;
   late DateTime timeStart;
   late DateTime timeEnd;
+  String? selectedRoutePath;
+  String? selectedRouteName;
+  String? routeDownloadUrl;
 
   @override
   void initState() {
@@ -163,11 +167,34 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: TextEditingController(text: selectedRouteName),
+                    readOnly: true, //veri girişini engeller
+                    decoration: InputDecoration(
+                      labelText: "Selected Route",
+                      suffixIcon: IconButton(
+                          onPressed: () async {
+                            FilePickerResult? result  = await context.read<EditActivityScreenCubit>().pickRouteFile();
+                            if(result != null) {
+                              selectedRoutePath = result.files.single.path;
+                              String fileName = selectedRoutePath!.split('/').last;
+                              routeDownloadUrl = await context.read<EditActivityScreenCubit>().uploadPickerResultToFirestore(result);
+                              setState(() {
+                                selectedRouteName = fileName;
+                              });
+                            }
+                          },
+                          icon: const Icon(Icons.upload_file)),
+                    ),
+
+                  ),
                   const SizedBox(height: 30),
                   Column(crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
+                            elevation: 10,
                               backgroundColor: kSecondaryColor2,
                               foregroundColor: Colors.white),
                           onPressed: () async {
@@ -186,9 +213,11 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                           child: const Text("Save Activity",style: TextStyle(fontSize: 20),)),
                       const SizedBox(height: 30,),
                       ElevatedButton(
-                         //style: ElevatedButton.styleFrom(
+                         style: ElevatedButton.styleFrom(
+                           elevation: 10
                          //    backgroundColor: kSecondaryColor2,
                          //    foregroundColor: Colors.white),
+                          ),
                           onPressed: (){
                             context.read<EditActivityScreenCubit>().deleteActivity(
                               context: context,
@@ -217,7 +246,7 @@ Future<Timestamp> _selectDateTime(
   DateTime selectedDateTime = await showDatePicker(
     context: context,
     initialDate: initialDateTime,
-    firstDate: DateTime.now(),
+    firstDate: initialDateTime,
     lastDate: DateTime(2101),
   ) ?? DateTime.now();
 

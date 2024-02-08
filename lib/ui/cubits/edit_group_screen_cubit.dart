@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:team_tracking/data/repo/group_tracking_dao_repository.dart';
+import 'package:team_tracking/data/repo/group_dao_repository.dart';
+import 'package:team_tracking/utils/helper_functions.dart';
 
 class EditGroupScreenCubit extends Cubit<File?> {
   EditGroupScreenCubit(): super(null);
@@ -18,7 +18,7 @@ class EditGroupScreenCubit extends Cubit<File?> {
         File? groupImage,
         String? photoUrl,
       }) async {
-    GroupTrackingDaoRepository.shared.editGroup(
+    GroupDaoRepository.shared.editGroup(
       context: context,
       groupId: groupId,
       name: name,
@@ -36,7 +36,7 @@ class EditGroupScreenCubit extends Cubit<File?> {
 
     if(image != null) {
       groupImageFile = File(image.path);
-      File resizedImage = await GroupTrackingDaoRepository.shared.resizeImage(groupImageFile, 300, 300);
+      File resizedImage = await HelperFunctions.resizeImage(groupImageFile, 300, 300);
       emit(resizedImage);
     }
   }
@@ -50,7 +50,7 @@ class EditGroupScreenCubit extends Cubit<File?> {
         required String groupId,
         required String photoUrl,
       }) async {
-    GroupTrackingDaoRepository.shared.deleteGroup(
+    GroupDaoRepository.shared.deleteGroup(
       context: context,
       groupId: groupId, photoUrl: photoUrl,
     );

@@ -18,6 +18,7 @@ class Activities {
   List<String>? joinRequests;
   Timestamp timeStart;
   Timestamp timeEnd;
+  String? routeUrl;
 
   Activities({
     required this.id,
@@ -30,6 +31,7 @@ class Activities {
     this.joinRequests,
     required this.timeStart,
     required this.timeEnd,
+    this.routeUrl,
   });
 
   factory Activities.fromMap(String id, Map<String, dynamic>? data) {
@@ -47,10 +49,11 @@ class Activities {
       country: data["country"] ?? "",
       owner: data["owner"] ?? "",
       memberIds: memberIds,
-      photoUrl: data["photoUrl"],
+      photoUrl: data["photoUrl"] ?? "",
       joinRequests: joinRequests,
       timeStart: data["timeStart"] ?? Timestamp.now(),
       timeEnd: data["timeEnd"] ?? Timestamp.now(),
+      routeUrl: data["routeUrl"] ?? "",
     );
   }
 
@@ -65,6 +68,7 @@ class Activities {
       "joinRequests": joinRequests,
       "timeStart": timeStart,
       "timeEnd": timeEnd,
+      "routeUrl": routeUrl
     };
   }
 
@@ -84,11 +88,3 @@ class Activities {
     return DateFormat('dd.MM.yyyy - HH:mm').format(dateTime);
   }
 }
-
-/*
-Kullanış şekli
-
-Activities myActivity = ...; // Aktivitenizi oluşturun veya alın
-
-print("Aktivite Durumu: ${myActivity.getActivityStatus()}");
-*/

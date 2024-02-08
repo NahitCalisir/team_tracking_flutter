@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:simple_progress_indicators/simple_progress_indicators.dart';
 import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/users.dart';
+import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_group_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -21,11 +23,17 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
   final TextEditingController end = TextEditingController(text: "34870 kartal");
   final MapController _mapController = MapController();
   final ValueNotifier<bool> _isSatelliteView = ValueNotifier<bool>(false);
+  GoogleAds _googleAds = GoogleAds();
+
+  @override
+  void initState() {
+    _googleAds.loadBannerAd();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     context.read<MapScreenForGroupCubit>().getGroupMembersAndShowMap(_mapController, widget.group);
-
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
@@ -132,35 +140,45 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            //backgroundColor: kSecondaryColor2,
-                          ),
-                          onPressed: () async {
-                            context.read<MapScreenForGroupCubit>().getGroupMembersAndShowMap(_mapController, widget.group);
-                          },
-                          child: const Text("Show All"),
-                        ),
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                //backgroundColor: kSecondaryColor2,
+                              ),
+                              onPressed: () async {
+                                context.read<MapScreenForGroupCubit>().getGroupMembersAndShowMap(_mapController, widget.group);
+                              },
+                              child: const Text("Show All"),
+                            ),
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isSatelliteView,
+                        builder: (context, isSatelliteView, _) {
+                          return ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              //backgroundColor: kSecondaryColor2,
+                            ),
+                            onPressed: () {
+                              _isSatelliteView.value = !_isSatelliteView.value;
+                              // Harita görünümünü değiştirmek için uydu görünümü butonuna tıklandığında yapılacak işlemler
+                            },
+                            child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  Positioned(bottom: 8,right: 8,
-                    child: ValueListenableBuilder<bool>(
-                      valueListenable: _isSatelliteView,
-                      builder: (context, isSatelliteView, _) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            //backgroundColor: kSecondaryColor2,
-                          ),
-                          onPressed: () {
-                            _isSatelliteView.value = !_isSatelliteView.value;
-                            // Harita görünümünü değiştirmek için uydu görünümü butonuna tıklandığında yapılacak işlemler
-                          },
-                          child: Text(isSatelliteView ? "Switch to Map View" : "Switch to Satellite View", ),
-                        );
-                      },
+                  if (_googleAds.bannerAd != null)
+                    Positioned(bottom: 0,
+                      child: SizedBox(
+                        width: _googleAds.bannerAd!.size.width.toDouble(),
+                        height: _googleAds.bannerAd!.size.height.toDouble(),
+                        child: AdWidget(ad: _googleAds.bannerAd!),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

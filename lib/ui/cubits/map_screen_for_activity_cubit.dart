@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:team_tracking/data/entity/activities.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
+import 'package:team_tracking/data/repo/activity_dao_repository.dart';
 
 class MapScreenForActivityCubit extends Cubit<List<Users>> {
   MapScreenForActivityCubit() : super([]);
@@ -89,7 +90,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   }
 
   //TODO: Get activity member IDs method -----------
-  Future<void> getActivityMembersAndShowMap(MapController mapController, Activities activity) async {
+  Future<List<LatLng>> getActivityMembersAndShowMap(MapController mapController, Activities activity) async {
     try {
       DocumentSnapshot<
           Map<String, dynamic>> activityDocument = await activityCollection.doc(
@@ -98,18 +99,33 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
       if (activityData != null) {
         List<dynamic> memberIdList = activityData["memberIds"];
         _runShowAllOnMap(mapController, memberIdList);
+        // Extract GPX points and add them to gpxPoints
+        if (activityData["gpxFilePath"] != null) {
+          List<LatLng> gpxTrack = await ActivityDaoRepository.shared.extractGpxPointsFromFile(activityData["gpxFilePath"]);
+          return gpxTrack;
+        }
       }
     } catch (e) {
       print("Firestore veri çekme hatası-3: $e");
     }
+    return [];
   }
 
   //TODO: Show all activity members method -----------
   Future<void> _showAllOnMap(MapController mapController, List<dynamic> memberIds) async {
 
-  List<LatLng> userLocations = [];
-  List<Users> userList = [];
-  DateTime now = DateTime.now();
+    List<LatLng> userLocations = [];
+    List<Users> userList = [];
+    DateTime now = DateTime.now();
+
+    // Kullanıcının konum izinlerini kontrol et
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      // Konum izni yoksa, izin iste
+      await _requestLocationPermission();
+      return;
+    }
 
     for(var memberIs in memberIds){
       try {
@@ -174,6 +190,23 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
       LatLng(minLat, minLng),
       LatLng(maxLat, maxLng),
     );
+  }
+
+  //Get gpx point list from gpx file
+  Future<List<LatLng>> extractGpxPointsFromFile (String gpxFilePath) async {
+    return ActivityDaoRepository.shared.extractGpxPointsFromFile(gpxFilePath);
+  }
+
+  //Konum izni isteme metodu
+  Future<void> _requestLocationPermission() async {
+    // Konum izni iste
+    LocationPermission permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.denied) {
+      // Kullanıcı izni reddetti
+      // Burada kullanıcıya bir bildirim veya açıklama gösterilebilir
+      print('Konum izni reddedildi.');
+    }
   }
 
 }
