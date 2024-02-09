@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:team_tracking/data/entity/activities.dart';
+import 'package:team_tracking/data/entity/lat_lng_with_altitude.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/activities_screen/activity_members_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
@@ -38,6 +40,8 @@ class ActivityDaoRepository {
         List<String>? joinRequests,
         required String routeUrl,
         required String routeName,
+        required double routeDistance,
+        required double routeElevation,
       }) async {
     var newActivity = {
       "name": name,
@@ -51,6 +55,8 @@ class ActivityDaoRepository {
       "timeEnd" : timeEnd,
       "routeUrl" :routeUrl,
       "routeName" :routeName,
+      "routeDistance" :routeDistance,
+      "routeElevation" :routeElevation,
     };
     await activityCollection.doc().set(newActivity);
   }
@@ -67,6 +73,8 @@ class ActivityDaoRepository {
         required Timestamp timeEnd,
         required String routeUrl,
         required String routeName,
+        required double routeDistance,
+        required double routeElevation,
       }) async {
     var updatedData = {
       "name": name,
@@ -77,6 +85,8 @@ class ActivityDaoRepository {
       "timeEnd" : timeEnd,
       "routeUrl" :routeUrl,
       "routeName" :routeName,
+      "routeDistance" :routeDistance,
+      "routeElevation" :routeElevation,
     };
     await activityCollection.doc(activityId).update(updatedData);
   }
@@ -104,6 +114,14 @@ class ActivityDaoRepository {
         String owner = UsersManager().currentUser!.id;
         List<String> memberIds = [UsersManager().currentUser!.id];
         List<String> joinRequests = [];
+        //Update activity in firestore
+        double routeDistance = 0.0;
+        double routeElevation = 0.0;
+        if(routeUrl.isNotEmpty) {
+          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl);
+          routeDistance = calculateRouteDistance(gpxPoints);
+          routeElevation = calculateRouteElevation(gpxPoints);
+        }
         registerActivity(
           name: name,
           city: city,
@@ -116,6 +134,8 @@ class ActivityDaoRepository {
           timeEnd : timeEnd,
           routeUrl : routeUrl,
           routeName : routeName,
+          routeDistance :routeDistance,
+          routeElevation :routeElevation,
         );
         Navigator.pop(context);
       } else {
@@ -179,11 +199,17 @@ class ActivityDaoRepository {
         String imageUrl = photoUrl ?? "";
         if (activityImage != null) {
           deleteActivityImage(photoUrl ?? "");
+          deleteActivityGpxFile(routeUrl ?? "" );
           imageUrl = await uploadActivityImage(activityImage);
         }
         //Update activity in firestore
-        String currentUser = UsersManager().currentUser!.id;
-        List<String> memberIds = [UsersManager().currentUser!.id];
+        double routeDistance = 0.0;
+        double routeElevation = 0.0;
+        if(routeUrl.isNotEmpty) {
+          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl);
+          routeDistance = calculateRouteDistance(gpxPoints);
+          routeElevation = calculateRouteElevation(gpxPoints);
+        }
         updateActivity(
           activityId: activityId,
           name: name,
@@ -194,6 +220,8 @@ class ActivityDaoRepository {
           timeEnd : timeEnd,
           routeUrl : routeUrl,
           routeName : routeName,
+          routeDistance :routeDistance,
+          routeElevation :routeElevation,
         );
         Navigator.pop(context);
       } else {
@@ -243,6 +271,7 @@ class ActivityDaoRepository {
     required BuildContext context,
     required String activityId,
     required String photoUrl,
+    required String routeUrl,
   }) async {
     // Delay the execution of the dialog to allow the saveActivity method to complete
     await Future.delayed(Duration.zero, () {
@@ -256,7 +285,7 @@ class ActivityDaoRepository {
             actions: [
               TextButton(
                 onPressed: () {
-                  deleteActivityFromFirestore(activityId: activityId, photoUrl: photoUrl);
+                  deleteActivityFromFirestore(activityId: activityId, photoUrl: photoUrl, routeUrl: routeUrl);
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 },
@@ -273,11 +302,13 @@ class ActivityDaoRepository {
   Future<void> deleteActivityFromFirestore({
     required String activityId,
     required String photoUrl,
+    required String routeUrl,
   }) async {
     try {
       await activityCollection.doc(activityId).delete();
       print("Activity deleted successfully!");
       await deleteActivityImage(photoUrl);
+      await deleteActivityGpxFile(routeUrl);
     } catch (error) {
       print("Error deleting activity: $error");
       // Hata durumunda gerekli işlemleri yapabilirsiniz.
@@ -314,6 +345,14 @@ class ActivityDaoRepository {
       await storageRef.delete();
     } catch (e) {
       print("Error deleting image: $e");
+    }
+  }
+  Future<void> deleteActivityGpxFile(String routeUrl) async {
+    try {
+      Reference storageRef = FirebaseStorage.instance.refFromURL(routeUrl);
+      await storageRef.delete();
+    } catch (e) {
+      print("Error deleting gpx file: $e");
     }
   }
 
@@ -445,7 +484,7 @@ class ActivityDaoRepository {
   }
 
   //Get gpx point list from gpx file
-  Future<List<LatLng>> extractGpxPointsFromFile(String gpxUrl) async {
+  Future<List<LatLngWithAltitude>> extractGpxPointsFromFile(String gpxUrl) async {
     final FirebaseStorage storage = FirebaseStorage.instance;
     final Reference ref = storage.refFromURL(gpxUrl);
 
@@ -465,10 +504,10 @@ class ActivityDaoRepository {
     }
   }
 
-  List<LatLng> _extractGpxPoints(String gpxContent) {
+  List<LatLngWithAltitude> _extractGpxPoints(String gpxContent) {
     final XmlDocument xmlDocument = XmlDocument.parse(gpxContent);
 
-    final List<LatLng> gpxPoints = [];
+    final List<LatLngWithAltitude> gpxPoints = [];
 
     try {
       final List<XmlElement> trackPoints = xmlDocument
@@ -478,7 +517,8 @@ class ActivityDaoRepository {
       for (final trackPoint in trackPoints) {
         final double lat = double.parse(trackPoint.getAttribute('lat') ?? '0');
         final double lon = double.parse(trackPoint.getAttribute('lon') ?? '0');
-        gpxPoints.add(LatLng(lat, lon));
+        final double altitude = double.parse(trackPoint.findElements('ele').first.text);
+        gpxPoints.add(LatLngWithAltitude(lat, lon, altitude));
       }
     } catch (e) {
       print("Error extracting GPX points: $e");
@@ -486,7 +526,57 @@ class ActivityDaoRepository {
     return gpxPoints;
   }
 
+  //CALCULATE ROUTE DISTANCE
+  double calculateRouteDistance(List<LatLngWithAltitude> gpxPoints) {
+    double totalDistance = 0;
+    if (gpxPoints.length < 2) {
+      // En az iki nokta olmalıdır
+      return 0.0;
+    }
 
+    for (int i = 1; i < gpxPoints.length; i++) {
+      // İki ardışık nokta arasındaki mesafeyi hesapla
+      double distance = _calculateDistance(gpxPoints[i - 1], gpxPoints[i]);
+      totalDistance += distance;
+    }
+    return totalDistance/1000;
+  }
+
+  double _calculateDistance(LatLngWithAltitude point1, LatLngWithAltitude point2) {
+    const int earthRadius = 6371000; // Dünya yarıçapı metre cinsinden
+    double lat1Rad = _degreesToRadians(point1.latitude);
+    double lat2Rad = _degreesToRadians(point2.latitude);
+    double latDeltaRad = _degreesToRadians(point2.latitude - point1.latitude);
+    double lonDeltaRad = _degreesToRadians(point2.longitude - point1.longitude);
+
+    double a = sin(latDeltaRad / 2) * sin(latDeltaRad / 2) +
+        cos(lat1Rad) * cos(lat2Rad) * sin(lonDeltaRad / 2) * sin(lonDeltaRad / 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    double distance = earthRadius * c;
+    return distance;
+  }
+
+  double _degreesToRadians(double degrees) {
+    return degrees * pi / 180;
+  }
+
+  //CALCULATE ROUTE ELEVATION
+  double calculateRouteElevation(List<LatLngWithAltitude> gpxPoints) {
+    double totalElevation = 0;
+    if (gpxPoints.length < 2) {
+      // En az iki nokta olmalıdır
+      return 0.0;
+    }
+
+    for (int i = 1; i < gpxPoints.length; i++) {
+      // İki ardışık nokta arasındaki elevasyon farkını hesapla
+      double elevationChange = gpxPoints[i].altitude - gpxPoints[i - 1].altitude;
+      if (elevationChange > 0) {
+        totalElevation += elevationChange;
+      }
+    }
+    return totalElevation;
+  }
 
 }
 

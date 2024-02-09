@@ -153,7 +153,7 @@ class ActivityList extends StatelessWidget {
                     .checkActivityMembershipAndNavigate(context, activity);
               },
               child: SizedBox(
-                height: 195,
+                height: 235,
                 // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8,right: 8,top: 8),
@@ -193,6 +193,14 @@ class ActivityList extends StatelessWidget {
                                   ),
                                 ),
                                 SizedBox(height: 8),
+                                if(activity.routeDistance != 0)
+                                  Text("Distance    : ${activity.routeDistance?.toStringAsFixed(1)} km",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Colors.grey)),
+                                if(activity.routeElevation != 0)
+                                  Text("Elevation   : ${activity.routeElevation?.toStringAsFixed(0)} m",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: Colors.grey)),
                                 Row(
                                   children: [
                                     Text("Status         : ",style: TextStyle(color: Colors.grey),),

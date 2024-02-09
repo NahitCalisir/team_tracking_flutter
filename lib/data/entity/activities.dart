@@ -20,6 +20,8 @@ class Activities {
   Timestamp timeEnd;
   String? routeUrl;
   String? routeName;
+  double? routeDistance;
+  double? routeElevation;
 
   Activities({
     required this.id,
@@ -34,6 +36,8 @@ class Activities {
     required this.timeEnd,
     this.routeUrl,
     this.routeName,
+    this.routeDistance,
+    this.routeElevation,
   });
 
   factory Activities.fromMap(String id, Map<String, dynamic>? data) {
@@ -57,6 +61,8 @@ class Activities {
       timeEnd: data["timeEnd"] ?? Timestamp.now(),
       routeUrl: data["routeUrl"] ?? "",
       routeName: data["routeName"] ?? "",
+      routeDistance: data["routeDistance"] ?? 0.0,
+      routeElevation: data["routeElevation"] ?? 0.0,
     );
   }
 
@@ -73,6 +79,8 @@ class Activities {
       "timeEnd": timeEnd,
       "routeUrl": routeUrl,
       "routeName": routeName,
+      "routeDistance": routeDistance,
+      "routeElevation": routeElevation,
     };
   }
 

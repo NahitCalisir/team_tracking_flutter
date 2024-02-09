@@ -24,6 +24,8 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
   String? selectedRoutePath;
   String? selectedRouteName;
   String? routeDownloadUrl;
+  double? routeDistance;
+  double? routeElevation;
 
   @override
   void initState() {
@@ -159,7 +161,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                         controller: TextEditingController(text: selectedRouteName),
                         readOnly: true, //veri girişini engeller
                         decoration: InputDecoration(
-                          labelText: "Selected Route",
+                          labelText: "Route (GPX File)",
                           suffixIcon: IconButton(
                               onPressed: () async {
                                 setState(() {isLoading = true;});
@@ -173,7 +175,6 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                                     isLoading = false;
                                   });
                                 }
-
                               },
                               icon: const Icon(Icons.upload_file)),
                         ),
@@ -248,6 +249,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
     return timestamp;
   }
 }
+
 
 
 

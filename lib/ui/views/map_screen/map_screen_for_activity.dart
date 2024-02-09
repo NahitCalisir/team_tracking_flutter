@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:simple_progress_indicators/simple_progress_indicators.dart';
 import 'package:team_tracking/data/entity/activities.dart';
+import 'package:team_tracking/data/entity/lat_lng_with_altitude.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:team_tracking/utils/constants.dart';
 
 class MapScreenForActivity extends StatefulWidget {
   final Activities activity;
@@ -24,7 +24,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
   final MapController _mapController = MapController();
   final ValueNotifier<bool> _isSatelliteView = ValueNotifier<bool>(false);
 
-  List<LatLng> gpxPoints = [];
+  List<LatLngWithAltitude> gpxPoints = [];
   GoogleAds _googleAds = GoogleAds();
 
 
@@ -80,7 +80,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                         polylineCulling: false,
                         polylines: [
                           Polyline(
-                              points: gpxPoints,
+                              points: gpxPoints.map((point) => LatLng(point.latitude, point.longitude)).toList(),
                               color: Colors.blue,
                               strokeWidth: 6),
                         ],
@@ -112,11 +112,11 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.speed, color: Colors.red,),
-                                          SizedBox(width: 8),
+                                          const Icon(Icons.speed, color: Colors.red,),
+                                          const SizedBox(width: 8),
                                           Text(
                                             "${user.lastSpeed!.toStringAsFixed(1)}",
-                                            style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
@@ -187,7 +187,6 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                             ),
                             onPressed: () {
                               _isSatelliteView.value = !_isSatelliteView.value;
-                              // Harita görünümünü değiştirmek için uydu görünümü butonuna tıklandığında yapılacak işlemler
                             },
                             child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
                           );

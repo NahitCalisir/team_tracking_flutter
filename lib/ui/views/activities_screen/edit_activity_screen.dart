@@ -39,6 +39,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
     timeStart = widget.activity.timeStart.toDate();
     timeEnd = widget.activity.timeEnd.toDate();
     _routeController.text = widget.activity.routeName ?? "";
+    routeDownloadUrl = widget.activity.routeUrl ?? "";
+    selectedRouteName = widget.activity.routeName ?? "";
     super.initState();
   }
 
@@ -175,7 +177,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                         controller: _routeController,
                         readOnly: true, //veri girişini engeller
                         decoration: InputDecoration(
-                          labelText: "Selected Route",
+                          labelText: "Route (GPX File)",
                           suffixIcon: IconButton(
                               onPressed: () async {
                                 setState(() {isLoading = true;});
@@ -231,6 +233,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                                   context: context,
                                   activityId: widget.activity.id,
                                   photoUrl: widget.activity.photoUrl!,
+                                  routeUrl: widget.activity.routeUrl!,
                                 );
                               },
                               child: const Text("Delete Activity",style: TextStyle(fontSize: 20, color: Colors.red),)),

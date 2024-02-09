@@ -59,10 +59,13 @@ class EditActivityScreenCubit extends Cubit<File?> {
         required BuildContext context,
         required String activityId,
         required String photoUrl,
+        required String routeUrl,
       }) async {
     ActivityDaoRepository.shared.deleteActivity(
       context: context,
-      activityId: activityId, photoUrl: photoUrl,
+      activityId: activityId,
+      photoUrl: photoUrl,
+      routeUrl: routeUrl,
     );
   }
 

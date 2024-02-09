@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:team_tracking/data/entity/activities.dart';
+import 'package:team_tracking/data/entity/lat_lng_with_altitude.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/data/repo/activity_dao_repository.dart';
@@ -28,8 +29,6 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
     _showAllOnMapTimer?.cancel();
     _trackMeTimer?.cancel();
   }
-
-
 
   //Future<void> runTrackMe(mapController) async {
   //  cancelTimers();
@@ -90,7 +89,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   }
 
   //TODO: Get activity member IDs method -----------
-  Future<List<LatLng>> getActivityMembersAndShowMap(MapController mapController, Activities activity) async {
+  Future<List<LatLngWithAltitude>> getActivityMembersAndShowMap(MapController mapController, Activities activity) async {
     try {
       DocumentSnapshot<
           Map<String, dynamic>> activityDocument = await activityCollection.doc(
@@ -101,7 +100,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
         _runShowAllOnMap(mapController, memberIdList);
         // Extract GPX points and add them to gpxPoints
         if (activityData["gpxFilePath"] != null) {
-          List<LatLng> gpxTrack = await ActivityDaoRepository.shared.extractGpxPointsFromFile(activityData["gpxFilePath"]);
+          List<LatLngWithAltitude> gpxTrack = await ActivityDaoRepository.shared.extractGpxPointsFromFile(activityData["gpxFilePath"]);
           return gpxTrack;
         }
       }
@@ -193,7 +192,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   }
 
   //Get gpx point list from gpx file
-  Future<List<LatLng>> extractGpxPointsFromFile (String gpxFilePath) async {
+  Future<List<LatLngWithAltitude>> extractGpxPointsFromFile (String gpxFilePath) async {
     return ActivityDaoRepository.shared.extractGpxPointsFromFile(gpxFilePath);
   }
 
