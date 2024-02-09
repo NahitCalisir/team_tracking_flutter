@@ -45,7 +45,7 @@ class GoogleAds  {
     bannerAd = BannerAd(
       adUnitId: bannerAdUnitId,
       request: const AdRequest(),
-      size: AdSize.banner,
+      size: AdSize.fullBanner,
       listener: BannerAdListener(
         // Called when an ad is successfully received.
         onAdLoaded: (ad) {

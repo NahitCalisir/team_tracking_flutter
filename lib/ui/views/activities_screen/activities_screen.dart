@@ -7,7 +7,6 @@ import 'package:team_tracking/ui/views/activities_screen/create_activity_screen.
 import 'package:team_tracking/ui/views/activities_screen/edit_activity_screen.dart';
 import 'package:team_tracking/ui/views/activities_screen/activity_members_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
-
 import '../../../data/entity/users.dart';
 
 class ActivitiesScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class ActivitiesScreen extends StatefulWidget {
 
 class _ActivitiesScreenState extends State<ActivitiesScreen>
     with SingleTickerProviderStateMixin {
-  bool aramaYapiliyormu = false;
+  bool isSearching = false;
   late TabController _tabController;
   Users? currentUser = UsersManager().currentUser;
 
@@ -45,7 +44,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
     }
     setState(() {
       //Close search when tab changes
-      aramaYapiliyormu = false;
+      isSearching = false;
     });
   }
 
@@ -62,7 +61,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
   Widget build(BuildContext context) {
     return Scaffold(backgroundColor: Colors.black,
       appBar: AppBar(backgroundColor: Colors.black,foregroundColor: Colors.white,
-        title: aramaYapiliyormu
+        title: isSearching
             ? TextField(
                 style: const TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
@@ -80,11 +79,11 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
               )
             : const Text("Activities"),
         actions: [
-          aramaYapiliyormu
+          isSearching
               ? IconButton(
                   onPressed: () {
                     setState(() {
-                      aramaYapiliyormu = false;
+                      isSearching = false;
                     });
                     context.read<ActivitiesScreenCubit>().getAllActivities();
                   },
@@ -93,7 +92,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
               : IconButton(
                   onPressed: () {
                     setState(() {
-                      aramaYapiliyormu = true;
+                      isSearching = true;
                     });
                   },
                   icon: const Icon(Icons.search),
@@ -135,176 +134,177 @@ class ActivityList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ActivitiesScreenCubit, List<Activities>>(
-        builder: (context, activityList) {
-      if (activityList.isNotEmpty) {
-        return ListView.builder(
-          itemCount: activityList.length,
-          itemBuilder: (context, index) {
-            var activity = activityList[index];
-            Users? currentUser = UsersManager().currentUser;
-            bool isOwner = activity.owner == currentUser?.id;
-            bool isMember = activity.memberIds.contains(currentUser?.id);
-            bool isWaitingMember =
-                activity.joinRequests!.contains(currentUser?.id);
-            return InkWell(
-              onTap: () {
-                context
-                    .read<ActivitiesScreenCubit>()
-                    .checkActivityMembershipAndNavigate(context, activity);
-              },
-              child: SizedBox(
-                height: 235,
-                // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8,right: 8,top: 8),
-                  child: Card(color: Colors.grey.shade800.withOpacity(.25),
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: activity.photoUrl!.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Image(
-                                    image: NetworkImage(activity.photoUrl!),
-                                    fit: BoxFit.cover,
-                                    width: 70,
-                                    height: 70,
-                                  ),
-                                )
-                              : const Icon(Icons.run_circle_outlined,
-                                  size: 70, color: Colors.grey),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  activity.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                      fontSize: 17,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                if(activity.routeDistance != 0)
-                                  Text("Distance    : ${activity.routeDistance?.toStringAsFixed(1)} km",
+      builder: (context, activityList) {
+        if (activityList.isNotEmpty) {
+          activityList.sort((a,b) => b.timeStart.compareTo(a.timeStart));
+          return ListView.builder(
+            itemCount: activityList.length,
+            itemBuilder: (context, index) {
+              var activity = activityList[index];
+              Users? currentUser = UsersManager().currentUser;
+              bool isOwner = activity.owner == currentUser?.id;
+              bool isMember = activity.memberIds.contains(currentUser?.id);
+              bool isWaitingMember =
+                  activity.joinRequests!.contains(currentUser?.id);
+              return InkWell(
+                onTap: () {
+                  context
+                      .read<ActivitiesScreenCubit>()
+                      .checkActivityMembershipAndNavigate(context, activity);
+                },
+                child: SizedBox(
+                  height: 235,
+                  // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8,right: 8,top: 8),
+                    child: Card(color: Colors.grey.shade800.withOpacity(.25),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: activity.photoUrl!.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(5),
+                                    child: Image(
+                                      image: NetworkImage(activity.photoUrl!),
+                                      fit: BoxFit.cover,
+                                      width: 70,
+                                      height: 70,
+                                    ),
+                                  )
+                                : const Icon(Icons.run_circle_outlined,
+                                    size: 70, color: Colors.grey),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    activity.name,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.grey)),
-                                if(activity.routeElevation != 0)
-                                  Text("Elevation   : ${activity.routeElevation?.toStringAsFixed(0)} m",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                        fontSize: 17,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  if(activity.routeDistance != 0)
+                                    Text("Distance    : ${activity.routeDistance?.toStringAsFixed(1)} km",
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(color: Colors.grey)),
-                                Row(
-                                  children: [
-                                    Text("Status         : ",style: TextStyle(color: Colors.grey),),
-                                    if(activity.getActivityStatus() == ActivityStatus.notStarted)
-                                      const Text("Not Started",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.green,
-                                          )),
-                                    if(activity.getActivityStatus() == ActivityStatus.finished)
-                                      const Text("Finished",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.red,
-                                          )),
-                                    if(activity.getActivityStatus() == ActivityStatus.continues)
-                                      const Text("Continues",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.yellow,
-                                          )),
-                                  ],
-                                ),
-                                Text("Start Time : ${activity.formattedTimestamp(activity.timeStart)}",
+                                  if(activity.routeElevation != 0)
+                                    Text("Elevation   : ${activity.routeElevation?.toStringAsFixed(0)} m",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(color: Colors.grey)),
+                                  Row(
+                                    children: [
+                                      Text("Status         : ",style: TextStyle(color: Colors.grey),),
+                                      if(activity.getActivityStatus() == ActivityStatus.notStarted)
+                                        const Text("Not Started",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.green,
+                                            )),
+                                      if(activity.getActivityStatus() == ActivityStatus.finished)
+                                        const Text("Finished",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.red,
+                                            )),
+                                      if(activity.getActivityStatus() == ActivityStatus.continues)
+                                        const Text("Continues",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: Colors.yellow,
+                                            )),
+                                    ],
+                                  ),
+                                  Text("Start Time : ${activity.formattedTimestamp(activity.timeStart)}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: Colors.grey)),
+                                  Text("End   Time : ${activity.formattedTimestamp(activity.timeEnd)}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: Colors.grey)),
+                                  Text("Location    : ${activity.city} - ${activity.country}",
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.grey)),
-                                Text("End   Time : ${activity.formattedTimestamp(activity.timeEnd)}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.grey)),
-                                Text("Location    : ${activity.city} - ${activity.country}",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                if (isMember && !isOwner)
-                                  Card(
-                                      color: Colors.green.shade100,
-                                      child: const Text(
-                                        "  Member  ",
-                                        style: TextStyle(fontSize: 12),
-                                      )),
-                                if (isOwner)
-                                  Card(
-                                      color: Colors.red.shade200,
-                                      child: const Text(
-                                        "  Admin  ",
-                                        style: TextStyle(fontSize: 12),
-                                      )),
-                                if (isWaitingMember)
-                                  Card(
-                                      color: Colors.amber.shade100,
-                                      child: const Text(
-                                        "  Request sent  ",
-                                        style: TextStyle(fontSize: 12),
-                                      )),
-                                const Spacer(),
-                              ],
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                  if (isMember && !isOwner)
+                                    Card(
+                                        color: Colors.green.shade100,
+                                        child: const Text(
+                                          "  Member  ",
+                                          style: TextStyle(fontSize: 12),
+                                        )),
+                                  if (isOwner)
+                                    Card(
+                                        color: Colors.red.shade200,
+                                        child: const Text(
+                                          "  Admin  ",
+                                          style: TextStyle(fontSize: 12),
+                                        )),
+                                  if (isWaitingMember)
+                                    Card(
+                                        color: Colors.amber.shade100,
+                                        child: const Text(
+                                          "  Request sent  ",
+                                          style: TextStyle(fontSize: 12),
+                                        )),
+                                  const Spacer(),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        PopupMenuButton<String>(iconSize: 30,
-                          iconColor: Colors.white,
-                          color: Colors.grey.shade900,
-                          onSelected: (String result) {
-                            handleMenuSelection(context, result, activity, isOwner,
-                                isMember, currentUser!);
-                          },
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                            if (isMember)
-                              const PopupMenuItem<String>(
-                                value: 'activityDetails',
-                                child: Text('Activity Details',style: TextStyle(color: Colors.white),),
-                              ),
-                            if (isOwner)
-                              const PopupMenuItem<String>(
-                                value: 'editActivity',
-                                child: Text('Edit Activity',style: TextStyle(color: Colors.white),),
-                              ),
-                            if (!isOwner && isMember)
-                              const PopupMenuItem<String>(
-                                value: 'leaveActivity',
-                                child: Text('Leave Activity',style: TextStyle(color: Colors.white),),
-                              ),
-                            if (!isOwner && !isMember && !isWaitingMember)
-                              const PopupMenuItem<String>(
-                                value: 'joinActivity',
-                                child: Text('Join Activity',style: TextStyle(color: Colors.white),),
-                              ),
-                            if (isWaitingMember)
-                              const PopupMenuItem<String>(
-                                value: 'cancelRequest',
-                                child: Text('Cancel Request',style: TextStyle(color: Colors.white),),
-                              ),
-                          ],
-                        )
-                      ],
+                          PopupMenuButton<String>(iconSize: 30,
+                            iconColor: Colors.white,
+                            color: Colors.grey.shade900,
+                            onSelected: (String result) {
+                              handleMenuSelection(context, result, activity, isOwner,
+                                  isMember, currentUser!);
+                            },
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                              if (isMember)
+                                const PopupMenuItem<String>(
+                                  value: 'activityDetails',
+                                  child: Text('Activity Details',style: TextStyle(color: Colors.white),),
+                                ),
+                              if (isOwner)
+                                const PopupMenuItem<String>(
+                                  value: 'editActivity',
+                                  child: Text('Edit Activity',style: TextStyle(color: Colors.white),),
+                                ),
+                              if (!isOwner && isMember)
+                                const PopupMenuItem<String>(
+                                  value: 'leaveActivity',
+                                  child: Text('Leave Activity',style: TextStyle(color: Colors.white),),
+                                ),
+                              if (!isOwner && !isMember && !isWaitingMember)
+                                const PopupMenuItem<String>(
+                                  value: 'joinActivity',
+                                  child: Text('Join Activity',style: TextStyle(color: Colors.white),),
+                                ),
+                              if (isWaitingMember)
+                                const PopupMenuItem<String>(
+                                  value: 'cancelRequest',
+                                  child: Text('Cancel Request',style: TextStyle(color: Colors.white),),
+                                ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      }
+              );
+            },
+          );
+        }
       return const Center();
     });
   }

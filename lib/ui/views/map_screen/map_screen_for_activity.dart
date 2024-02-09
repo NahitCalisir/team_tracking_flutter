@@ -9,6 +9,7 @@ import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:team_tracking/utils/constants.dart';
 
 class MapScreenForActivity extends StatefulWidget {
   final Activities activity;
@@ -112,7 +113,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          const Icon(Icons.speed, color: Colors.red,),
+                                          const Icon(Icons.speed, color: Colors.white,),
                                           const SizedBox(width: 8),
                                           Text(
                                             "${user.lastSpeed!.toStringAsFixed(1)}",
@@ -162,67 +163,97 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                       ),
                     ],
                   ),
-                  Row(
+                  Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            //backgroundColor: kSecondaryColor2,
-                            elevation: 10,
-                          ),
-                          onPressed: () async {
-                            context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
-                          },
-                          child: const Text("Show All"),
+                      if (_googleAds.bannerAd != null)
+                        SizedBox(
+                          width: _googleAds.bannerAd!.size.width.toDouble(),
+                          height: _googleAds.bannerAd!.size.height.toDouble(),
+                          child: AdWidget(ad: _googleAds.bannerAd!),
                         ),
-                      ),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: _isSatelliteView,
-                        builder: (context, isSatelliteView, _) {
-                          return ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              //backgroundColor: kSecondaryColor2,
-                              elevation: 10,
+                      Row(crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Container(
+                              color: Colors.black.withOpacity(0.6),
+                              child: Text(
+                                " Distance  : ${widget.activity.routeDistance?.toStringAsFixed(1).toString() ?? ""} km \n"
+                                " Elevation : ${widget.activity.routeElevation?.toStringAsFixed(0).toString() ?? ""} m ",
+                                style: TextStyle(color: Colors.greenAccent),
+                              ),
                             ),
-                            onPressed: () {
-                              _isSatelliteView.value = !_isSatelliteView.value;
-                            },
-                            child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
-                          );
-                        },
+                          ),
+                          Spacer(),
+                          Column(
+                            children: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  shape: CircleBorder(),
+                                  backgroundColor: Colors.white.withOpacity(0.7),
+                                  elevation: 10,
+                                ),
+                                onPressed: () async {
+                                  context.read<MapScreenForActivityCubit>().cancelTimers();
+                                  Navigator.of(context).pop();
+                                 },
+                                child: const Icon(Icons.close),
+                              ),
+                              ValueListenableBuilder<bool>(
+                                valueListenable: _isSatelliteView,
+                                builder: (context, isSatelliteView, _) {
+                                  return ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      shape: CircleBorder(),
+                                      backgroundColor: Colors.white.withOpacity(0.7),
+                                      elevation: 10,
+                                    ),
+                                    onPressed: () {
+                                      _isSatelliteView.value = !_isSatelliteView.value;
+                                    },
+                                    //child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
+                                    child: Icon( isSatelliteView ? Icons.map_outlined : Icons.satellite_alt, ),
+                                  );
+                                },
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  shape: CircleBorder(),
+                                  backgroundColor: Colors.white.withOpacity(0.7),
+                                  elevation: 10,
+                                ),
+                                onPressed: () async {
+                                  context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
+                                },
+                                child: const Icon(Icons.my_location_sharp),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  if (_googleAds.bannerAd != null)
-                    Positioned(bottom: 0,
-                      child: SizedBox(
-                        width: _googleAds.bannerAd!.size.width.toDouble(),
-                        height: _googleAds.bannerAd!.size.height.toDouble(),
-                        child: AdWidget(ad: _googleAds.bannerAd!),
-                      ),
-                    ),
                 ],
               ),
             ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-            floatingActionButton: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: SizedBox(
-                height: 38,
-                width: 38,
-                child: FloatingActionButton(
-                  //backgroundColor: kSecondaryColor2,
-                  //foregroundColor: Colors.white,
-                  shape: const CircleBorder(),
-                  child: const Icon(Icons.close),
-                  onPressed: () {
-                    context.read<MapScreenForActivityCubit>().cancelTimers();
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-            ),
+            //floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+            //floatingActionButton: Padding(
+            //  padding: const EdgeInsets.only(top: 4),
+            //  child: SizedBox(
+            //    height: 38,
+            //    width: 38,
+            //    child: FloatingActionButton(
+            //      backgroundColor: Colors.white.withOpacity(0.7),
+            //      //foregroundColor: Colors.red,
+            //      shape: const CircleBorder(),
+            //      child: const Icon(Icons.close),
+            //      onPressed: () {
+            //        context.read<MapScreenForActivityCubit>().cancelTimers();
+            //        Navigator.of(context).pop();
+            //      },
+            //    ),
+            //  ),
+            //),
           );
         },
       ),

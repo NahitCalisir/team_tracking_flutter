@@ -19,7 +19,6 @@ class ActivityMembersScreen extends StatefulWidget {
 
 class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
 
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -27,20 +26,43 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.activity.name),
-          bottom: const TabBar(
-            //labelColor: kSecondaryColor2,
-            //unselectedLabelColor: Colors.white60 ,
-            //indicatorColor: kSecondaryColor2,
-            tabs: [
-              Tab(text: 'Activity Members'),
-              Tab(text: 'Membership Requests'),
-            ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight), // AppBar'ın yüksekliği
+            child: Stack(
+              children: [
+                const TabBar(
+                  tabs: [
+                    Tab(text: 'Activity Members'),
+                    Tab(text: 'Membership Requests'),
+                  ],
+                ),
+                if(widget.activity.joinRequests!.length != 0)
+                Positioned(
+                  top: 2, // İstenilen dikey konum
+                  right: 2, // İstenilen yatay konum
+                  child: CircleAvatar(
+                    radius: 9,
+                    backgroundColor: Colors.red,
+                    child: Text(
+                      widget.activity.joinRequests!.length.toString(),
+                      style: TextStyle(color: Colors.white,fontSize: 12),
+                    ),
+                  ), // Burada BadgeWidget yer alacak
+                ),
+              ],
+            ),
           ),
           actions: [
             IconButton(
                 onPressed: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForActivity(activity: widget.activity)))
-                      .then((value) => context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity));
+                  if(widget.activity.timeEnd.toDate().isAfter(DateTime.now())) {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForActivity(activity: widget.activity)))
+                        .then((value) => context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Activity completed."),backgroundColor: Colors.red,)
+                    );
+                  }
                 },
                 icon: const Icon(Icons.map_outlined,color: Colors.indigo,size: 30,)),
           ],
@@ -164,7 +186,6 @@ class MembershipRequestsList extends StatelessWidget {
 
   bool aramaYapiliyormu = false;
 
-
   @override
   Widget build(BuildContext context) {
     // ActivityMembersScreenCubit ile grup üyelerini getir
@@ -211,7 +232,7 @@ class MembershipRequestsList extends StatelessWidget {
                             const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                             ClipOval(
                               child: Image(
-                                image: NetworkImage(user.photoUrl!),
+                                image: NetworkImage(user.photoUrl),
                                 width: 50,
                                 height: 50,
                               ),
