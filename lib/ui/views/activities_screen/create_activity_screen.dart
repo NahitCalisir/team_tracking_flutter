@@ -26,6 +26,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
   String? routeDownloadUrl;
   double? routeDistance;
   double? routeElevation;
+  FilePickerResult? filePickerResult;
 
   @override
   void initState() {
@@ -101,13 +102,11 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                           Timestamp? selectedTimestamp =
                           await _selectDateTime(context, timeStart);
 
-                          if (selectedTimestamp != null) {
-                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                            setState(() {
-                              timeStart = selectedDateTime;
-                            });
-                          }
-                        },
+                          DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                          setState(() {
+                            timeStart = selectedDateTime;
+                          });
+                                                },
                         child: InputDecorator(
                           decoration: const InputDecoration(
                             labelText: 'Start Date and Time*',
@@ -132,13 +131,11 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                           Timestamp? selectedTimestamp =
                           await _selectDateTime(context, timeEnd ?? DateTime.now());
 
-                          if (selectedTimestamp != null) {
-                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                            setState(() {
-                              timeEnd = selectedDateTime;
-                            });
-                          }
-                        },
+                          DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                          setState(() {
+                            timeEnd = selectedDateTime;
+                          });
+                                                },
                         child: InputDecorator(
                           decoration: const InputDecoration(
                             labelText: 'End Date and Time*',
@@ -169,7 +166,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                                 if(result != null) {
                                   selectedRoutePath = result.files.single.path;
                                   String fileName = selectedRoutePath!.split('/').last;
-                                  routeDownloadUrl = await context.read<CreateActivityScreenCubit>().uploadPickerResultToFirestore(result);
+                                  //routeDownloadUrl = await context.read<CreateActivityScreenCubit>().uploadPickerResultToFirestore(result);
                                   setState(() {
                                     selectedRouteName = fileName;
                                     isLoading = false;
@@ -187,17 +184,22 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
                           foregroundColor: Colors.white,
                         ),
                         onPressed: () async {
-                            context.read<CreateActivityScreenCubit>().saveActivity(
-                              context: context,
-                              name: _nameController.text.trim(),
-                              city: _cityController.text.trim(),
-                              country: _countryController.text.trim(),
-                              activityImage: activityImageFile,
-                              timeStart: Timestamp.fromDate(timeStart),
-                              timeEnd: Timestamp.fromDate(timeEnd),
-                              routeUrl: routeDownloadUrl ?? "",
-                              routeName: selectedRouteName ?? "",
-                            );
+                         //if(filePickerResult != null) {
+                         //  routeDownloadUrl = await context.read<CreateActivityScreenCubit>().uploadPickerResultToFirestore(filePickerResult!);
+                         //}
+                          setState(() {isLoading = true;});
+                          await context.read<CreateActivityScreenCubit>().saveActivity(
+                            context: context,
+                            name: _nameController.text.trim(),
+                            city: _cityController.text.trim(),
+                            country: _countryController.text.trim(),
+                            activityImage: activityImageFile,
+                            timeStart: Timestamp.fromDate(timeStart),
+                            timeEnd: Timestamp.fromDate(timeEnd),
+                            routeUrl: routeDownloadUrl ?? "",
+                            routeName: selectedRouteName ?? "",
+                          );
+                          setState(() {isLoading = false;});
                         },
                         child: const Text("Create Activity",
                             style: TextStyle(fontSize: 20)),

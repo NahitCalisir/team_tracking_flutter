@@ -9,11 +9,10 @@ import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_activity_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:team_tracking/utils/constants.dart';
 
 class MapScreenForActivity extends StatefulWidget {
   final Activities activity;
-  const MapScreenForActivity({Key? key, required this.activity}) : super(key: key);
+  const MapScreenForActivity({super.key, required this.activity});
 
   @override
   State<MapScreenForActivity> createState() => _MapScreenForActivityState();
@@ -26,7 +25,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
   final ValueNotifier<bool> _isSatelliteView = ValueNotifier<bool>(false);
 
   List<LatLngWithAltitude> gpxPoints = [];
-  GoogleAds _googleAds = GoogleAds();
+  final GoogleAds _googleAds = GoogleAds();
 
 
   @override
@@ -75,7 +74,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                         urlTemplate: _isSatelliteView.value
                             ? 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}'
                             : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
                       ),
                       PolylineLayer(
                         polylineCulling: false,
@@ -87,76 +86,89 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                         ],
                       ),
                       MarkerLayer(
-                        markers: userList.map((user) {
+                        markers: [
+                          if (gpxPoints.isNotEmpty)
+                            Marker(
+                            point: LatLng(gpxPoints.first.latitude, gpxPoints.first.longitude),
+                            child: const Icon(Icons.location_pin,color: Colors.red)
+                        ),
+                          if (gpxPoints.isNotEmpty)
+                            Marker(
+                              point: LatLng(gpxPoints.last.latitude, gpxPoints.last.longitude),
+                              child: const Icon(Icons.flag,color: Colors.white)
+                          ),
+                        ]
+                      ),
+                      if(widget.activity.timeStart.toDate().isBefore(DateTime.now())) //Eğer başladıysa
+                      MarkerLayer(
+                        markers: userList.map((user){
                           return Marker(
                             point: LatLng(user.lastLocation!.latitude, user.lastLocation!.longitude),
                             rotate: true,
                             height: 250,
                             width: 86,
-                            child: Container(
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      ProgressBar(
-                                        value: user.lastSpeed! / 50,
-                                        width: 75,
-                                        height: 20,
-                                        backgroundColor: Colors.deepPurpleAccent,
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [Colors.yellowAccent, Colors.red],
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.speed, color: Colors.white,),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            "${user.lastSpeed!.toStringAsFixed(1)}",
-                                            style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    width: 80,
-                                    height: 27,
-                                    child: Card(
-                                      color: Colors.deepPurpleAccent,
-                                      child: Text(
-                                        "${user.name}",
-                                        style: const TextStyle(color: Colors.white),
-                                        textAlign: TextAlign.center,
+                            child: Column(
+                              children: [
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    ProgressBar(
+                                      value: user.lastSpeed! / 50,
+                                      width: 75,
+                                      height: 20,
+                                      backgroundColor: Colors.deepPurpleAccent,
+                                      gradient: const LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [Colors.orangeAccent, Colors.red],
                                       ),
                                     ),
-                                  ),
-                                  Stack(
-                                    alignment: Alignment.topCenter,
-                                    children: [
-                                      const Icon(Icons.location_pin, size: 84, color: Colors.deepPurpleAccent,),
-                                      Positioned(
-                                        top: 10,
-                                        left: 20,
-                                        child: CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor: Colors.white,
-                                          child: user.photoUrl!.isNotEmpty
-                                              ? CircleAvatar(
-                                            radius: 20,
-                                            backgroundImage: NetworkImage(user.photoUrl!),
-                                          )
-                                              : const Icon(Icons.account_circle, color: Colors.orangeAccent, size: 42,),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.speed, color: Colors.white,),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          user.lastSpeed!.toStringAsFixed(1),
+                                          style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  width: 80,
+                                  height: 27,
+                                  child: Card(
+                                    color: Colors.deepPurpleAccent,
+                                    child: Text(
+                                      user.name,
+                                      style: const TextStyle(color: Colors.white),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                Stack(
+                                  alignment: Alignment.topCenter,
+                                  children: [
+                                    const Icon(Icons.location_pin, size: 84, color: Colors.deepPurpleAccent,),
+                                    Positioned(
+                                      top: 10,
+                                      left: 20,
+                                      child: CircleAvatar(
+                                        radius: 22,
+                                        backgroundColor: Colors.white,
+                                        child: user.photoUrl.isNotEmpty
+                                            ? CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: NetworkImage(user.photoUrl),
+                                        )
+                                            : const Icon(Icons.account_circle, color: Colors.orangeAccent, size: 42,),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -180,16 +192,16 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                               child: Text(
                                 " Distance  : ${widget.activity.routeDistance?.toStringAsFixed(1).toString() ?? ""} km \n"
                                 " Elevation : ${widget.activity.routeElevation?.toStringAsFixed(0).toString() ?? ""} m ",
-                                style: TextStyle(color: Colors.greenAccent),
+                                style: const TextStyle(color: Colors.greenAccent),
                               ),
                             ),
                           ),
-                          Spacer(),
+                          const Spacer(),
                           Column(
                             children: [
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  shape: CircleBorder(),
+                                  shape: const CircleBorder(),
                                   backgroundColor: Colors.white.withOpacity(0.7),
                                   elevation: 10,
                                 ),
@@ -204,7 +216,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                                 builder: (context, isSatelliteView, _) {
                                   return ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      shape: CircleBorder(),
+                                      shape: const CircleBorder(),
                                       backgroundColor: Colors.white.withOpacity(0.7),
                                       elevation: 10,
                                     ),
@@ -218,7 +230,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  shape: CircleBorder(),
+                                  shape: const CircleBorder(),
                                   backgroundColor: Colors.white.withOpacity(0.7),
                                   elevation: 10,
                                 ),
@@ -236,24 +248,6 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                 ],
               ),
             ),
-            //floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-            //floatingActionButton: Padding(
-            //  padding: const EdgeInsets.only(top: 4),
-            //  child: SizedBox(
-            //    height: 38,
-            //    width: 38,
-            //    child: FloatingActionButton(
-            //      backgroundColor: Colors.white.withOpacity(0.7),
-            //      //foregroundColor: Colors.red,
-            //      shape: const CircleBorder(),
-            //      child: const Icon(Icons.close),
-            //      onPressed: () {
-            //        context.read<MapScreenForActivityCubit>().cancelTimers();
-            //        Navigator.of(context).pop();
-            //      },
-            //    ),
-            //  ),
-            //),
           );
         },
       ),

@@ -8,11 +8,10 @@ import 'package:team_tracking/services/google_ads.dart';
 import 'package:team_tracking/ui/cubits/map_screen_for_group_cubit.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:team_tracking/utils/constants.dart';
 
 class MapScreenForGroup extends StatefulWidget {
   final Groups group;
-  const MapScreenForGroup({Key? key, required this.group}) : super(key: key);
+  const MapScreenForGroup({super.key, required this.group});
 
   @override
   State<MapScreenForGroup> createState() => _MapScreenForGroupState();
@@ -23,7 +22,7 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
   final TextEditingController end = TextEditingController(text: "34870 kartal");
   final MapController _mapController = MapController();
   final ValueNotifier<bool> _isSatelliteView = ValueNotifier<bool>(false);
-  GoogleAds _googleAds = GoogleAds();
+  final GoogleAds _googleAds = GoogleAds();
 
   @override
   void initState() {
@@ -61,7 +60,7 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
                         urlTemplate: _isSatelliteView.value
                             ? 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}'
                             : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
                       ),
                       MarkerLayer(
                         markers: userList.map((user) {
@@ -90,11 +89,11 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Icon(Icons.speed, color: Colors.red,),
-                                          SizedBox(width: 8),
+                                          const Icon(Icons.speed, color: Colors.red,),
+                                          const SizedBox(width: 8),
                                           Text(
-                                            "${user.lastSpeed!.toStringAsFixed(1)}",
-                                            style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
+                                            user.lastSpeed!.toStringAsFixed(1),
+                                            style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold),
                                           ),
                                         ],
                                       ),
@@ -106,7 +105,7 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
                                     child: Card(
                                       color: Colors.deepPurpleAccent,
                                       child: Text(
-                                        "${user.name}",
+                                        user.name,
                                         style: const TextStyle(color: Colors.white),
                                         textAlign: TextAlign.center,
                                       ),
@@ -122,10 +121,10 @@ class _MapScreenForGroupState extends State<MapScreenForGroup> {
                                         child: CircleAvatar(
                                           radius: 22,
                                           backgroundColor: Colors.white,
-                                          child: user.photoUrl!.isNotEmpty
+                                          child: user.photoUrl.isNotEmpty
                                               ? CircleAvatar(
                                             radius: 20,
-                                            backgroundImage: NetworkImage(user.photoUrl!),
+                                            backgroundImage: NetworkImage(user.photoUrl),
                                           )
                                               : const Icon(Icons.account_circle, color: Colors.orangeAccent, size: 42,),
                                         ),

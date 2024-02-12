@@ -8,7 +8,7 @@ import 'package:team_tracking/ui/cubits/settings_secreen_cubit.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
-  SettingsScreen({super.key});
+  const SettingsScreen({super.key});
 
 
   @override
@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(currentUser!.email),
-                    if(isLoading) CircularProgressIndicator(),
+                    if(isLoading) const CircularProgressIndicator(),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _nameController,

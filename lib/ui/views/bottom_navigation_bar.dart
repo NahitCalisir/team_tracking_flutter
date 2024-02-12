@@ -5,7 +5,6 @@ import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/groups_screen/groups_screen.dart';
-import 'package:team_tracking/ui/views/settings_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
 
 

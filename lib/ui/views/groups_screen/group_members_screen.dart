@@ -106,11 +106,11 @@ class GroupMembersList extends StatelessWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: user.photoUrl!.isEmpty ?
+                              child: user.photoUrl.isEmpty ?
                               const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                               ClipOval(
                                 child: Image(
-                                  image: NetworkImage(user.photoUrl!),
+                                  image: NetworkImage(user.photoUrl),
                                   width: 50,
                                   height: 50,
                                 ),
@@ -207,11 +207,11 @@ class MembershipRequestsList extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: user.photoUrl!.isEmpty ?
+                            child: user.photoUrl.isEmpty ?
                             const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                             ClipOval(
                               child: Image(
-                                image: NetworkImage(user.photoUrl!),
+                                image: NetworkImage(user.photoUrl),
                                 width: 50,
                                 height: 50,
                               ),

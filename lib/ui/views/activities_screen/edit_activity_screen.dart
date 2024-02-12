@@ -29,6 +29,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
   String? selectedRoutePath;
   String? selectedRouteName;
   String? routeDownloadUrl;
+  FilePickerResult? filePickerResult;
 
   @override
   void initState() {
@@ -117,13 +118,11 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                           Timestamp? selectedTimestamp =
                           await _selectDateTime(context, timeStart ?? DateTime.now());
 
-                          if (selectedTimestamp != null) {
-                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                            setState(() {
-                              timeStart = selectedDateTime;
-                            });
-                          }
-                        },
+                          DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                          setState(() {
+                            timeStart = selectedDateTime;
+                          });
+                                                },
                         child: InputDecorator(
                           decoration: const InputDecoration(
                             labelText: 'Start Date and Time*',
@@ -164,7 +163,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                             children: <Widget>[
                               Text(
                                 timeEnd.toString().isNotEmpty
-                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd!)
+                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd)
                                     : 'Select End Date and Time',
                               ),
                               const Icon(Icons.calendar_today),
@@ -181,18 +180,16 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                           suffixIcon: IconButton(
                               onPressed: () async {
                                 setState(() {isLoading = true;});
-                                FilePickerResult? result  = await context.read<EditActivityScreenCubit>().pickRouteFile();
-                                if(result != null) {
-                                  selectedRoutePath = result.files.single.path;
+                                filePickerResult  = await context.read<EditActivityScreenCubit>().pickRouteFile();
+                                if(filePickerResult != null) {
+                                  selectedRoutePath = filePickerResult?.files.single.path;
                                   String fileName = selectedRoutePath!.split('/').last;
-                                  routeDownloadUrl = await context.read<EditActivityScreenCubit>().uploadPickerResultToFirestore(result);
                                   setState(() {
                                     _routeController.text = fileName;
                                     selectedRouteName = fileName;
                                     isLoading = false;
                                   });
                                 }
-
                               },
                               icon: const Icon(Icons.upload_file)),
                         ),
@@ -206,7 +203,8 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                                   backgroundColor: kSecondaryColor2,
                                   foregroundColor: Colors.white),
                               onPressed: () async {
-                                context.read<EditActivityScreenCubit>().editActivity(
+                                setState(() {isLoading = true;});
+                                await context.read<EditActivityScreenCubit>().editActivity(
                                   context: context,
                                   activityId: widget.activity.id,
                                   name: _nameController.text.trim(),
@@ -216,9 +214,11 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                                   photoUrl: widget.activity.photoUrl,
                                   timeStart: Timestamp.fromDate(timeStart),
                                   timeEnd: Timestamp.fromDate(timeEnd),
-                                  routeUrl: routeDownloadUrl ?? "",
+                                  routeUrl: widget.activity.routeUrl ?? "",
                                   routeName: selectedRouteName ?? "",
+                                  routeGpxFile: filePickerResult,
                                 );
+                                setState(() {isLoading = false;});
                               },
                               child: const Text("Save Activity",style: TextStyle(fontSize: 20),)),
                           const SizedBox(height: 30,),
@@ -269,9 +269,7 @@ Future<Timestamp> _selectDateTime(
     lastDate: DateTime(2101),
   ) ?? DateTime.now();
 
-  TimeOfDay selectedTime = await showTimePicker(context: context,
-    initialTime: TimeOfDay.fromDateTime(selectedDateTime),
-  ) ?? TimeOfDay.fromDateTime(DateTime.now());
+  TimeOfDay selectedTime = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(selectedDateTime),) ?? TimeOfDay.fromDateTime(DateTime.now());
 
   selectedDateTime = DateTime(
     selectedDateTime.year,

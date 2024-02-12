@@ -125,6 +125,8 @@ class GroupList extends StatelessWidget {
   bool aramaYapiliyormu = false;
   Users? currentUser = UsersManager().currentUser;
 
+  GroupList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<GroupsScreenCubit, List<Groups>>(

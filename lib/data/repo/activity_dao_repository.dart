@@ -38,10 +38,10 @@ class ActivityDaoRepository {
         required Timestamp timeEnd,
         String? photoUrl,
         List<String>? joinRequests,
-        required String routeUrl,
-        required String routeName,
-        required double routeDistance,
-        required double routeElevation,
+        String? routeUrl,
+        String? routeName,
+        double? routeDistance,
+        double? routeElevation,
       }) async {
     var newActivity = {
       "name": name,
@@ -71,10 +71,10 @@ class ActivityDaoRepository {
         String? photoUrl,
         required Timestamp timeStart,
         required Timestamp timeEnd,
-        required String routeUrl,
-        required String routeName,
-        required double routeDistance,
-        required double routeElevation,
+        String? routeUrl,
+        String? routeName,
+        double? routeDistance,
+        double? routeElevation,
       }) async {
     var updatedData = {
       "name": name,
@@ -100,8 +100,9 @@ class ActivityDaoRepository {
     required File? activityImage,
     required Timestamp timeStart,
     required Timestamp timeEnd,
-    required String routeUrl,
-    required String routeName,
+    FilePickerResult? routeGpxFile,
+    String? routeUrl,
+    String? routeName,
   }) async {
     if (name.isNotEmpty && city.isNotEmpty && country.isNotEmpty && timeStart.toString().isNotEmpty && timeEnd.toString().isNotEmpty) {
       if(timeEnd.toDate().isAfter(timeStart.toDate())) {
@@ -110,6 +111,10 @@ class ActivityDaoRepository {
         if (activityImage != null) {
           imageUrl = await uploadActivityImage(activityImage);
         }
+        if (routeGpxFile != null) {
+          deleteActivityGpxFile(routeUrl ?? "");
+          routeUrl = await uploadPickerResultToStorage(routeGpxFile);
+        }
         //Register activity to firestore
         String owner = UsersManager().currentUser!.id;
         List<String> memberIds = [UsersManager().currentUser!.id];
@@ -117,8 +122,8 @@ class ActivityDaoRepository {
         //Update activity in firestore
         double routeDistance = 0.0;
         double routeElevation = 0.0;
-        if(routeUrl.isNotEmpty) {
-          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl);
+        if(routeUrl != "") {
+          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl!);
           routeDistance = calculateRouteDistance(gpxPoints);
           routeElevation = calculateRouteElevation(gpxPoints);
         }
@@ -190,8 +195,9 @@ class ActivityDaoRepository {
     String? photoUrl,
     required Timestamp timeStart,
     required Timestamp timeEnd,
-    required String routeUrl,
-    required String routeName,
+    FilePickerResult? routeGpxFile,
+    String? routeUrl,
+    String? routeName,
   }) async {
     if (name.isNotEmpty && city.isNotEmpty && country.isNotEmpty && timeStart.toString().isNotEmpty && timeEnd.toString().isNotEmpty) {
       if(timeEnd.toDate().isAfter(timeStart.toDate())) {
@@ -199,14 +205,17 @@ class ActivityDaoRepository {
         String imageUrl = photoUrl ?? "";
         if (activityImage != null) {
           deleteActivityImage(photoUrl ?? "");
-          deleteActivityGpxFile(routeUrl ?? "" );
           imageUrl = await uploadActivityImage(activityImage);
+        }
+        if (routeGpxFile != null) {
+          deleteActivityGpxFile(routeUrl ?? "");
+          routeUrl = await uploadPickerResultToStorage(routeGpxFile);
         }
         //Update activity in firestore
         double routeDistance = 0.0;
         double routeElevation = 0.0;
-        if(routeUrl.isNotEmpty) {
-          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl);
+        if(routeUrl != "") {
+          List<LatLngWithAltitude> gpxPoints = await extractGpxPointsFromFile(routeUrl!);
           routeDistance = calculateRouteDistance(gpxPoints);
           routeElevation = calculateRouteElevation(gpxPoints);
         }
@@ -467,15 +476,15 @@ class ActivityDaoRepository {
     }
   }
 
-  Future<String?> uploadPickerResultToFirestore(FilePickerResult pickerResult) async {
+  Future<String?> uploadPickerResultToStorage(FilePickerResult pickerResult) async {
     String path = pickerResult.files.single.path ?? "";
     String name = path.split('/').last;
     File file = File(path);
-    FirebaseStorage _storage = FirebaseStorage.instance;
+    FirebaseStorage storage = FirebaseStorage.instance;
     try {
       String fileName = "${name}_${DateTime.now().millisecondsSinceEpoch}.gpx";
-      await _storage.ref("routeFiles/$fileName").putFile(file);
-      String uploadedFileUrl = await _storage.ref("routeFiles/$fileName").getDownloadURL();
+      await storage.ref("routeFiles/$fileName").putFile(file);
+      String uploadedFileUrl = await storage.ref("routeFiles/$fileName").getDownloadURL();
       return uploadedFileUrl;
     } catch(e) {
       print("File upload error : Dosya Yükleme hatası");

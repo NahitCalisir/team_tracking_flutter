@@ -32,11 +32,11 @@ void main() async{
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
   );
-  FirebaseAppCheck.instance.activate(
-    webProvider: ReCaptchaV3Provider("6Lf9IVgpAAAAALPwk2dx8kuZknThQ3H0d-bL8sHP"),
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.appAttest,
-  );
+  //FirebaseAppCheck.instance.activate(
+  //  webProvider: ReCaptchaV3Provider("6Lf9IVgpAAAAALPwk2dx8kuZknThQ3H0d-bL8sHP"),
+  //  androidProvider: AndroidProvider.debug,
+  //  appleProvider: AppleProvider.appAttest,
+  //);
   runApp(const MyApp());
 }
 
@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting)  {
                       // Eğer checkAndSetUserLogin() fonksiyonu hala çalışıyorsa, yükleniyor göster.
-                      return Center(child: const CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     } else {
                       // checkAndSetUserLogin() fonksiyonu tamamlandıysa, HomePage'e git.
                       return snapshot.hasData ? const Homepage() : const LoginScreen();

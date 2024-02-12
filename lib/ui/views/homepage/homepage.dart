@@ -1,9 +1,6 @@
-import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/data/entity/users.dart';
 import 'package:team_tracking/services/google_ads.dart';
@@ -43,14 +40,14 @@ class _HomepageState extends State<Homepage> {
     return BlocBuilder<HomepageCubit,void>(
       builder: (BuildContext context, void state) {
         return Scaffold(
-            backgroundColor: Color(0xff14012c),//Color(0xff131230),
+            backgroundColor: const Color(0xff14012c),//Color(0xff131230),
             appBar: AppBar(
               title: const Text("Team Tracking",style: TextStyle(color: Colors.white),),
-              backgroundColor: Color(0xff14012c),
+              backgroundColor: const Color(0xff14012c),
               actions: [
                 GestureDetector(
                   onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsScreen()));
+                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingsScreen()));
                     },
                   child: const Padding(
                     padding: EdgeInsets.all(8.0),
@@ -80,7 +77,7 @@ class _HomepageState extends State<Homepage> {
                             GoogleAds().showInterstitialAd();
                           },
                           child: Padding(
-                            padding:  EdgeInsets.symmetric(horizontal: 8,vertical: 20),
+                            padding:  const EdgeInsets.symmetric(horizontal: 8,vertical: 20),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(24),
                               child: Stack(
@@ -95,8 +92,8 @@ class _HomepageState extends State<Homepage> {
                                     right: 0,
                                     child: Center(
                                       child: Container(
-                                        padding: EdgeInsets.all(24),
-                                        color: Color(0xff14012c).withOpacity(0.7),
+                                        padding: const EdgeInsets.all(24),
+                                        color: const Color(0xff14012c).withOpacity(0.7),
                                         child: Text(
                                           menu.detailText,
                                           style: const TextStyle(
@@ -111,8 +108,8 @@ class _HomepageState extends State<Homepage> {
                                     left: 0,
                                     child: Center(
                                       child: Container(
-                                        padding: EdgeInsets.all(24),
-                                        color: Color(0xff14012c).withOpacity(0.7),
+                                        padding: const EdgeInsets.all(24),
+                                        color: const Color(0xff14012c).withOpacity(0.7),
                                         child: Text(
                                           menu.title,
                                           style: const TextStyle(
@@ -142,12 +139,12 @@ class _HomepageState extends State<Homepage> {
 
   Future<List<MenuItems>> loadMenuItems() async {
     var menuItemList = <MenuItems>[];
-    var menu1 = MenuItems(
+    var menu2 = MenuItems(
         title: "Group Tracking",
         image: "assets/images/team.jpg",
         sayfa: const GroupsScreen(),
         detailText: "You can create any group, such as your business team or family members, and track their live locations whenever you want.");
-    var menu2 = MenuItems(
+    var menu1 = MenuItems(
         title: "Activity Tracking",
         image: "assets/images/activity.jpg",
         sayfa: const ActivitiesScreen(),

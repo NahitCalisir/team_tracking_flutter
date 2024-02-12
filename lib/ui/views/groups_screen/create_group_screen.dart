@@ -70,7 +70,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                 )
                           )
                       ),
-                      if(isLoading) CircularProgressIndicator(),
+                      if(isLoading) const CircularProgressIndicator(),
                       const SizedBox(height: 16),
                       TextField(
                         controller: _nameController,

@@ -79,7 +79,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                         )
                       )
                   ),
-                  if(isLoading) CircularProgressIndicator(),
+                  if(isLoading) const CircularProgressIndicator(),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _nameController,

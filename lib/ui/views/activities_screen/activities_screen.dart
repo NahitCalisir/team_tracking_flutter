@@ -131,6 +131,8 @@ class ActivityList extends StatelessWidget {
   bool aramaYapiliyormu = false;
   Users? currentUser = UsersManager().currentUser;
 
+  ActivityList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ActivitiesScreenCubit, List<Activities>>(
@@ -192,18 +194,24 @@ class ActivityList extends StatelessWidget {
                                         fontSize: 17,
                                     ),
                                   ),
-                                  SizedBox(height: 8),
-                                  if(activity.routeDistance != 0)
+                                  const SizedBox(height: 8),
+                                  (activity.routeDistance != 0) ?
                                     Text("Distance    : ${activity.routeDistance?.toStringAsFixed(1)} km",
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(color: Colors.grey)),
-                                  if(activity.routeElevation != 0)
+                                      style: const TextStyle(color: Colors.grey)):
+                                    const Text("Distance    : Route not selected",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: Colors.grey)),
+                                  (activity.routeElevation != 0) ?
                                     Text("Elevation   : ${activity.routeElevation?.toStringAsFixed(0)} m",
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(color: Colors.grey)),
+                                        style: const TextStyle(color: Colors.grey)):
+                                  const Text("Elevation   : Route not selected",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.grey)),
                                   Row(
                                     children: [
-                                      Text("Status         : ",style: TextStyle(color: Colors.grey),),
+                                      const Text("Status         : ",style: TextStyle(color: Colors.grey),),
                                       if(activity.getActivityStatus() == ActivityStatus.notStarted)
                                         const Text("Not Started",
                                             overflow: TextOverflow.ellipsis,
@@ -232,7 +240,7 @@ class ActivityList extends StatelessWidget {
                                       style: const TextStyle(color: Colors.grey)),
                                   Text("Location    : ${activity.city} - ${activity.country}",
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(color: Colors.grey),
+                                    style: const TextStyle(color: Colors.grey),
                                   ),
                                   if (isMember && !isOwner)
                                     Card(

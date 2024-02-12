@@ -36,7 +36,7 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
                     Tab(text: 'Membership Requests'),
                   ],
                 ),
-                if(widget.activity.joinRequests!.length != 0)
+                if(widget.activity.joinRequests!.isNotEmpty)
                 Positioned(
                   top: 2, // İstenilen dikey konum
                   right: 2, // İstenilen yatay konum
@@ -45,7 +45,7 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
                     backgroundColor: Colors.red,
                     child: Text(
                       widget.activity.joinRequests!.length.toString(),
-                      style: TextStyle(color: Colors.white,fontSize: 12),
+                      style: const TextStyle(color: Colors.white,fontSize: 12),
                     ),
                   ), // Burada BadgeWidget yer alacak
                 ),
@@ -128,11 +128,11 @@ class ActivityMembersList extends StatelessWidget {
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: user.photoUrl!.isEmpty ?
+                              child: user.photoUrl.isEmpty ?
                               const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                               ClipOval(
                                 child: Image(
-                                  image: NetworkImage(user.photoUrl!),
+                                  image: NetworkImage(user.photoUrl),
                                   width: 50,
                                   height: 50,
                                 ),
@@ -228,7 +228,7 @@ class MembershipRequestsList extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: user.photoUrl!.isEmpty ?
+                            child: user.photoUrl.isEmpty ?
                             const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
                             ClipOval(
                               child: Image(

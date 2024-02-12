@@ -21,6 +21,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   Timer? _trackMeTimer;
   Timer? _showAllOnMapTimer;
   List<LatLng> allUserLocations = [];
+  List<LatLng> gpxPoints = [];
   //List<Users> allUserList = [];
   LatLng? myLocation;
 
@@ -39,12 +40,12 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   //  });
   //}
 
-  Future<void> _runShowAllOnMap(mapController,memberIds) async {
+  Future<void> _runShowAllOnMap(mapController,memberIds,gpxPoints) async {
     cancelTimers();
-    await _showAllOnMap( mapController,memberIds);
-    setMapPositionForAll(mapController);
+    await _showAllOnMap( mapController,memberIds,gpxPoints);
+    setMapPositionForAll(mapController,gpxPoints);
     _showAllOnMapTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      await _showAllOnMap( mapController, memberIds);
+      await _showAllOnMap( mapController, memberIds,gpxPoints);
     });
   }
 
@@ -90,20 +91,29 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
 
   //TODO: Get activity member IDs method -----------
   Future<List<LatLngWithAltitude>> getActivityMembersAndShowMap(MapController mapController, Activities activity) async {
+    List<LatLngWithAltitude> gpxPointsWithAltitude = [];
     try {
       DocumentSnapshot<
           Map<String, dynamic>> activityDocument = await activityCollection.doc(
           activity.id).get();
       Map<String, dynamic>? activityData = activityDocument.data();
       if (activityData != null) {
-        List<dynamic> memberIdList = activityData["memberIds"];
-        _runShowAllOnMap(mapController, memberIdList);
-        // Extract GPX points and add them to gpxPoints
-        if (activityData["gpxFilePath"] != null) {
-          List<LatLngWithAltitude> gpxTrack = await ActivityDaoRepository.shared.extractGpxPointsFromFile(activityData["gpxFilePath"]);
-          return gpxTrack;
+        // Extract GPX points and add them to gpxPointsWithAltitude
+        if (activityData["routeUrl"] != "") {
+          List<LatLngWithAltitude> gpxTrack = await ActivityDaoRepository.shared.extractGpxPointsFromFile(activityData["routeUrl"]);
+          gpxPointsWithAltitude = gpxTrack;
+          for (var element in gpxTrack) {
+            gpxPoints.add(LatLng(element.latitude, element.longitude));
+          }
+          List<dynamic> memberIdList = activityData["memberIds"];
+          _runShowAllOnMap(mapController, memberIdList,gpxPoints );
+        } else {
+          gpxPoints = [];
+          List<dynamic> memberIdList = activityData["memberIds"];
+          _runShowAllOnMap(mapController, memberIdList,gpxPoints );
         }
       }
+      return gpxPointsWithAltitude;
     } catch (e) {
       print("Firestore veri çekme hatası-3: $e");
     }
@@ -111,7 +121,7 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   }
 
   //TODO: Show all activity members method -----------
-  Future<void> _showAllOnMap(MapController mapController, List<dynamic> memberIds) async {
+  Future<void> _showAllOnMap(MapController mapController, List<dynamic> memberIds, List<LatLng> gpxPoints) async {
 
     List<LatLng> userLocations = [];
     List<Users> userList = [];
@@ -159,11 +169,21 @@ class MapScreenForActivityCubit extends Cubit<List<Users>> {
   }
 
   //TODO:Update Map position for all users
-  Future<void> setMapPositionForAll(mapController) async {
+  Future<void> setMapPositionForAll(mapController,List<LatLng> gpxPoints) async {
     // harita konumunu güncelle
-    LatLngBounds bounds = calculateBoundingBox(allUserLocations);
-    mapController.fitBounds(
-        bounds, options: const FitBoundsOptions(padding: EdgeInsets.all(30.0)));
+    if(gpxPoints.isNotEmpty) {
+      LatLngBounds bounds = calculateBoundingBox(gpxPoints);
+      mapController.fitBounds(
+          bounds, options: const FitBoundsOptions(padding: EdgeInsets.all(30.0)));
+      print("*********");
+      print("GPX pointlere göre harita konumu ayarlandı");
+    } else {
+      LatLngBounds bounds = calculateBoundingBox(allUserLocations);
+      mapController.fitBounds(
+          bounds, options: const FitBoundsOptions(padding: EdgeInsets.all(30.0)));
+      print("*********");
+      print("GPX olmadığı için kullanıcılara göre konum ayarlandı");
+    }
   }
 
   Future<void> setMapPositionForMe(mapController) async {
