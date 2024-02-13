@@ -122,8 +122,8 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>
             body: TabBarView(
               controller: _tabController,
               children: [
-                ActivityMembersList(activity: widget.activity),
-                ActivityMembersList(activity: widget.activity),
+                ActivityMembersList(activity: widget.activity,tabController: _tabController,),
+                ActivityMembersList(activity: widget.activity,tabController: _tabController,),
                 //MembershipRequestsList(activity: widget.activity),
               ],
             ),
@@ -137,10 +137,11 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>
 class ActivityMembersList extends StatelessWidget {
   final Activities activity;
 
-  ActivityMembersList({super.key, required this.activity});
+  TabController tabController;
+
+  ActivityMembersList({super.key, required this.activity,required this.tabController});
 
   bool aramaYapiliyormu = false;
-
 
   @override
   Widget build(BuildContext context) {
@@ -199,14 +200,22 @@ class ActivityMembersList extends StatelessWidget {
                         const Spacer(),
                         if (isOwner) PopupMenuButton<String>(
                           onSelected: (String result) {
-                            handleMenuSelectionForMembers(context, result, activity, isOwner, isMember,user);
+                            handleMenuSelectionForRequests(context, result, activity, isOwner, isMember,user);
                           },
                           color: Colors.black,
                           iconColor: Colors.white,
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                            const PopupMenuItem<String>(
+                            if (tabController.index == 0) const PopupMenuItem<String>(
                               value: 'remove',
                               child: Text('Remove',style: TextStyle(color: Colors.white),),
+                            ),
+                            if (tabController.index == 1) const PopupMenuItem<String>(
+                              value: 'accept',
+                              child: Text('Accept',style: TextStyle(color: Colors.white)),
+                            ),
+                            if (tabController.index == 1) const PopupMenuItem<String>(
+                              value: 'reject',
+                              child: Text('Reject',style: TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),

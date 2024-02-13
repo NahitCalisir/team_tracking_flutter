@@ -138,8 +138,8 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
 
 
 class ActivityList extends StatelessWidget {
-  bool isSearching = false;
-  Users? currentUser = UsersManager().currentUser;
+  final bool isSearching = false;
+  final Users? currentUser = UsersManager().currentUser;
 
   ActivityList({super.key});
 
