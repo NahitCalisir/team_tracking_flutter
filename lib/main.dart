@@ -24,7 +24,6 @@ import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/ui/views/login_screen/login_screen.dart';
 import 'data/entity/users.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,11 +31,6 @@ void main() async{
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
   );
-  //FirebaseAppCheck.instance.activate(
-  //  webProvider: ReCaptchaV3Provider("6Lf9IVgpAAAAALPwk2dx8kuZknThQ3H0d-bL8sHP"),
-  //  androidProvider: AndroidProvider.debug,
-  //  appleProvider: AppleProvider.appAttest,
-  //);
   runApp(const MyApp());
 }
 
@@ -124,3 +118,4 @@ Future<User?> checkAndSetUserLogin() async {
   }
   return user;
 }
+

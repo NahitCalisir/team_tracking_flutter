@@ -8,7 +8,7 @@ import 'package:team_tracking/data/entity/groups.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/groups_screen/group_members_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 import '../entity/users.dart';
 
 class GroupDaoRepository {

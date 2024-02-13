@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:team_tracking/data/repo/group_dao_repository.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 
 class CreateGroupScreenCubit extends Cubit<File?> {
   CreateGroupScreenCubit(): super(null);

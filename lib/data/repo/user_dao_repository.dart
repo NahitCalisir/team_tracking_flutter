@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,7 +14,7 @@ import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/main.dart';
 import 'package:team_tracking/utils/constants.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 import '../entity/users.dart';
 
 class UserDaoRepository {
@@ -241,10 +242,25 @@ class UserDaoRepository {
   Future<void> runUpdateMyLocation() async {
     _updateMyLocationTimer?.cancel();
     await _updateMyLocation();
-     _updateMyLocationTimer = Timer.periodic(const Duration(seconds: 60), (timer) async {
+
+    int? locationUpdateDurationSecond; // Default value
+    try {
+      final appSettingsSnapshot = await FirebaseFirestore.instance.collection('appSettings').get();
+      if (appSettingsSnapshot.docs.isNotEmpty) {
+        final doc = appSettingsSnapshot.docs.first;
+        final duration = doc["locationUpdateDurationSecond"]?.toString();
+        if (duration != null) {
+          locationUpdateDurationSecond = int.tryParse(duration) ?? locationUpdateDurationSecond;
+        }
+      }
+    } catch (e) {
+      print("Error fetching app settings: $e");
+    }
+    _updateMyLocationTimer = Timer.periodic(Duration(seconds: locationUpdateDurationSecond ?? 60), (timer) async {
       await _updateMyLocation();
     });
   }
+
   //TODO: Update my location and speed, send to firestore method
   Future<void> _updateMyLocation() async {
     Users? currentUser = UsersManager().currentUser; // Mevcut kullanıcıyı al

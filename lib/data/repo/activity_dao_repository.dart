@@ -13,7 +13,7 @@ import 'package:team_tracking/data/entity/lat_lng_with_altitude.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/activities_screen/activity_members_screen.dart';
 import 'package:team_tracking/utils/constants.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 import 'package:xml/xml.dart';
 
 import '../entity/users.dart';
@@ -331,7 +331,7 @@ class ActivityDaoRepository {
       String userId = FirebaseAuth.instance.currentUser!.uid;
       String? userName = FirebaseAuth.instance.currentUser?.displayName ?? "";
       String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      String fileName = 'activity_images/${userId}_$userName/$timestamp.jpeg';
+      String fileName = 'activity_images/${userId}_${userName}_${timestamp}.jpg';
 
       // Upload the resized image to Firebase Storage
       File resizedImageFile = await HelperFunctions.resizeImage(imageFile, 200, 200);
@@ -483,8 +483,8 @@ class ActivityDaoRepository {
     FirebaseStorage storage = FirebaseStorage.instance;
     try {
       String fileName = "${name}_${DateTime.now().millisecondsSinceEpoch}.gpx";
-      await storage.ref("routeFiles/$fileName").putFile(file);
-      String uploadedFileUrl = await storage.ref("routeFiles/$fileName").getDownloadURL();
+      await storage.ref("route_files/$fileName").putFile(file);
+      String uploadedFileUrl = await storage.ref("route_files/$fileName").getDownloadURL();
       return uploadedFileUrl;
     } catch(e) {
       print("File upload error : Dosya Yükleme hatası");

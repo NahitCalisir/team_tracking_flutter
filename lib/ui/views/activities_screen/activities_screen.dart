@@ -59,76 +59,86 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.black,foregroundColor: Colors.white,
-        title: isSearching
-            ? TextField(
-                style: const TextStyle(color: Colors.white),
-                cursorColor: Colors.white,
-                decoration: InputDecoration(
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey.shade800)
-                  ),
-                  suffixIconColor: Colors.red,
-                  hintText: "Search",
-                ),
-                onChanged: (searchText) {
-                  context.read<ActivitiesScreenCubit>().filteredActivityList(
-                      currentUser!, searchText, _tabController.index);
-                },
-              )
-            : const Text("Activities"),
-        actions: [
-          isSearching
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isSearching = false;
-                    });
-                    context.read<ActivitiesScreenCubit>().getAllActivities();
-                  },
-                  icon: const Icon(Icons.clear),
-                )
-              : IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isSearching = true;
-                    });
-                  },
-                  icon: const Icon(Icons.search),
-                ),
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const CreateActivityScreen()));
-            },
-            icon: const Icon(Icons.add),
-          )
-        ],
-        bottom: TabBar(
-          labelColor: Colors.white,
-          indicatorColor: Colors.white,
-          dividerColor: Colors.grey.shade800,
-          controller: _tabController,
-          tabs: const [
-            Tab(text: "My Activities"),
-            Tab(text: "All Activities"),
-          ],
+    return Stack(
+      children: [
+        // Background image
+        Image.asset(
+          'assets/images/background_image4.jpg',
+          fit: BoxFit.cover,
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          ActivityList(),
-          ActivityList(),
-        ],
-      ),
+        Scaffold(backgroundColor: Colors.transparent,
+          appBar: AppBar(backgroundColor: Colors.transparent,foregroundColor: Colors.white,
+            title: isSearching
+                ? TextField(
+                    style: const TextStyle(color: Colors.white),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade800)
+                      ),
+                      suffixIconColor: Colors.red,
+                      hintText: "Search",
+                    ),
+                    onChanged: (searchText) {
+                      context.read<ActivitiesScreenCubit>().filteredActivityList(
+                          currentUser!, searchText, _tabController.index);
+                    },
+                  )
+                : const Text("Activities"),
+            actions: [
+              isSearching
+                  ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isSearching = false;
+                        });
+                        context.read<ActivitiesScreenCubit>().getAllActivities();
+                      },
+                      icon: const Icon(Icons.clear),
+                    )
+                  : IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isSearching = true;
+                        });
+                      },
+                      icon: const Icon(Icons.search),
+                    ),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const CreateActivityScreen()));
+                },
+                icon: const Icon(Icons.add),
+              )
+            ],
+            bottom: TabBar(
+              labelColor: Colors.white,
+              indicatorColor: Colors.white,
+              dividerColor: Colors.grey.shade800,
+              controller: _tabController,
+              tabs: const [
+                Tab(text: "My Activities"),
+                Tab(text: "All Activities"),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              ActivityList(),
+              ActivityList(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
+
 class ActivityList extends StatelessWidget {
-  bool aramaYapiliyormu = false;
+  bool isSearching = false;
   Users? currentUser = UsersManager().currentUser;
 
   ActivityList({super.key});
@@ -159,7 +169,7 @@ class ActivityList extends StatelessWidget {
                   // İstenilen sınırlı yüksekliği buradan ayarlayabilirsiniz
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8,right: 8,top: 8),
-                    child: Card(color: Colors.grey.shade800.withOpacity(.25),
+                    child: Card(color: Colors.grey.shade900.withOpacity(0.4),
                       child: Row(crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
@@ -270,7 +280,7 @@ class ActivityList extends StatelessWidget {
                           ),
                           PopupMenuButton<String>(iconSize: 30,
                             iconColor: Colors.white,
-                            color: Colors.grey.shade900,
+                            color: Colors.black,
                             onSelected: (String result) {
                               handleMenuSelection(context, result, activity, isOwner,
                                   isMember, currentUser!);

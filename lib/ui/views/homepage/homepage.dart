@@ -24,6 +24,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   void initState() {
+    context.read<HomepageCubit>().checkAndUpdateVersion(context);
     _googleAds.loadInterstitialAd();
     super.initState();
   }
@@ -40,22 +41,22 @@ class _HomepageState extends State<Homepage> {
     return BlocBuilder<HomepageCubit,void>(
       builder: (BuildContext context, void state) {
         return Scaffold(
-            backgroundColor: const Color(0xff14012c),//Color(0xff131230),
-            appBar: AppBar(
-              title: const Text("Team Tracking",style: TextStyle(color: Colors.white),),
-              backgroundColor: const Color(0xff14012c),
-              actions: [
-                GestureDetector(
-                  onTap: (){
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingsScreen()));
-                    },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: ClipOval(
-                      child: Icon(Icons.account_circle,color: Colors.white,size: 40,),
-                    ),
+          backgroundColor: Colors.black,//Color(0xff14012c),
+          appBar: AppBar(
+            title: const Text("Tracker",style: TextStyle(color: Colors.white),),
+            backgroundColor: Colors.black, // Color(0xff14012c),
+            actions: [
+              GestureDetector(
+                onTap: (){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingsScreen()));
+                  },
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: ClipOval(
+                    child: Icon(Icons.account_circle,color: Colors.white,size: 40,),
                   ),
-                )],
+                ),
+              )],
             ),
             body: FutureBuilder<List<MenuItems>>(
               future: loadMenuItems(),
@@ -93,7 +94,7 @@ class _HomepageState extends State<Homepage> {
                                     child: Center(
                                       child: Container(
                                         padding: const EdgeInsets.all(24),
-                                        color: const Color(0xff14012c).withOpacity(0.7),
+                                        color: Colors.black.withOpacity(0.7),
                                         child: Text(
                                           menu.detailText,
                                           style: const TextStyle(
@@ -109,12 +110,13 @@ class _HomepageState extends State<Homepage> {
                                     child: Center(
                                       child: Container(
                                         padding: const EdgeInsets.all(24),
-                                        color: const Color(0xff14012c).withOpacity(0.7),
+                                        color: Colors.black.withOpacity(0.7),
                                         child: Text(
                                           menu.title,
                                           style: const TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
                                           ),
                                         ),
                                       ),
@@ -140,130 +142,18 @@ class _HomepageState extends State<Homepage> {
   Future<List<MenuItems>> loadMenuItems() async {
     var menuItemList = <MenuItems>[];
     var menu2 = MenuItems(
-        title: "Group Tracking",
+        title: "Group Tracker",
         image: "assets/images/team.jpg",
         sayfa: const GroupsScreen(),
-        detailText: "You can create any group, such as your business team or family members, and track their live locations whenever you want.");
+        detailText: "You can create any group, such as your business team or family members and track their live locations whenever you want.");
     var menu1 = MenuItems(
-        title: "Activity Tracking",
+        title: "Activity Tracker",
         image: "assets/images/activity.jpg",
         sayfa: const ActivitiesScreen(),
-        detailText: 'You can create group activities for a certain period of time and track live location of participants.');
+        detailText: 'You can create group activities, upload your route, and track live locations of participants during the activity.');
     menuItemList.add(menu1);
     menuItemList.add(menu2);
     return menuItemList;
   }
 }
 
-/*
-        return Scaffold(backgroundColor: Color(0xff14012c),//Color(0xff131230),
-            appBar: AppBar(
-              title: const Text("Team Track",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold),),
-              backgroundColor: Color(0xff14012c),
-              actions: [
-                IconButton(
-                    onPressed: (){
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context)=>SettingsScreen()));
-                    },
-                    icon: Icon(Icons.account_circle,color: Colors.white),
-                ),
-              ],
-            ),
-            body: FutureBuilder<List<MenuItems>>(
-              future: loadMenuItems(),
-              builder: (context,snapshot){
-                if(snapshot.hasData){
-                  var menuItemList = snapshot.data;
-                  return ListView.builder(
-                      itemCount: menuItemList!.length,
-                      itemBuilder: (context,indeks){
-                        var menu = menuItemList[indeks];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => menu.sayfa,
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 16,right: 16,top: 16),
-                            child: Container(
-                              height: 370,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  bottomRight: Radius.circular(40),
-                                  bottomLeft: Radius.circular(2),
-                                  topLeft: Radius.circular(2),
-                                  topRight: Radius.circular(2),
-                                ),
-                                gradient:  LinearGradient(
-                                  colors: [
-                                    //Colors.pink,
-                                    //Colors.purple,
-                                    Colors.deepPurple,
-                                    //Color(0xffb14fd6),
-                                    //Color(0xff275d9d),
-                                    Color(0xff1c023a),
-                                    Color(0xff1c023a),
-                                    Colors.primaries[Random().nextInt(Colors.primaries.length)],
-                                    //Color(0xff131230),
-                                    //Colors.deepPurple,
-                                    //Colors.purple,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.3), // Gölge rengi ve opaklığı
-                                    spreadRadius: 2, // Yayılma yarıçapı
-                                    blurRadius: 5, // Bulanıklık yarıçapı
-                                    offset: const Offset(3, 3), // Gölge konumu (x, y)
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(5),
-                                      child: Text(menu.title,style: const TextStyle(color:Colors.white,fontSize: 22,),),
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(16.0),
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.3),
-                                          ),
-                                          child: Image.asset(
-                                            menu.image,
-                                            fit: BoxFit.cover,
-                                            height: 260,
-                                            width: MediaQuery.of(context).size.width * 0.88,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    //Image.asset(menu.image,height: 260,width: screenWidth*0.88,),
-                                    Text(menu.detailText, style: TextStyle(color: Colors.white),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                  );
-                } else {
-                  return const Center();
-                }
-              },
-            )
-        )
- */

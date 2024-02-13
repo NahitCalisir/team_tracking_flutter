@@ -116,7 +116,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                       InkWell(
                         onTap: () async {
                           Timestamp? selectedTimestamp =
-                          await _selectDateTime(context, timeStart ?? DateTime.now());
+                          await _selectDateTime(context, timeStart);
 
                           DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
                           setState(() {
@@ -132,7 +132,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                             children: <Widget>[
                               Text(
                                 timeStart.toString().isNotEmpty
-                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeStart)
+                                    ? DateFormat('dd/MM/yyyy - HH:mm').format(timeStart)
                                     : 'Select Start Date and Time',
                               ),
                               const Icon(Icons.calendar_today),
@@ -145,9 +145,9 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                       InkWell(
                         onTap: () async {
                           Timestamp? selectedTimestamp =
-                          await _selectDateTime(context, timeEnd ?? DateTime.now());
+                          await _selectDateTime(context, timeEnd);
 
-                          if (selectedTimestamp.toString().isNotEmpty) {
+                          if (selectedTimestamp != null) {
                             DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
                             setState(() {
                               timeEnd = selectedDateTime;
@@ -163,7 +163,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
                             children: <Widget>[
                               Text(
                                 timeEnd.toString().isNotEmpty
-                                    ? DateFormat('MM/dd/yyyy - HH:mm').format(timeEnd)
+                                    ? DateFormat('dd/MM/yyyy - HH:mm').format(timeEnd)
                                     : 'Select End Date and Time',
                               ),
                               const Icon(Icons.calendar_today),

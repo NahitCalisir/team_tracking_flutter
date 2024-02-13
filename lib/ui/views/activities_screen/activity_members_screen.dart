@@ -12,67 +12,123 @@ class ActivityMembersScreen extends StatefulWidget {
   final Activities activity;
 
   const ActivityMembersScreen({super.key, required this.activity});
-
   @override
   _ActivityMembersScreenState createState() => _ActivityMembersScreenState();
 }
 
-class _ActivityMembersScreenState extends State<ActivityMembersScreen>  {
+
+class _ActivityMembersScreenState extends State<ActivityMembersScreen>
+    with SingleTickerProviderStateMixin {
+  bool isSearching = false;
+  late TabController _tabController;
+  Users? currentUser = UsersManager().currentUser;
+
+
+  @override
+  void initState() {
+    // TabController'ı doğrudan oluşturma
+    _tabController = TabController(length: 2, vsync: this);
+    // Tab değişikliklerini dinlemek için listener ekledik
+    _tabController.addListener(_onTabChanged);
+    // İlk başta varsayılan olarak 0. index seçili olacak şekilde metodu çağırın
+    context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity);
+    super.initState();
+  }
+
+  // Tab değişikliklerini dinleyen metod
+  void _onTabChanged() {
+    // Seçili tab'ın index'ini kontrol edin ve buna göre metodları çağırın
+    if (_tabController.index == 0) {
+      context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity);
+    } else if (_tabController.index == 1) {
+      context.read<ActivityMembersScreenCubit>().getMemberRequestList(widget.activity);
+    }
+    setState(() {
+      //Close search when tab changes
+      isSearching = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    //Stop Listener
+    _tabController.removeListener(_onTabChanged);
+    //Dispose TabController
+    _tabController.dispose();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2, // İki sekme
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.activity.name),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(kToolbarHeight), // AppBar'ın yüksekliği
-            child: Stack(
-              children: [
-                const TabBar(
-                  tabs: [
-                    Tab(text: 'Activity Members'),
-                    Tab(text: 'Membership Requests'),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background image
+          Image.asset(
+            'assets/images/background_image4.jpg',
+            fit: BoxFit.cover,
+          ),
+          Scaffold(backgroundColor: Colors.transparent,
+            appBar: AppBar(backgroundColor: Colors.transparent,foregroundColor: Colors.white,
+              title: Text(widget.activity.name),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight), // AppBar'ın yüksekliği
+                child: Stack(
+                  children: [
+                    TabBar(
+                      labelColor: Colors.white,
+                      indicatorColor: Colors.white,
+                      dividerColor: Colors.grey.shade800,
+                      controller: _tabController,
+                      tabs: const [
+                        Tab(text: 'Activity Members'),
+                        Tab(text: 'Membership Requests'),
+                      ],
+                    ),
+                    if(widget.activity.joinRequests!.isNotEmpty)
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: CircleAvatar(
+                        radius: 9,
+                        backgroundColor: Colors.red,
+                        child: Text(
+                          widget.activity.joinRequests!.length.toString(),
+                          style: const TextStyle(color: Colors.white,fontSize: 12),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                if(widget.activity.joinRequests!.isNotEmpty)
-                Positioned(
-                  top: 2, // İstenilen dikey konum
-                  right: 2, // İstenilen yatay konum
-                  child: CircleAvatar(
-                    radius: 9,
-                    backgroundColor: Colors.red,
-                    child: Text(
-                      widget.activity.joinRequests!.length.toString(),
-                      style: const TextStyle(color: Colors.white,fontSize: 12),
-                    ),
-                  ), // Burada BadgeWidget yer alacak
-                ),
+              ),
+              actions: [
+                IconButton(
+                    onPressed: (){
+                      if(widget.activity.timeEnd.toDate().isAfter(DateTime.now())) {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForActivity(activity: widget.activity)))
+                            .then((value) => context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Activity completed."),backgroundColor: Colors.red,)
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.map_outlined,size: 30,)),
+              ],
+            ),
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                ActivityMembersList(activity: widget.activity),
+                ActivityMembersList(activity: widget.activity),
+                //MembershipRequestsList(activity: widget.activity),
               ],
             ),
           ),
-          actions: [
-            IconButton(
-                onPressed: (){
-                  if(widget.activity.timeEnd.toDate().isAfter(DateTime.now())) {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>MapScreenForActivity(activity: widget.activity)))
-                        .then((value) => context.read<ActivityMembersScreenCubit>().getActivityMembers(widget.activity));
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Activity completed."),backgroundColor: Colors.red,)
-                    );
-                  }
-                },
-                icon: const Icon(Icons.map_outlined,color: Colors.indigo,size: 30,)),
-          ],
-        ),
-        body: TabBarView(
-          children: [
-            ActivityMembersList(activity: widget.activity),
-            MembershipRequestsList(activity: widget.activity),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -88,103 +144,88 @@ class ActivityMembersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ActivityMembersScreenCubit ile grup üyelerini getir
-    context.read<ActivityMembersScreenCubit>().getActivityMembers(activity);
     return BlocBuilder<ActivityMembersScreenCubit,List<Users>>(
-          builder: (context,userList){
-            DateTime now = DateTime.now();
-            if(userList.isNotEmpty){
-              return ListView.builder(
-                  itemCount: userList.length,
-                  itemBuilder: (context, indeks){
-                    var user = userList[indeks];
-                    Users? currentUser = UsersManager().currentUser;
-                    bool isOwner = activity.owner == currentUser?.id;
-                    bool isMember = activity.memberIds.contains(currentUser?.id);
-                    bool isWaitingMember = activity.joinRequests!.contains(currentUser?.id);
-                    DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
-                    return InkWell(
-                      onTap: (){
-                        showModalBottomSheet(
-                            context: context,
-                            builder: (BuildContext context){
-                              return Container(
-                                height: 200,
-                                color: Colors.amber,
-                                child: const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
-                      },
-                      child: Card(
-                        child: Row(
+      builder: (context,userList){
+        DateTime now = DateTime.now();
+        if(userList.isNotEmpty){
+          return ListView.builder(
+            itemCount: userList.length,
+            itemBuilder: (context, indeks){
+              var user = userList[indeks];
+              Users? currentUser = UsersManager().currentUser;
+              bool isOwner = activity.owner == currentUser?.id;
+              bool isMember = activity.memberIds.contains(currentUser?.id);
+              bool isWaitingMember = activity.joinRequests!.contains(currentUser?.id);
+              DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
+              return Padding(
+                padding: const EdgeInsets.only(top: 8.0,left: 8,right: 8),
+                child: SizedBox(
+                  height: 100,
+                  child: Card(
+                    color: Colors.grey.shade900.withOpacity(0.4),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: user.photoUrl.isEmpty ?
+                          const Icon(Icons.account_circle, size: 50, color: Colors.grey,):
+                          ClipOval(
+                            child: Image(
+                              image: NetworkImage(user.photoUrl),
+                              width: 50,
+                              height: 50,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: user.photoUrl.isEmpty ?
-                              const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
-                              ClipOval(
-                                child: Image(
-                                  image: NetworkImage(user.photoUrl),
-                                  width: 50,
-                                  height: 50,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 5),
+                            Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
-                                    const SizedBox(width: 8,),
-                                    Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
-                                  ],
-                                ),
-                                Text(user.email),
-                                Text(
-                                  "Last Update: ${user.formattedLastLocationUpdatedAt()}",
-                                  style: TextStyle(
-                                      color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
-                                ),
+                                Text(user.name,style: const TextStyle(color: Colors.white ,fontSize: 17,fontWeight: FontWeight.bold),),
+                                const SizedBox(width: 8,),
+                                Icon(Icons.circle,size: 15,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
                               ],
                             ),
-                            const Spacer(),
-                            if (isOwner) PopupMenuButton<String>(
-                              onSelected: (String result) {
-                                handleMenuSelectionForMembers(context, result, activity, isOwner, isMember,user);
-                              },
-                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'remove',
-                                  child: Text('Remove'),
-                                ),
-                              ],
-                            )
+                            Text(user.email, style: TextStyle(color: Colors.grey),),
+                            Text(
+                              "Last Update: ${user.formattedLastLocationUpdatedAt()}",
+                              style: TextStyle(
+                                  color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
+                            ),
                           ],
                         ),
-                      ),
-                    );
-                  });
-            } return const Center();
-          });
-
+                        const Spacer(),
+                        if (isOwner) PopupMenuButton<String>(
+                          onSelected: (String result) {
+                            handleMenuSelectionForMembers(context, result, activity, isOwner, isMember,user);
+                          },
+                          color: Colors.black,
+                          iconColor: Colors.white,
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'remove',
+                              child: Text('Remove',style: TextStyle(color: Colors.white),),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            });
+        } return const Center();
+      });
   }
 }
 
+/*
 class MembershipRequestsList extends StatelessWidget {
   final Activities activity;
 
   MembershipRequestsList({super.key, required this.activity});
-
-  bool aramaYapiliyormu = false;
 
   @override
   Widget build(BuildContext context) {
@@ -203,78 +244,56 @@ class MembershipRequestsList extends StatelessWidget {
                   bool isMember = activity.memberIds.contains(currentUser?.id);
                   bool isWaitingMember = activity.joinRequests!.contains(currentUser?.id);
                   DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
-                  return InkWell(
-                    onTap: (){
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (BuildContext context){
-                          return Container(
-                            height: 200,
-                            color: Colors.amber,
-                            child: const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-
-                                ],
-                              ),
-                            ),
-                          );
-                        });
-                      },
-                    child: Card(
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: user.photoUrl.isEmpty ?
-                            const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
-                            ClipOval(
-                              child: Image(
-                                image: NetworkImage(user.photoUrl),
-                                width: 50,
-                                height: 50,
-                              ),
+                  return Card(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: user.photoUrl.isEmpty ?
+                          const Icon(Icons.account_circle, size: 50, color: kSecondaryColor2,):
+                          ClipOval(
+                            child: Image(
+                              image: NetworkImage(user.photoUrl),
+                              width: 50,
+                              height: 50,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Column(crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
-                                  const SizedBox(width: 8,),
-                                  Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
-                                ],
-                              ),
-                              Text(user.email),
-                              Text(
-                                "Last Update: ${user.formattedLastLocationUpdatedAt()}",
-                                style: TextStyle(
-                                    color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          if (isOwner) PopupMenuButton<String>(
-                            onSelected: (String result) {
-                              handleMenuSelectionForRequests(context, result, activity, isOwner, isMember,user);
-                            },
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'accept',
-                                child: Text('Accept'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'reject',
-                                child: Text('Reject'),
-                              ),
-                            ],
-                          )
-
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(user.name,style: const TextStyle(fontSize: 17,fontWeight: FontWeight.bold),),
+                                const SizedBox(width: 8,),
+                                Icon(Icons.circle,size: 17,color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.greenAccent:  Colors.redAccent ),
+                              ],
+                            ),
+                            Text(user.email),
+                            Text(
+                              "Last Update: ${user.formattedLastLocationUpdatedAt()}",
+                              style: TextStyle(
+                                  color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        if (isOwner) PopupMenuButton<String>(
+                          onSelected: (String result) {
+                            handleMenuSelectionForRequests(context, result, activity, isOwner, isMember,user);
+                          },
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            const PopupMenuItem<String>(
+                              value: 'accept',
+                              child: Text('Accept'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'reject',
+                              child: Text('Reject'),
+                            ),
+                          ],
+                        )
+                      ],
                     ),
                   );
                 });
@@ -282,6 +301,7 @@ class MembershipRequestsList extends StatelessWidget {
         });
   }
 }
+*/
 
 void handleMenuSelectionForMembers(
     BuildContext context,

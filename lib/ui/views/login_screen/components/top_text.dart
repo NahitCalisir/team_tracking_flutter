@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:team_tracking/ui/views/login_screen/animations/change_screen_animation.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 import 'login_content.dart';
 
 class TopText extends StatefulWidget {

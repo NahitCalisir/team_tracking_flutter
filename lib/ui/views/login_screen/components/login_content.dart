@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:team_tracking/ui/cubits/login_screen_cubit.dart';
-import 'package:team_tracking/utils/helper_functions.dart';
+import 'package:team_tracking/data/repo/helper_functions.dart';
 import 'package:team_tracking/utils/constants.dart';
 import '../animations/change_screen_animation.dart';
 import 'bottom_text.dart';
