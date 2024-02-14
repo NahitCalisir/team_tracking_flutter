@@ -52,10 +52,10 @@ class HelperFunctions {
     print("CurrentV ersion: $currentVersion");
     print("Build Number: $buildNumber");
 
-    // Sunucuya manuel kaydedilen güncel versiyon numarası
-    String? latestVersion = await  getLastVersionNumber();
+    //fetch last version number that registered as manual from firestore
+    String? lastVersion = await  getLastVersionNumber();
 
-    if (currentVersion != latestVersion) {
+    if (currentVersion != lastVersion && lastVersion != null) {
       // Eğer mevcut versiyon güncel değilse, kullanıcıya güncellemesi gerektiğini bildir
       showDialog(
         context: context,

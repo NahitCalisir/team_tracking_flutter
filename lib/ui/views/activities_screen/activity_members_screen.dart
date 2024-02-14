@@ -200,7 +200,7 @@ class ActivityMembersList extends StatelessWidget {
                         const Spacer(),
                         if (isOwner) PopupMenuButton<String>(
                           onSelected: (String result) {
-                            handleMenuSelectionForRequests(context, result, activity, isOwner, isMember,user);
+                            handleMenuSelection(context, result, activity, isOwner, isMember,user);
                           },
                           color: Colors.black,
                           iconColor: Colors.white,
@@ -227,6 +227,73 @@ class ActivityMembersList extends StatelessWidget {
             });
         } return const Center();
       });
+  }
+}
+
+void handleMenuSelection(
+    BuildContext context,
+    String result,
+    Activities activity,
+    bool isOwner,
+    bool isMember,
+    Users user
+    ) async {
+  switch (result)  {
+    case 'remove':
+      print(!isOwner);
+      if(activity.owner.contains(user.id)) { //eğer çıkarılmak istenen admin ise
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: const Text("You cannot leave the activity because you are the administrator. If you wish, you can delete the activity entirely.",style: TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () {Navigator.of(context).pop();},
+                  child: const Text("OK",style: TextStyle(color: kSecondaryColor2),),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: kSecondaryColor,
+              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
+              content: Text("Are you sure you want to remove ${user.name}  from the activity?",style: const TextStyle(color: Colors.white),),
+              actions: [
+                TextButton(
+                  onPressed: () async {Navigator.of(context).pop();},
+                  child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await context.read<ActivityMembersScreenCubit>().removeFromActivity(activity, user);
+                    await context.read<ActivityMembersScreenCubit>().getActivityMembers(activity);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text("Remove",style: TextStyle(color: Colors.red),),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      break;
+    case 'accept':
+      await context.read<ActivityMembersScreenCubit>().acceptJoinRequest(activity, user);
+      await context.read<ActivityMembersScreenCubit>().getMemberRequestList(activity);
+      break;
+    case 'reject':
+      await context.read<ActivityMembersScreenCubit>().rejectJoinRequest(activity, user);
+      await context.read<ActivityMembersScreenCubit>().getMemberRequestList(activity);
+
+      break;
   }
 }
 
@@ -312,64 +379,9 @@ class MembershipRequestsList extends StatelessWidget {
 }
 */
 
-void handleMenuSelectionForMembers(
-    BuildContext context,
-    String result,
-    Activities activity,
-    bool isOwner,
-    bool isMember,
-    Users user
-    ) async {
-  switch (result)  {
-    case 'remove':
-      print(!isOwner);
-      if(activity.owner.contains(user.id)) { //eğer çıkarılmak istenen admin ise
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: kSecondaryColor,
-              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: const Text("You cannot leave the activity because you are the administrator. If you wish, you can delete the activity entirely.",style: TextStyle(color: Colors.white),),
-              actions: [
-                TextButton(
-                  onPressed: () {Navigator.of(context).pop();},
-                  child: const Text("OK",style: TextStyle(color: kSecondaryColor2),),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: kSecondaryColor,
-              title: const Text("Warning",style: TextStyle(color: kSecondaryColor2),),
-              content: Text("Are you sure you want to remove ${user.name}  from the activity?",style: const TextStyle(color: Colors.white),),
-              actions: [
-                TextButton(
-                  onPressed: () async {Navigator.of(context).pop();},
-                  child: const Text("Cancel",style: TextStyle(color: kSecondaryColor2),),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    await context.read<ActivityMembersScreenCubit>().removeFromActivity(activity, user);
-                    await context.read<ActivityMembersScreenCubit>().getActivityMembers(activity);
-                    Navigator.of(context).pop();
-                    },
-                  child: const Text("Remove",style: TextStyle(color: Colors.red),),
-                ),
-              ],
-            );
-          },
-        );
-      }
-      break;
-  }
-}
 
+
+/*
 void handleMenuSelectionForRequests(
     BuildContext context,
     String result,
@@ -390,5 +402,5 @@ void handleMenuSelectionForRequests(
       break;
   }
 }
-
+*/
 

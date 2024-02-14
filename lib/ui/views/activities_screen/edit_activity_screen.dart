@@ -50,208 +50,259 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<EditActivityScreenCubit, File?>(
       builder: (context, activityImageFile) {
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text("Edit Activity"),
-          ),
-          body: Stack(
-            children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                          onTap: () async {
-                            setState(() {isLoading = true;});
-                            await context.read<EditActivityScreenCubit>().pickImage();
-                            setState(() {isLoading = false;});
-                          } ,
-                          child: activityImageFile == null ?
-                          widget.activity.photoUrl == "" ?
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: const Icon(
-                              Icons.add_a_photo,
-                              color: kSecondaryColor2, // İkonun rengini belirleyin
-                              size: 100, // İkonun boyutunu belirleyin
-                            ),
-                          ):
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image(
-                              image: NetworkImage(widget.activity.photoUrl!),
-                              fit: BoxFit.cover,
-                              width: 100,
-                              height: 100,
-                            ),
-                          )
-                              : ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                            child: Image(
-                              image: FileImage(activityImageFile),
-                              fit: BoxFit.cover,
-                              height: 100,
-                              width: 100,
-                            )
-                          )
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(labelText: " Activity Name*"),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _cityController,
-                        decoration: const InputDecoration(labelText: "City*"),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _countryController,
-                        decoration: const InputDecoration(labelText: "Country*"),
-                      ),
-                      const SizedBox(height: 8),
-                      // Başlangıç tarihini ve saati seçmek için
-                      InkWell(
-                        onTap: () async {
-                          Timestamp? selectedTimestamp =
-                          await _selectDateTime(context, timeStart);
-
-                          DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                          setState(() {
-                            timeStart = selectedDateTime;
-                          });
-                                                },
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Start Date and Time*',
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                timeStart.toString().isNotEmpty
-                                    ? DateFormat('dd/MM/yyyy - HH:mm').format(timeStart)
-                                    : 'Select Start Date and Time',
-                              ),
-                              const Icon(Icons.calendar_today),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Bitiş tarihini ve saati seçmek için
-                      InkWell(
-                        onTap: () async {
-                          Timestamp? selectedTimestamp =
-                          await _selectDateTime(context, timeEnd);
-
-                          if (selectedTimestamp != null) {
-                            DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
-                            setState(() {
-                              timeEnd = selectedDateTime;
-                            });
-                          }
-                        },
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'End Date and Time*',
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                timeEnd.toString().isNotEmpty
-                                    ? DateFormat('dd/MM/yyyy - HH:mm').format(timeEnd)
-                                    : 'Select End Date and Time',
-                              ),
-                              const Icon(Icons.calendar_today),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _routeController,
-                        readOnly: true, //veri girişini engeller
-                        decoration: InputDecoration(
-                          labelText: "Route (GPX File)",
-                          suffixIcon: IconButton(
-                              onPressed: () async {
-                                setState(() {isLoading = true;});
-                                filePickerResult  = await context.read<EditActivityScreenCubit>().pickRouteFile();
-                                if(filePickerResult != null) {
-                                  selectedRoutePath = filePickerResult?.files.single.path;
-                                  String fileName = selectedRoutePath!.split('/').last;
-                                  setState(() {
-                                    _routeController.text = fileName;
-                                    selectedRouteName = fileName;
-                                    isLoading = false;
-                                  });
-                                }
-                              },
-                              icon: const Icon(Icons.upload_file)),
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+        return Stack(
+          children: [
+            // Background image
+            Image.asset(
+              'assets/images/background_image4.jpg',
+              fit: BoxFit.cover,
+            ),
+            Scaffold(backgroundColor: Colors.transparent,
+              appBar: AppBar(backgroundColor: Colors.transparent,foregroundColor: Colors.white,
+                title: const Text("Edit Activity"),
+              ),
+              body: Stack(
+                children: [
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
                         children: [
-                          ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                elevation: 10,
-                                  backgroundColor: kSecondaryColor2,
-                                  foregroundColor: Colors.white),
-                              onPressed: () async {
+                          GestureDetector(
+                              onTap: () async {
                                 setState(() {isLoading = true;});
-                                await context.read<EditActivityScreenCubit>().editActivity(
-                                  context: context,
-                                  activityId: widget.activity.id,
-                                  name: _nameController.text.trim(),
-                                  city: _cityController.text.trim(),
-                                  country: _countryController.text.trim(),
-                                  activityImage: activityImageFile,
-                                  photoUrl: widget.activity.photoUrl,
-                                  timeStart: Timestamp.fromDate(timeStart),
-                                  timeEnd: Timestamp.fromDate(timeEnd),
-                                  routeUrl: widget.activity.routeUrl ?? "",
-                                  routeName: selectedRouteName ?? "",
-                                  routeGpxFile: filePickerResult,
-                                );
+                                await context.read<EditActivityScreenCubit>().pickImage();
                                 setState(() {isLoading = false;});
-                              },
-                              child: const Text("Save Activity",style: TextStyle(fontSize: 20),)),
-                          const SizedBox(height: 30,),
-                          ElevatedButton(
-                             style: ElevatedButton.styleFrom(
-                               elevation: 10
-                             //    backgroundColor: kSecondaryColor2,
-                             //    foregroundColor: Colors.white),
+                              } ,
+                              child: activityImageFile == null ?
+                              widget.activity.photoUrl == "" ?
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: const Icon(
+                                  Icons.add_a_photo,
+                                  color: Colors.grey, // İkonun rengini belirleyin
+                                  size: 100, // İkonun boyutunu belirleyin
+                                ),
+                              ):
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image(
+                                  image: NetworkImage(widget.activity.photoUrl!),
+                                  fit: BoxFit.cover,
+                                  width: 100,
+                                  height: 100,
+                                ),
+                              ):
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image(
+                                image: FileImage(activityImageFile),
+                                fit: BoxFit.cover,
+                                height: 100,
+                                width: 100,
+                              )
+                            )
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _nameController,
+                            style: const TextStyle(color: Colors.white),
+                            cursorColor: Colors.white,
+                            decoration: const InputDecoration(
+                              labelText: " Activity Name*",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
                               ),
-                              onPressed: (){
-                                context.read<EditActivityScreenCubit>().deleteActivity(
-                                  context: context,
-                                  activityId: widget.activity.id,
-                                  photoUrl: widget.activity.photoUrl!,
-                                  routeUrl: widget.activity.routeUrl!,
-                                );
-                              },
-                              child: const Text("Delete Activity",style: TextStyle(fontSize: 20, color: Colors.red),)),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _cityController,
+                            style: TextStyle(color: Colors.white),
+                            cursorColor: Colors.white,
+                            decoration: const InputDecoration(
+                              labelText: "City*",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _countryController,
+                            style: const TextStyle(color: Colors.white),
+                            cursorColor: Colors.white,
+                            decoration: const InputDecoration(
+                              labelText: "Country*",
+                              labelStyle: TextStyle(color: Colors.grey),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),),
+                          ),
+                          const SizedBox(height: 8),
+                          // Başlangıç tarihini ve saati seçmek için
+                          InkWell(
+                            onTap: () async {
+                              Timestamp? selectedTimestamp =
+                              await _selectDateTime(context, timeStart);
+
+                              DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                              setState(() {
+                                timeStart = selectedDateTime;
+                              });
+                                                    },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Start Date and Time*',
+                                labelStyle: TextStyle(color: Colors.grey),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    timeStart.toString().isNotEmpty
+                                        ? DateFormat('dd/MM/yyyy - HH:mm').format(timeStart)
+                                        : 'Select Start Date and Time',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8.0),
+                                    child: Icon(Icons.calendar_today, color: Colors.white,),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Bitiş tarihini ve saati seçmek için
+                          InkWell(
+                            onTap: () async {
+                              Timestamp? selectedTimestamp =
+                              await _selectDateTime(context, timeEnd);
+
+                              if (selectedTimestamp != null) {
+                                DateTime selectedDateTime = selectedTimestamp.toDate(); // Convert to DateTime
+                                setState(() {
+                                  timeEnd = selectedDateTime;
+                                });
+                              }
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'End Date and Time*',
+                                labelStyle: TextStyle(color: Colors.grey),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(
+                                    timeEnd.toString().isNotEmpty
+                                        ? DateFormat('dd/MM/yyyy - HH:mm').format(timeEnd)
+                                        : 'Select End Date and Time',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8.0),
+                                    child: Icon(Icons.calendar_today,color: Colors.white,),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _routeController,
+                            style: const TextStyle(color: Colors.white),
+                            readOnly: true, //veri girişini engeller
+                            decoration: InputDecoration(
+                              labelText: "Route (GPX File)",
+                              suffixIconColor: Colors.white,
+                              labelStyle: const TextStyle(color: Colors.grey),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
+                              suffixIcon: IconButton(
+                                  onPressed: () async {
+                                    setState(() {isLoading = true;});
+                                    filePickerResult  = await context.read<EditActivityScreenCubit>().pickRouteFile();
+                                    if(filePickerResult != null) {
+                                      selectedRoutePath = filePickerResult?.files.single.path;
+                                      String fileName = selectedRoutePath!.split('/').last;
+                                      setState(() {
+                                        _routeController.text = fileName;
+                                        selectedRouteName = fileName;
+                                        isLoading = false;
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.upload_file)),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          Column(crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey.shade800,
+                                      shadowColor: Colors.grey,
+                                      elevation: 10,
+                                      foregroundColor: Colors.white),
+                                  onPressed: () async {
+                                    setState(() {isLoading = true;});
+                                    await context.read<EditActivityScreenCubit>().editActivity(
+                                      context: context,
+                                      activityId: widget.activity.id,
+                                      name: _nameController.text.trim(),
+                                      city: _cityController.text.trim(),
+                                      country: _countryController.text.trim(),
+                                      activityImage: activityImageFile,
+                                      photoUrl: widget.activity.photoUrl,
+                                      timeStart: Timestamp.fromDate(timeStart),
+                                      timeEnd: Timestamp.fromDate(timeEnd),
+                                      routeUrl: widget.activity.routeUrl ?? "",
+                                      routeName: selectedRouteName ?? "",
+                                      routeGpxFile: filePickerResult,
+                                    );
+                                    setState(() {isLoading = false;});
+                                  },
+                                  child: const Text("Save Activity",style: TextStyle(fontSize: 20),)),
+                              const SizedBox(height: 30,),
+                              ElevatedButton(
+                                 style: ElevatedButton.styleFrom(
+                                   backgroundColor: Colors.grey.shade800,
+                                   shadowColor: Colors.grey,
+                                   elevation: 10
+                                 //    backgroundColor: kSecondaryColor2,
+                                 //    foregroundColor: Colors.white),
+                                  ),
+                                  onPressed: (){
+                                    context.read<EditActivityScreenCubit>().deleteActivity(
+                                      context: context,
+                                      activityId: widget.activity.id,
+                                      photoUrl: widget.activity.photoUrl!,
+                                      routeUrl: widget.activity.routeUrl!,
+                                    );
+                                  },
+                                  child: const Text("Delete Activity",style: TextStyle(fontSize: 20, color: Colors.red),)),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  Center(
+                    child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if(isLoading) const CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              Center(
-                child: Column(mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if(isLoading) const CircularProgressIndicator(),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -283,3 +334,4 @@ Future<Timestamp> _selectDateTime(
   Timestamp timestamp = Timestamp.fromDate(selectedDateTime);
   return timestamp;
 }
+

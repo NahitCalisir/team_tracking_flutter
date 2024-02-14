@@ -70,10 +70,10 @@ class LoginContentState extends State<LoginContent>
          }
         },
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 8), backgroundColor: kSecondaryColor2,
+          backgroundColor: Colors.black54,
           shape: const StadiumBorder(),
           elevation: 8,
-          shadowColor: Colors.black87,
+          shadowColor: Colors.grey,
         ),
         child: Text(
           title,
@@ -125,10 +125,10 @@ class LoginContentState extends State<LoginContent>
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 4),
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.black54,
             shape: const StadiumBorder(),
             elevation: 8,
-            shadowColor: Colors.black87,
+            shadowColor: Colors.white,
           ),
           onPressed: () async {
             setState(() {isLoading = true;});
@@ -139,14 +139,16 @@ class LoginContentState extends State<LoginContent>
             padding: const EdgeInsets.all(4.0),
             child: Row(mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/images/google.png'),
-                const SizedBox(width: 8,),
-                Text(
+                SizedBox(
+                  height: 27,
+                    child: Image.asset('assets/images/google.png')),
+                const SizedBox(width: 15,),
+                const Text(
                   "Sin In With Google",
                   style: TextStyle(
-                      color: Colors.grey.shade800,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 17
                   ),),
               ],
             ),

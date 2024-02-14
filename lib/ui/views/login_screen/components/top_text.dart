@@ -31,6 +31,7 @@ class _TopTextState extends State<TopText> {
             ? ' Create\n Account'
             : ' Welcome\n Back',
         style: const TextStyle(
+          color: Colors.white,
           fontSize: 30,
           fontWeight: FontWeight.w600,
         ),

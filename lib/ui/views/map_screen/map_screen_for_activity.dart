@@ -46,6 +46,11 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
 
   @override
   Widget build(BuildContext context) {
+    print("*************** AdMod ****************");
+    print(_googleAds.bannerAd!.adUnitId);
+    print(_googleAds.bannerAd!.size.width);
+    print(_googleAds.bannerAd!.responseInfo);
+    print(_googleAds.bannerAd!.request.contentUrl);
     context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
     return PopScope(
       canPop: true,
@@ -70,11 +75,13 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                       const SimpleAttributionWidget(
                         source: Text('OpenStreetMap '),
                       ),
+                      //'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', //Standart map
                       TileLayer(
                         urlTemplate: _isSatelliteView.value
-                            ? 'https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}'
-                            : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+                            ? 'https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=N66KS5A32hsdM21pqLpH'
+                            : 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', //Standart map
+                        //  : 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+                        subdomains: const ['a', 'b', 'c'],
                       ),
                       PolylineLayer(
                         polylineCulling: false,
@@ -177,7 +184,7 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                   ),
                   Column(
                     children: [
-                      if (_googleAds.bannerAd != null)
+                      if (_googleAds.bannerAd != null && _googleAds.bannerAd!.responseInfo != null)
                         SizedBox(
                           width: _googleAds.bannerAd!.size.width.toDouble(),
                           height: _googleAds.bannerAd!.size.height.toDouble(),
@@ -202,14 +209,14 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   shape: const CircleBorder(),
-                                  backgroundColor: Colors.white.withOpacity(0.7),
+                                  backgroundColor: Colors.black12.withOpacity(0.3),
                                   elevation: 10,
                                 ),
                                 onPressed: () async {
                                   context.read<MapScreenForActivityCubit>().cancelTimers();
                                   Navigator.of(context).pop();
                                  },
-                                child: const Icon(Icons.close),
+                                child: const Icon(Icons.close,color: Colors.white),
                               ),
                               ValueListenableBuilder<bool>(
                                 valueListenable: _isSatelliteView,
@@ -217,27 +224,27 @@ class _MapScreenForActivityState extends State<MapScreenForActivity> {
                                   return ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       shape: const CircleBorder(),
-                                      backgroundColor: Colors.white.withOpacity(0.7),
+                                      backgroundColor: Colors.black12.withOpacity(0.3),
                                       elevation: 10,
                                     ),
                                     onPressed: () {
                                       _isSatelliteView.value = !_isSatelliteView.value;
                                     },
                                     //child: Text(isSatelliteView ? "Map View" : "Satellite View", ),
-                                    child: Icon( isSatelliteView ? Icons.map_outlined : Icons.satellite_alt, ),
+                                    child: Icon( isSatelliteView ? Icons.map_outlined : Icons.satellite_alt, color: Colors.white, ),
                                   );
                                 },
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   shape: const CircleBorder(),
-                                  backgroundColor: Colors.white.withOpacity(0.7),
+                                  backgroundColor: Colors.black12.withOpacity(0.3),
                                   elevation: 10,
                                 ),
                                 onPressed: () async {
                                   context.read<MapScreenForActivityCubit>().getActivityMembersAndShowMap(_mapController, widget.activity);
                                 },
-                                child: const Icon(Icons.my_location_sharp),
+                                child: const Icon(Icons.zoom_out_map_sharp,color: Colors.white,),
                               ),
                             ],
                           ),

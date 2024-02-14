@@ -23,10 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment(-0.2, -0.8),
             end: Alignment.bottomCenter,
             colors: [
-              //Color(0x007CBFCF),
-              //Color(0xB316BFC4),
-              Colors.black87,
-              Color(0x00EA3323),
+              //Colors.black87,
+              //Color(0x00EA3323),
+              Colors.black,
+              Colors.black12,
             ],
           ),
         ),
@@ -44,10 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
           begin: const Alignment(0.6, -1.1),
           end: const Alignment(0.7, 0.8),
           colors: [
-            const Color(0x00332C2C),
-            Colors.brown.shade100,
-            //Color(0x00EA3323),
-            Colors.white
+            //Color(0x00332C2C),
+            //Colors.brown.shade100,
+            //Colors.white,
+            Colors.black,
+            Colors.white,
           ],
         ),
       ),
@@ -58,6 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return Scaffold(
+      backgroundColor: Colors.white54,
       body: Stack(
         children: [
           Positioned(

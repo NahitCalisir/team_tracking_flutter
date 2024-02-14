@@ -6,13 +6,24 @@ class GoogleAds  {
   InterstitialAd? interstitialAd;
   BannerAd? bannerAd;
 
+/*
+  //TEST IDs
   final interstitialAdUnitId = Platform.isAndroid
       ? 'ca-app-pub-3940256099942544/1033173712'
       : 'ca-app-pub-3940256099942544/4411468910';
-  // TODO: replace this test ad unit with your own ad unit.
   final bannerAdUnitId = Platform.isAndroid
       ? 'ca-app-pub-3940256099942544/6300978111'
       : 'ca-app-pub-3940256099942544/2934735716';
+ */
+
+  //App IDs
+  final interstitialAdUnitId = Platform.isAndroid
+      ? 'ca-app-pub-4137620141469367/2691860878'
+      : 'ca-app-pub-4137620141469367/6220042348';
+  final bannerAdUnitId = Platform.isAndroid
+      ? 'ca-app-pub-4137620141469367/6554497530'
+      : 'ca-app-pub-4137620141469367/5349227071';
+
 
   void loadInterstitialAd({bool showAfterLoad = false}) {
     InterstitialAd.load(

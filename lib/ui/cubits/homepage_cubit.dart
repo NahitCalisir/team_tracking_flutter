@@ -10,7 +10,7 @@ class HomepageCubit extends Cubit<void> {
     await UserDaoRepository.shared.runUpdateMyLocation();
   }
 
-  Future<void> checkAndUpdateVersion(BuildContext context) async {
+  Future<void> checkVersion(BuildContext context) async {
     HelperFunctions.shared.checkVersion(context);
 }
 
