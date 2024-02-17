@@ -33,7 +33,7 @@ class _GroupMembersScreenState extends State<GroupMembersScreen>  {
             //indicatorColor: kSecondaryColor2,
             tabs: [
               Tab(text: 'Group Members'),
-              Tab(text: 'Membership Requests'),
+              Tab(text: 'Join Requests'),
             ],
           ),
           actions: [
@@ -83,24 +83,24 @@ class GroupMembersList extends StatelessWidget {
                     DateTime lastLocationUpdatedAt = (user.lastLocationUpdatedAt as Timestamp).toDate();
                     return InkWell(
                       onTap: (){
-                        showModalBottomSheet(
-                            context: context,
-                            builder: (BuildContext context){
-                              return Container(
-                                height: 200,
-                                color: Colors.amber,
-                                child: const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
+                     //  showModalBottomSheet(
+                     //      context: context,
+                     //      builder: (BuildContext context){
+                     //        return Container(
+                     //          height: 200,
+                     //          color: Colors.amber,
+                     //          child: const Center(
+                     //            child: Column(
+                     //              mainAxisAlignment: MainAxisAlignment.center,
+                     //              mainAxisSize: MainAxisSize.min,
+                     //              children: [
 
-                                    ],
-                                  ),
-                                ),
-                              );
-                            });
-                      },
+                     //              ],
+                     //            ),
+                     //          ),
+                     //        );
+                     //      });
+                     },
                       child: Card(
                         child: Row(
                           children: [
@@ -130,7 +130,8 @@ class GroupMembersList extends StatelessWidget {
                                 Text(
                                   "Last Update: ${user.formattedLastLocationUpdatedAt()}",
                                   style: TextStyle(
-                                      color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
+                                    fontSize: 12,
+                                    color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
                                 ),
                               ],
                             ),

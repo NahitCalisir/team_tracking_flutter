@@ -85,7 +85,7 @@ class _ActivityMembersScreenState extends State<ActivityMembersScreen>
                       controller: _tabController,
                       tabs: const [
                         Tab(text: 'Activity Members'),
-                        Tab(text: 'Membership Requests'),
+                        Tab(text: 'Join Requests'),
                       ],
                     ),
                     if(widget.activity.joinRequests!.isNotEmpty)
@@ -191,9 +191,10 @@ class ActivityMembersList extends StatelessWidget {
                             ),
                             Text(user.email, style: TextStyle(color: Colors.grey),),
                             Text(
-                              "Last Update: ${user.formattedLastLocationUpdatedAt()}",
+                              "Last Update: ${user.formattedLastLocationUpdatedAt()}",overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
+                                fontSize: 12,
+                                color: (now.difference(lastLocationUpdatedAt).inMinutes <= 5) ?  Colors.green:  Colors.red ),
                             ),
                           ],
                         ),
