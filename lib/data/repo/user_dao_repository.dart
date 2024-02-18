@@ -282,9 +282,9 @@ class UserDaoRepository {
       double speedInKmPerHour = myLastPosition.speed != null ? myLastPosition.speed * 3.6 : 0;
 
       // Hız 0 ise ve önceki hız da 0 ise konum güncellemesini yapma
-      if (speed == 0 && _lastSpeed == 0) {
-        return;
-      }
+      //if (speed == 0 && _lastSpeed == 0) {
+      //  return;
+      //}
 
       // Firestore'da kullanıcının son konumunu güncelle
       await FirebaseFirestore.instance.collection('users').doc(currentUser.id).update({
