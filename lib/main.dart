@@ -37,6 +37,7 @@ void main() async{
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static bool isLoginPageLoaded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +90,20 @@ class MyApp extends StatelessWidget {
                       // Eğer checkAndSetUserLogin() fonksiyonu hala çalışıyorsa, yükleniyor göster.
                       return const Center(child: CircularProgressIndicator());
                     } else {
-                      // checkAndSetUserLogin() fonksiyonu tamamlandıysa, HomePage'e git.
-                      return snapshot.hasData ? const Homepage() : const LoginScreen();
+                       //checkAndSetUserLogin() fonksiyonu tamamlandıysa, HomePage'e git.
+                      if(snapshot.hasData) {
+                        isLoginPageLoaded = false;
+                        return const Homepage();
+                      } else {
+                        isLoginPageLoaded = true;
+                        return const LoginScreen();
+                      }
+                      //return snapshot.hasData ? const Homepage() : const LoginScreen();
                     }
                   },
                 );
               } else {
+                isLoginPageLoaded = true;
                 return const LoginScreen();
               }
             }

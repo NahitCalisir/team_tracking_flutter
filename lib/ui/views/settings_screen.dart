@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
@@ -9,7 +8,6 @@ import 'package:team_tracking/utils/constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
-
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -87,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             )
                         ),
                         const SizedBox(height: 16),
-                        Text(currentUser!.email,style: TextStyle(color: Colors.grey),),
+                        Text(currentUser!.email ?? "",style: TextStyle(color: Colors.grey),),
                         if(isLoading) const CircularProgressIndicator(),
                         const SizedBox(height: 16),
                         TextField(
@@ -137,21 +135,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 },
                                 child: const Text("Save",style: TextStyle(fontSize: 20),)),
                             const SizedBox(height: 50),
-                            ElevatedButton(
+                            TextButton(
                                 //style: ElevatedButton.styleFrom(backgroundColor: kSecondaryColor2,foregroundColor: Colors.white),
                                 onPressed: () async {
                                   await context.read<SettingsScreenCubit>().signOut(context);
                                 },
-                                style: ElevatedButton.styleFrom(
-                                    elevation: 10,
-                                    backgroundColor: Colors.grey.shade800,
-                                    foregroundColor: Colors.white,
-                                    shadowColor: Colors.grey
-                                ),
-                                child: const Text("Sign Out",style: TextStyle(fontSize: 20,color: Colors.red)))
+                                //style: ElevatedButton.styleFrom(
+                                //    elevation: 10,
+                                //    backgroundColor: Colors.grey.shade800,
+                                //    foregroundColor: Colors.white,
+                                //    shadowColor: Colors.grey
+                                //),
+                                child: const Text("Sign Out",style: TextStyle(fontSize: 20,color: Colors.red))),
+                            const SizedBox(height: 50),
+                            TextButton(
+                              //style: ElevatedButton.styleFrom(backgroundColor: kSecondaryColor2,foregroundColor: Colors.white),
+                                onPressed: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: const Text('Delete your Account?'),
+                                        content: const Text(
+                                            "If you select Delete we will delete your account on our server.\n\n"
+                                            "Your app data will also be deleted and you won't be able to retrieve it.\n\n"
+                                            "Since this is a security-sensitive operation, you eventually are asked to login before your account can be deleted."),
+                                        actions: [
+                                          TextButton(
+                                            child: const Text('Cancel'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: const Text(
+                                              'Delete',style: TextStyle(color: Colors.red,),
+                                              ),
+                                            onPressed: () {
+                                              context.read<SettingsScreenCubit>().deleteUserAccount(context);
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                //style: ElevatedButton.styleFrom(
+                                //    elevation: 10,
+                                //    backgroundColor: Colors.grey.shade800,
+                                //    foregroundColor: Colors.white,
+                                //    shadowColor: Colors.grey
+                                //),
+                                child: const Text("Delete Account",style: TextStyle(fontSize: 20,color: Colors.red))),
                           ],
                         ),
-
                       ],
                     ),
                   ),

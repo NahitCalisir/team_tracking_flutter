@@ -37,12 +37,13 @@ class _HomepageState extends State<Homepage> {
     final double screenWidth = screenInfo.size.width;
 
     context.read<HomepageCubit>().runUpdateMyLocation();
-    if(_googleAds.interstitialAd != null) {
-      print("*************** AdMod ****************");
-      print(_googleAds.interstitialAd!.adUnitId);
-      print(_googleAds.interstitialAd!.responseInfo);
-      print(_googleAds.interstitialAd!.request.contentUrl);
-    }
+
+    //if(_googleAds.interstitialAd != null) {
+    //  print("*************** AdMod ****************");
+    //  print(_googleAds.interstitialAd!.adUnitId);
+    //  print(_googleAds.interstitialAd!.responseInfo);
+    //  print(_googleAds.interstitialAd!.request.contentUrl);
+    //}
 
     return BlocBuilder<HomepageCubit,void>(
       builder: (BuildContext context, void state) {

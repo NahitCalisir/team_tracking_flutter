@@ -46,5 +46,10 @@ class SettingsScreenCubit extends Cubit<File?> {
     emit(null);
   }
 
+  //TODO:Delete User account from firebase
+  Future<void> deleteUserAccount(BuildContext context) async {
+    UserDaoRepository.shared.deleteUserAccount(context);
+  }
+
 }
 

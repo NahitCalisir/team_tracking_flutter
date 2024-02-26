@@ -18,6 +18,9 @@ class LoginScreenCubit extends Cubit<void> {
     await UserDaoRepository.shared.signInWithGoogle(context);
   }
 
+  Future<void> signInWithApple(BuildContext context) async {
+    await UserDaoRepository.shared.signInWithApple(context);
+  }
   //Forgot password method
   Future<void> forgotPassword(BuildContext context, {required String email}) async {
     UserDaoRepository.shared.forgotPassword(context, email: email);

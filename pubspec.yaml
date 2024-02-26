@@ -61,6 +61,7 @@ dependencies:
   xml: ^6.5.0
   google_mobile_ads: ^4.0.0
   package_info_plus: ^5.0.1
+  sign_in_with_apple: ^5.0.0
 
 
 dev_dependencies:

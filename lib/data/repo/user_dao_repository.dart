@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:ffi';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,11 +9,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:team_tracking/data/entity/user_manager.dart';
 import 'package:team_tracking/ui/views/homepage/homepage.dart';
 import 'package:team_tracking/main.dart';
 import 'package:team_tracking/utils/constants.dart';
 import 'package:team_tracking/data/repo/helper_functions.dart';
+import '../../ui/views/login_screen/login_screen.dart';
 import '../entity/users.dart';
 
 class UserDaoRepository {
@@ -40,9 +41,9 @@ class UserDaoRepository {
       );
       await handleUserSignIn(context, userCredential);
     } on FirebaseAuthException catch (e) {
-      handleAuthException(context, e);
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
     } catch (e) {
-      // Diğer hatalar
+      log("***** $e");
     }
   }
 
@@ -55,12 +56,13 @@ class UserDaoRepository {
         await updateUserLocation(userId: userCredential.user!.uid);
       }
     } on FirebaseAuthException catch (e) {
-      handleAuthException(context, e);
-    } catch (e) {
-      print(e);
-    }
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
+      } catch (e) {
+        print("***** $e");
+      }
   }
 
+  //TODO: Sign in with Google
   Future<User?> signInWithGoogle(BuildContext context) async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -78,7 +80,7 @@ class UserDaoRepository {
 
       if (userCredential.additionalUserInfo?.isNewUser == true) {
         // Yeni kaydedilen kullanıcı
-        log("New user signed in with Google: ${userCredential.user?.displayName}");
+        log("***** New user signed in with Google: ${userCredential.user?.displayName}");
 
         // Yeni kullanıcıya dair işlemleri burada yapabilirsiniz.
         LatLng position = await getLocation();
@@ -91,20 +93,73 @@ class UserDaoRepository {
         );
       } else {
         // Zaten kayıtlı olan kullanıcı
-        log("Existing user signed in with Google: ${userCredential.user?.displayName}");
+        log("***** Existing user signed in with Google: ${userCredential.user?.displayName}");
       }
 
       // Kullanıcı girişini handle et
       await handleUserSignIn(context, userCredential);
 
       return userCredential.user;
-    } catch (e) {
-      // Hata durumunda handle et
-      print("Error signing in with Google: $e");
-      //handleAuthException(context, e);
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
+      print("***** Error signing in with Google: $e");
       return null;
     }
   }
+
+  //TODO: Sign in with Apple
+  Future<User?> signInWithApple(BuildContext context) async {
+    try {
+      // Apple kimliğiyle giriş için uygun platformlar aracılığıyla yetkilendirme yapılır.
+      final AuthorizationCredentialAppleID credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: 'your_client_id', // Kendi istemci kimliğinizi buraya ekleyin
+          redirectUri: Uri.parse('https://example.com/callback'), // Doğru URI'yi buraya ekleyin
+        ),
+      );
+
+      // Kimlik bilgileri alındıktan sonra, bu kimlik bilgilerini Firebase kimlik doğrulama sağlayıcısına ileterek giriş yapılır.
+      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
+      final AuthCredential authCredential = oAuthProvider.credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+      );
+
+      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(authCredential);
+
+      if (userCredential.additionalUserInfo?.isNewUser == true) {
+        // Yeni kaydedilen kullanıcı
+        log("***** New user signed in with Apple: ${userCredential.user?.displayName}");
+
+        // Yeni kullanıcıya dair işlemleri burada yapabilirsiniz.
+        LatLng position = await getLocation();
+        await _registerUser(
+          uid: userCredential.user!.uid,
+          name: userCredential.user!.displayName ?? "unnamed",
+          email: userCredential.user!.email ?? "noEmail",
+          photoUrl: "",
+          position: LatLng(position.latitude, position.longitude),
+        );
+      } else {
+        // Zaten kayıtlı olan kullanıcı
+        log("***** Existing user signed in with Apple: ${userCredential.user?.displayName}");
+      }
+
+      // Kullanıcı girişini handle et
+      await handleUserSignIn(context, userCredential);
+
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
+      print("***** Error signing in with Apple: $e");
+      return null;
+    }
+  }
+
 
   //TODO: Handle Mettods for sig in and sign up
   Future<void> handleUserSignIn(BuildContext context, UserCredential userCredential) async {
@@ -116,25 +171,35 @@ class UserDaoRepository {
         Navigator.of(context).push(MaterialPageRoute(builder: (context) => const Homepage(),));
       }
     } else {
-      print(" kullanıcı bilgisi alnımadı ve set edilemedi");
+      print(" kullanıcı bilgisi alınamadı ve set edilemedi");
     }
   }
-  void handleAuthException(BuildContext context, FirebaseAuthException e) {
-    Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
-  }
+  //void handleAuthException(BuildContext context, FirebaseAuthException e) {
+  //  Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
+  //}
 
   //TODO: Sign Out Method
   Future<void> signOut(BuildContext context) async {
     try {
-      _updateMyLocationTimer?.cancel();//konum göndermeyi durdur
+      _updateMyLocationTimer?.cancel();// Zamanlayıcıyı iptal et
       await firebaseAuth.signOut();
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) => const MyApp()));
+
+      // Başlangıç sayfasını kontrol et
+      if (MyApp.isLoginPageLoaded) {
+        // Eğer başlangıç sayfası LoginPage ise, popUntil ile geri dön
+        Navigator.popUntil(context, (route) => route.isFirst);
+      } else {
+        // Eğer başlangıç sayfası HomePage ise, pushReplacement ile geri dön
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp()));
+      }
+
+
     } on FirebaseAuthException catch(e) {
       Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_LONG);
     }
   }
 
-  //Forgot password method
+  //TODO:Forgot password method
   Future<void> forgotPassword(BuildContext context, {required String email}) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
@@ -148,6 +213,48 @@ class UserDaoRepository {
         toastLength:  Toast.LENGTH_LONG,
       );
       print("Error sending password reset email: $e");
+    }
+  }
+
+  //TODO:Delete User account from firebase
+  Future<void> deleteUserAccount(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.currentUser!.delete();
+      if (MyApp.isLoginPageLoaded) {
+        // Eğer başlangıç sayfası LoginPage ise, popUntil ile geri dön
+        Navigator.popUntil(context, (route) => route.isFirst);
+      } else {
+        // Eğer başlangıç sayfası HomePage ise, pushReplacement ile geri dön
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyApp()));
+      }
+      //TODO: kullanıcıya ait activite, group ve user gibi tüm dataları sil
+
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(msg: e.message!, toastLength: Toast.LENGTH_SHORT);
+      log(e.message!);
+      if (e.code == "requires-recent-login") {
+        await _reauthenticateAndDelete();
+      } else {
+        // Handle other Firebase exceptions
+      }
+    } catch (e) {
+      log(e.toString());
+      // Handle general exception
+    }
+  }
+  Future<void> _reauthenticateAndDelete() async {
+    try {
+      final providerData = firebaseAuth.currentUser?.providerData.first;
+      if (AppleAuthProvider().providerId == providerData!.providerId) {
+        await firebaseAuth.currentUser!
+            .reauthenticateWithProvider(AppleAuthProvider());
+      } else if (GoogleAuthProvider().providerId == providerData.providerId) {
+        await firebaseAuth.currentUser!
+            .reauthenticateWithProvider(GoogleAuthProvider());
+      }
+      await firebaseAuth.currentUser?.delete();
+    } catch (e) {
+      // Handle exceptions
     }
   }
 

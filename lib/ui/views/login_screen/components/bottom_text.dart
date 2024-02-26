@@ -28,14 +28,12 @@ class _BottomTextState extends State<BottomText> {
       animation: ChangeScreenAnimation.bottomTextAnimation,
       child: GestureDetector(
         onTap: () {
-          if (!ChangeScreenAnimation.isPlaying) {
-            ChangeScreenAnimation.currentScreen == Screens.signUp
-                ? ChangeScreenAnimation.forward()
-                : ChangeScreenAnimation.reverse();
+          ChangeScreenAnimation.currentScreen == Screens.signUp
+              ? ChangeScreenAnimation.forward()
+              : ChangeScreenAnimation.reverse();
 
-            ChangeScreenAnimation.currentScreen =
-                Screens.values[1 - ChangeScreenAnimation.currentScreen.index];
-          }
+          ChangeScreenAnimation.currentScreen =
+              Screens.values[1 - ChangeScreenAnimation.currentScreen.index];
         },
         behavior: HitTestBehavior.opaque,
         child: Padding(
