@@ -39,6 +39,7 @@ class _CreateActivityScreenState extends State<CreateActivityScreen> {
     return BlocBuilder<CreateActivityScreenCubit, File?>(
       builder: (context, activityImageFile) {
         return Stack(
+          fit: StackFit.expand,
           children: [
             // Background image
             Image.asset(

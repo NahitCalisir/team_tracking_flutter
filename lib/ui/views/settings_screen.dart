@@ -33,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return BlocBuilder<SettingsScreenCubit, File?>(
       builder: (context, userImageFile){
         return Stack(
+          fit: StackFit.expand,
           children: [
             // Background image
             Image.asset(

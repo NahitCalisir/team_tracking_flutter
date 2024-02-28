@@ -51,6 +51,7 @@ class _EditActivityScreenState extends State<EditActivityScreen> {
     return BlocBuilder<EditActivityScreenCubit, File?>(
       builder: (context, activityImageFile) {
         return Stack(
+          fit: StackFit.expand,
           children: [
             // Background image
             Image.asset(
