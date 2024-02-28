@@ -60,6 +60,7 @@ class _ActivitiesScreenState extends State<ActivitiesScreen>
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: [
         // Background image
         Image.asset(
