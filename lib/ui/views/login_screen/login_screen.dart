@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:flutter/material.dart';
 import 'package:team_tracking/main.dart';
 import 'animations/change_screen_animation.dart';
@@ -13,6 +14,30 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      _trackingTransparencyRequest();
+    });
+  }
+
+  Future<String?> _trackingTransparencyRequest() async {
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    final TrackingStatus status = await AppTrackingTransparency.trackingAuthorizationStatus;
+    if (status == TrackingStatus.authorized) {
+      final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
+      return uuid;
+    } else if(status == TrackingStatus.notDetermined) {
+      await AppTrackingTransparency.requestTrackingAuthorization();
+      final uuid = await AppTrackingTransparency.getAdvertisingIdentifier();
+      return uuid;
+    }
+
+    return null;
+  }
 
   @override
   void dispose() {

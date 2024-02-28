@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This app may track user interactions to improve ad performance and deliver personalized advertisements.</string>
 	<key>com.apple.developer.applesignin</key>
 	<array>
 		<string>Default</string>
@@ -58,8 +60,6 @@
 	<string>We request access to your photo library to enable you to personalize your profile and share photos with friends within the app. Your photos will not be used for any other purpose without your explicit consent.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We request access to your photo library to enable you to personalize your profile and share photos with friends within the app. Your photos will not be used for any other purpose without your explicit consent.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>This app may track user interactions to improve ad performance and deliver personalized advertisements.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
