@@ -248,7 +248,7 @@ class LoginContentState extends State<LoginContent>
                     Icon(Icons.apple,color: Colors.white,size: 30,),
                     SizedBox(width: 15,),
                     Text(
-                      "Sin In With Apple",
+                      "Sign In With Apple",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
@@ -283,7 +283,7 @@ class LoginContentState extends State<LoginContent>
                         child: Image.asset('assets/images/google.png')),
                     const SizedBox(width: 15,),
                     const Text(
-                      "Sin In With Google",
+                      "Sign In With Google",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
